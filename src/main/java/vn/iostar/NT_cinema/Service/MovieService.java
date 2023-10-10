@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.Service;
 
 import org.bson.types.ObjectId;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,7 +53,37 @@ public class MovieService {
 
     }
 
-    public Movie  save(Movie entity) {
-        return movieRepository.save(entity);
+
+    public ResponseEntity<GenericResponse> save(Movie entity) {
+        try {
+            if (movieRepository.findByTitle(entity.getTitle()).isEmpty()){
+                movieRepository.save(entity);
+                Movie movie =new Movie();
+                BeanUtils.copyProperties(entity, movie);
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(GenericResponse.builder()
+                                .success(true)
+                                .message("Add movie success")
+                                .result(movie)
+                                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                .build());
+            }else {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Movie already exist")
+                                .result(null)
+                                .statusCode(HttpStatus.CONFLICT.value())
+                                .build());
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
     }
 }

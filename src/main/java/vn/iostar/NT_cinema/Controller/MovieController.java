@@ -27,4 +27,9 @@ public class MovieController {
     public ResponseEntity<GenericResponse> getMovie(@PathVariable("movieId") String movieId){
         return movieService.findById(movieId);
     }
+
+    @PostMapping("/movie")
+    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie){
+        return movieService.save(movie);
+    }
 }

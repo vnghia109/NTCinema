@@ -40,4 +40,17 @@ public class Movie {
     private List<Review> reviews;
 
     private List<ShowTime> showTimes;
+
+    public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String poster, String trailerLink, List<Review> reviews, List<ShowTime> showTimes) {
+        this.title = title;
+        this.director = director;
+        this.genres = genres;
+        this.actor = actor;
+        this.releaseDate = releaseDate;
+        this.desc = desc;
+        this.poster = poster;
+        this.trailerLink = trailerLink;
+        this.reviews = reviews;
+        this.showTimes = showTimes;
+    }
 }
