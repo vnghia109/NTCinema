@@ -24,17 +24,19 @@ import java.util.Optional;
 public class RefreshTokenService {
     @Autowired
     RefreshTokenRepository refreshTokenRepository;
-
+    @Autowired
     JwtTokenProvider jwtTokenProvider;
+    @Autowired
     UserRepository userRepository;
-
+    @Autowired
     UserDetailServiceImpl userDetailsService;
-    public void revokeRefreshToken(String userId){
-        try{
+
+    public void revokeRefreshToken(String userId) {
+        try {
             Optional<User> optionalUser = userRepository.findById(userId);
-            if(optionalUser.isPresent()&&optionalUser.get().isActive()) {
+            if (optionalUser.isPresent() && optionalUser.get().isActive()) {
                 List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByUser_UserIdAndExpiredIsFalseAndRevokedIsFalse(userId);
-                if(refreshTokens.isEmpty()){
+                if (refreshTokens.isEmpty()) {
                     return;
                 }
                 refreshTokens.forEach(token -> {
@@ -43,7 +45,7 @@ public class RefreshTokenService {
                 });
                 refreshTokenRepository.saveAll(refreshTokens);
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -52,11 +54,11 @@ public class RefreshTokenService {
         return refreshTokenRepository.save(entity);
     }
 
-    public ResponseEntity<?> logout(String refreshToken){
-        try{
-            if(jwtTokenProvider.validateToken(refreshToken)){
+    public ResponseEntity<?> logout(String refreshToken) {
+        try {
+            if (jwtTokenProvider.validateToken(refreshToken)) {
                 Optional<RefreshToken> optionalRefreshToken = refreshTokenRepository.findByTokenAndExpiredIsFalseAndRevokedIsFalse(refreshToken);
-                if(optionalRefreshToken.isPresent()){
+                if (optionalRefreshToken.isPresent()) {
                     optionalRefreshToken.get().setRevoked(true);
                     optionalRefreshToken.get().setExpired(true);
                     refreshTokenRepository.save(optionalRefreshToken.get());
@@ -85,7 +87,7 @@ public class RefreshTokenService {
                             .statusCode(HttpStatus.UNAUTHORIZED.value())
                             .build());
 
-        }catch(Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)
@@ -96,15 +98,15 @@ public class RefreshTokenService {
         }
     }
 
-    public ResponseEntity<GenericResponse> refreshAccessToken(String refreshToken){
-        try{
+    public ResponseEntity<GenericResponse> refreshAccessToken(String refreshToken) {
+        try {
             String userId = jwtTokenProvider.getUserIdFromRefreshToken(refreshToken);
             Optional<User> optionalUser = userRepository.findById(userId);
-            if(optionalUser.isPresent()&&optionalUser.get().isActive()){
+            if (optionalUser.isPresent() && optionalUser.get().isActive()) {
                 //List<RefreshToken> refreshTokens = refreshTokenRepository.findAllByUser_UserIdAndExpiredIsFalseAndRevokedIsFalse(userId);
                 Optional<RefreshToken> token = refreshTokenRepository.findByUser_UserIdAndExpiredIsFalseAndRevokedIsFalse(userId);
-                if(token.isPresent() && jwtTokenProvider.validateToken(token.get().getToken())){
-                    if(!token.get().getToken().equals(refreshToken)){
+                if (token.isPresent() && jwtTokenProvider.validateToken(token.get().getToken())) {
+                    if (!token.get().getToken().equals(refreshToken)) {
                         return ResponseEntity.status(404)
                                 .body(GenericResponse.builder()
                                         .success(false)

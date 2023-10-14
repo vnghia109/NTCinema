@@ -41,7 +41,7 @@ public class MovieService {
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));
 
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)
@@ -56,9 +56,9 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> save(Movie entity) {
         try {
-            if (movieRepository.findByTitle(entity.getTitle()).isEmpty()){
+            if (movieRepository.findByTitle(entity.getTitle()).isEmpty()) {
                 movieRepository.save(entity);
-                Movie movie =new Movie();
+                Movie movie = new Movie();
                 BeanUtils.copyProperties(entity, movie);
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
@@ -67,7 +67,7 @@ public class MovieService {
                                 .result(movie)
                                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                                 .build());
-            }else {
+            } else {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(GenericResponse.builder()
                                 .success(false)
@@ -76,7 +76,7 @@ public class MovieService {
                                 .statusCode(HttpStatus.CONFLICT.value())
                                 .build());
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)

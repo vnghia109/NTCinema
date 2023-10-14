@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.RegisterRequest;
 import vn.iostar.NT_cinema.entity.User;
+import vn.iostar.NT_cinema.entity.Viewer;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
 import java.util.Optional;
@@ -17,9 +18,9 @@ import java.util.UUID;
 public class UserService {
     @Autowired
     UserRepository userRepository;
-
+    @Autowired
     PasswordEncoder passwordEncoder;
-
+    @Autowired
     RoleService roleService;
 
     public Optional<User> findByUserName(String userName) {
@@ -62,6 +63,18 @@ public class UserService {
                                     .build()
                     );
 
+        userOptional = userRepository.findByUserName(registerRequest.getUserName());
+        if (userOptional.isPresent())
+            return ResponseEntity.status(409)
+                    .body(
+                            GenericResponse.builder()
+                                    .success(true)
+                                    .message("User name already in use")
+                                    .result(null)
+                                    .statusCode(HttpStatus.CONFLICT.value())
+                                    .build()
+                    );
+
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword()))
             return ResponseEntity.status(409)
                     .body(
@@ -73,10 +86,11 @@ public class UserService {
                                     .build()
                     );
 
-        User user = new User();
+        User user = new Viewer();
         user.setFullName(registerRequest.getFullName());
         user.setEmail(registerRequest.getEmail());
         user.setPhone(registerRequest.getPhone());
+        user.setUserName(registerRequest.getUserName());
         user.setUserId(UUID.randomUUID().toString().split("-")[0]);
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole(roleService.findByRoleName("VIEWER"));

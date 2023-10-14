@@ -22,7 +22,7 @@ public class MyBasicAuthenticationEntryPoint implements AuthenticationEntryPoint
 
         Map<String, Object> errorMap = new HashMap<>();
         errorMap.put("success", false);
-        errorMap.put("message","Unauthenticated!");
+        errorMap.put("message", "Unauthenticated!");
         errorMap.put("result", authException.getMessage());
 
         ObjectMapper objectMapper = new ObjectMapper();

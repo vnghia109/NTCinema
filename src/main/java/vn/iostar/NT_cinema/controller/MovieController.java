@@ -22,12 +22,12 @@ public class MovieController {
     }
 
     @GetMapping("/{movieId}")
-    public ResponseEntity<GenericResponse> getMovie(@PathVariable("movieId") String movieId){
+    public ResponseEntity<GenericResponse> getMovie(@PathVariable("movieId") String movieId) {
         return movieService.findById(movieId);
     }
 
     @PostMapping("/movie")
-    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie){
+    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
         return movieService.save(movie);
     }
 }

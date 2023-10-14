@@ -24,6 +24,9 @@ public class RegisterRequest {
     @NotEmpty(message = "Phone is required")
     private String phone;
 
+    @NotEmpty(message = "UserName is required")
+    private String userName;
+
     @NotEmpty(message = "Password is required")
     private String password;
 

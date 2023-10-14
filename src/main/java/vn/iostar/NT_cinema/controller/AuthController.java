@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.controller;
 
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -31,13 +32,13 @@ import java.util.*;
 @RequestMapping("/api/v1/auth")
 @Validated
 public class AuthController {
-
+    @Autowired
     AuthenticationManager authenticationManager;
-
+    @Autowired
     JwtTokenProvider jwtTokenProvider;
-
+    @Autowired
     UserService userService;
-
+    @Autowired
     RefreshTokenService refreshTokenService;
 
     TemplateEngine templateEngine;
@@ -47,7 +48,7 @@ public class AuthController {
     @Transactional
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
 
-        if (userService.findByUserName(loginDTO.getCredentialId()).isEmpty() && userService.findByPassword(loginDTO.getCredentialId()).isEmpty())
+        if (userService.findByUserName(loginDTO.getCredentialId()).isEmpty())
             throw new UserNotFoundException("Account does not exist");
         Optional<User> optionalUser = userService.findByUserName(loginDTO.getCredentialId());
         if (optionalUser.isPresent() && !optionalUser.get().isActive()) {

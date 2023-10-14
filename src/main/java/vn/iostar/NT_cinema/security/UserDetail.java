@@ -15,11 +15,10 @@ import java.util.List;
 @AllArgsConstructor
 public class UserDetail implements UserDetails {
     private User user;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        List<GrantedAuthority> authorityList = new ArrayList<>();
-        authorityList.add(new SimpleGrantedAuthority(user.getRole().getRoleName()));
-        return authorityList;
+        return List.of(new SimpleGrantedAuthority(user.getRole().getRoleName()));
     }
 
     public String getUserId() {

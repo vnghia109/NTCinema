@@ -24,7 +24,7 @@ public class Review {
 
     private String comment;
 
-    @Size( min = 0, max = 5)
+    @Size(min = 0, max = 5)
     private int rating;
 
 }

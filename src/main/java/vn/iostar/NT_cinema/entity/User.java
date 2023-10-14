@@ -2,6 +2,7 @@ package vn.iostar.NT_cinema.entity;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,14 +29,18 @@ public class User {
     private Role role;
 
     @NotBlank
+    @NotEmpty
     @UniqueElements
     private String userName;
 
     @NotBlank
+    @NotEmpty
     private String password;
 
     @NotBlank
+    @NotEmpty
     @Email
+    @UniqueElements
     private String email;
 
     private String fullName;
@@ -43,9 +48,10 @@ public class User {
     private Date dob;
 
     @Size(max = 10)
+    @UniqueElements
     private String phone;
 
-    private boolean isActive;
+    private boolean isActive = true;
 
     private Date createdAt;
 
@@ -53,5 +59,4 @@ public class User {
 
     private Date lastLoginAt;
 
-    private List<Booking> bookings;
 }
