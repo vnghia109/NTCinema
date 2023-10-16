@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Service;
@@ -24,10 +25,13 @@ import java.util.Optional;
 public class RefreshTokenService {
     @Autowired
     RefreshTokenRepository refreshTokenRepository;
+
     @Autowired
     JwtTokenProvider jwtTokenProvider;
+
     @Autowired
     UserRepository userRepository;
+
     @Autowired
     UserDetailServiceImpl userDetailsService;
 
@@ -145,5 +149,10 @@ public class RefreshTokenService {
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
+    }
+
+    @Scheduled(fixedRate = 300000)
+    public void cleanUpToken(){
+        refreshTokenRepository.deleteAllByExpiredIsTrueAndRevokedIsTrue();
     }
 }

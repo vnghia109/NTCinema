@@ -26,14 +26,18 @@ public class Movie {
 
     private String genres;
 
+    @NotBlank
     private String actor;
 
+    @NotBlank
     private String releaseDate;
 
     private String desc;
 
+    @NotBlank
     private String poster;
 
+    @NotBlank
     private String trailerLink;
 
     private List<Review> reviews;

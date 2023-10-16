@@ -61,7 +61,12 @@ public class WebSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().permitAll()
+                                .requestMatchers("api/v1/auth/**").permitAll()
+                                .requestMatchers("api/v1/movies/**").permitAll()
+                                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/api/v1/manager/**").hasRole("MANAGER")
+                                .requestMatchers("/api/v1/viewer/**").hasRole("VIEWER")
+                                .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic((basic) -> basic

@@ -14,4 +14,6 @@ public interface RefreshTokenRepository extends MongoRepository<RefreshToken, St
     Optional<RefreshToken> findByTokenAndExpiredIsFalseAndRevokedIsFalse(String refreshToken);
 
     Optional<RefreshToken> findByUser_UserIdAndExpiredIsFalseAndRevokedIsFalse(String userId);
+
+    void deleteAllByExpiredIsTrueAndRevokedIsTrue();
 }

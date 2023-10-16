@@ -6,11 +6,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.ManagerRequest;
 import vn.iostar.NT_cinema.dto.RegisterRequest;
+import vn.iostar.NT_cinema.entity.Role;
 import vn.iostar.NT_cinema.entity.User;
 import vn.iostar.NT_cinema.entity.Viewer;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
+import java.util.Date;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -90,8 +93,8 @@ public class UserService {
         user.setFullName(registerRequest.getFullName());
         user.setEmail(registerRequest.getEmail());
         user.setPhone(registerRequest.getPhone());
+        user.setCreatedAt(new Date());
         user.setUserName(registerRequest.getUserName());
-        user.setUserId(UUID.randomUUID().toString().split("-")[0]);
         user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setRole(roleService.findByRoleName("VIEWER"));
 
@@ -107,6 +110,74 @@ public class UserService {
                         .statusCode(200)
                         .build()
         );
+    }
+
+    public ResponseEntity<GenericResponse> addManager(ManagerRequest request) {
+        try {
+            User user = new User();
+            if (userRepository.findByUserName(request.getUserName()).isPresent()){
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("User name already in use")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
+            }
+            if (userRepository.findByPhone(request.getPhone()).isPresent()){
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Phone already in use")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
+            }
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Email already in use")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
+            }
+            user.setUserName(request.getUserName());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setEmail(request.getEmail());
+            user.setFullName(request.getFullName());
+            user.setCreatedAt(new Date());
+            user.setPhone(request.getPhone());
+            user.setRole(roleService.findByRoleName("MANAGER"));
+
+            User manager = save(user);
+
+            return ResponseEntity.ok(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("SignUp to manager success")
+                            .result(manager)
+                            .statusCode(200)
+                            .build()
+            );
+
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message(e.getMessage())
+                                    .result(null)
+                                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                    .build()
+                    );
+        }
     }
 
 //    public String validateVerificationAccount(String token) {
