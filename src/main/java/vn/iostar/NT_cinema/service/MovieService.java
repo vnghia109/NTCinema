@@ -26,8 +26,7 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> findById(String id) {
         try {
-            ObjectId objectId = new ObjectId(id);
-            Optional<Movie> movie = movieRepository.findById(objectId);
+            Optional<Movie> movie = movieRepository.findById(id);
             return movie.map(value -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -90,8 +89,7 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> update(String movieId, MovieRequest movieRequest) {
         try {
-            ObjectId id = new ObjectId(movieId);
-            Optional<Movie> optionalMovie = movieRepository.findById(id);
+            Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
                 Movie movie = optionalMovie.get();
                 movie.setTitle(movieRequest.getTitle());
@@ -134,10 +132,9 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> delete(String movieId) {
         try {
-            ObjectId id = new ObjectId(movieId);
-            Optional<Movie> optionalMovie = movieRepository.findById(id);
+            Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
-                movieRepository.deleteById(id);
+                movieRepository.deleteById(movieId);
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
