@@ -9,9 +9,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.MovieRequest;
+import vn.iostar.NT_cinema.dto.RoomReq;
+import vn.iostar.NT_cinema.dto.ShowTimeReq;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.MovieService;
+import vn.iostar.NT_cinema.service.RoomService;
+import vn.iostar.NT_cinema.service.ShowTimeService;
 
 @RestController
 @PreAuthorize("hasRole('MANAGER')")
@@ -22,6 +26,12 @@ public class ManagerController {
 
     @Autowired
     JwtTokenProvider jwtTokenProvider;
+
+    @Autowired
+    ShowTimeService showTimeService;
+
+    @Autowired
+    RoomService roomService;
 
 //    @PostMapping("/movies/movie")
 //    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
@@ -47,5 +57,26 @@ public class ManagerController {
     @DeleteMapping("/movies/{movieId}")
     public ResponseEntity<GenericResponse> deleteMovie(@PathVariable("movieId") String movieId) throws Exception{
         return movieService.delete(movieId);
+    }
+
+    @PostMapping("/room")
+    public ResponseEntity<GenericResponse> addRoom(@RequestBody RoomReq roomReq){
+        return roomService.addRoom(roomReq);
+    }
+
+    @PostMapping("/showtime")
+    public ResponseEntity<GenericResponse> addShowTime(@RequestBody ShowTimeReq showTimeReq){
+        return showTimeService.addShowTime(showTimeReq);
+    }
+
+    @DeleteMapping("/showtime/{id}")
+    public ResponseEntity<GenericResponse> deleteShowTime(@PathVariable("id") String id){
+        return showTimeService.deleteShowTime(id);
+    }
+
+    @PutMapping("/showtime/{id}")
+    public ResponseEntity<GenericResponse> updateShowTime(@PathVariable("id") String id,
+                                                          @RequestBody ShowTimeReq showTimeReq){
+        return showTimeService.updateShowTime(id, showTimeReq);
     }
 }

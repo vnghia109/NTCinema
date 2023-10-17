@@ -22,6 +22,4 @@ public class Cinema {
 
     private String desc;
 
-    @DBRef
-    private List<Room> rooms;
 }

@@ -8,9 +8,8 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.ManagerRequest;
 import vn.iostar.NT_cinema.dto.RegisterRequest;
-import vn.iostar.NT_cinema.entity.Role;
-import vn.iostar.NT_cinema.entity.User;
-import vn.iostar.NT_cinema.entity.Viewer;
+import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
 import java.util.Date;
@@ -25,6 +24,8 @@ public class UserService {
     PasswordEncoder passwordEncoder;
     @Autowired
     RoleService roleService;
+    @Autowired
+    CinemaRepository cinemaRepository;
 
     public Optional<User> findByUserName(String userName) {
         return userRepository.findByUserName(userName);
@@ -114,7 +115,7 @@ public class UserService {
 
     public ResponseEntity<GenericResponse> addManager(ManagerRequest request) {
         try {
-            User user = new User();
+            Manager user = new Manager();
             if (userRepository.findByUserName(request.getUserName()).isPresent()){
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(
@@ -148,6 +149,17 @@ public class UserService {
                                         .build()
                         );
             }
+
+            Optional<Cinema> cinema = cinemaRepository.findById(request.getCinemaId());
+            if (cinema.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Cinema not found")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+
             user.setUserName(request.getUserName());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             user.setEmail(request.getEmail());
@@ -155,6 +167,7 @@ public class UserService {
             user.setCreatedAt(new Date());
             user.setPhone(request.getPhone());
             user.setRole(roleService.findByRoleName("MANAGER"));
+            user.setCinema(cinema.get());
 
             User manager = save(user);
 

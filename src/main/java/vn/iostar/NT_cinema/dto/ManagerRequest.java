@@ -31,4 +31,6 @@ public class ManagerRequest {
 
     @Size(max = 10)
     private String phone;
+
+    private String cinemaId;
 }
