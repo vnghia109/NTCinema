@@ -65,4 +65,34 @@ public class RoomService {
                         .build());
         }
     }
+
+    public ResponseEntity<GenericResponse> deleteRoom(String roomId) {
+        try {
+            Optional<Room> roomOptional = roomRepository.findById(roomId);
+            if (roomOptional.isPresent()){
+                roomRepository.deleteById(roomId);
+                return ResponseEntity.ok().body(GenericResponse.builder()
+                        .success(true)
+                        .message("Delete room success!")
+                        .result(null)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+            }else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Room not found")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

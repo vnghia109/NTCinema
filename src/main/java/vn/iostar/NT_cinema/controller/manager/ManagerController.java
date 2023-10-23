@@ -7,15 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.dto.MovieRequest;
-import vn.iostar.NT_cinema.dto.RoomReq;
-import vn.iostar.NT_cinema.dto.ShowTimeReq;
+import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
-import vn.iostar.NT_cinema.service.MovieService;
-import vn.iostar.NT_cinema.service.RoomService;
-import vn.iostar.NT_cinema.service.ShowTimeService;
+import vn.iostar.NT_cinema.service.*;
 
 @RestController
 @PreAuthorize("hasRole('MANAGER')")
@@ -32,6 +27,9 @@ public class ManagerController {
 
     @Autowired
     RoomService roomService;
+
+    @Autowired
+    ManagerService managerService;
 
 //    @PostMapping("/movies/movie")
 //    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
@@ -59,9 +57,14 @@ public class ManagerController {
         return movieService.delete(movieId);
     }
 
-    @PostMapping("/room")
+    @PostMapping("/rooms")
     public ResponseEntity<GenericResponse> addRoom(@RequestBody RoomReq roomReq){
         return roomService.addRoom(roomReq);
+    }
+
+    @DeleteMapping("/rooms/{roomId}")
+    public ResponseEntity<GenericResponse> deleteRoom(@PathVariable("roomId") String roomId){
+        return roomService.deleteRoom(roomId);
     }
 
     @PostMapping("/showtime")
