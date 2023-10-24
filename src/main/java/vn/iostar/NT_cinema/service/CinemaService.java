@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.CinemaReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Cinema;
+import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -91,6 +93,45 @@ public class CinemaService {
                             .success(false)
                             .message(e.getMessage())
                             .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> allMovies() {
+        List<Cinema> cinemas = cinemaRepository.findAll();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GenericResponse.builder()
+                        .success(true)
+                        .message("Get all movie")
+                        .result(cinemas)
+                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .build());
+    }
+
+    public ResponseEntity<GenericResponse> findById(String movieId) {
+        try {
+            Optional<Cinema> cinema = cinemaRepository.findById(movieId);
+            return cinema.map(value -> ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get movie success")
+                            .result(value)
+                            .statusCode(HttpStatus.OK.value())
+                            .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Movie not found")
+                            .result(null)
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .build()));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }

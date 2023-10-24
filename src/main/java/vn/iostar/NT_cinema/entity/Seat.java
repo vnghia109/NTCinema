@@ -14,15 +14,14 @@ public class Seat {
     @Id
     private String seatId;
 
-    @DBRef
-    private ShowTime showTime;
+    private String showTimeId;
 
     private Price price;
 
     private String row;
     private String column;
     private boolean status;
-
-    @DBRef
-    private Booking booking;
+//
+//    @DBRef
+//    private Booking booking;
 }

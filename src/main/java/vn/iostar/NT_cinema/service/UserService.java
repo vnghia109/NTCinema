@@ -225,22 +225,62 @@ public class UserService {
         try {
 
             if (request.getNewPassword().length() < 8 || request.getNewPassword().length() > 32)
-                throw new RuntimeException("Password must be between 8 and 32 characters long");
+                return ResponseEntity.status(409)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Password must be between 8 and 32 characters long")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
 
             if (!request.getNewPassword().equals(request.getConfirmNewPassword()))
-                throw new RuntimeException("Password and confirm password do not match");
+                return ResponseEntity.status(409)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Password and confirm password do not match")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
 
             Optional<User> userOptional = userRepository.findById(userId);
 
             if (userOptional.isEmpty())
-                throw new RuntimeException("Candidate is not found");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("This account is not found")
+                                        .result(null)
+                                        .statusCode(HttpStatus.NOT_FOUND.value())
+                                        .build()
+                        );
 
             User user = userOptional.get();
             if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword()))
-                throw new BadCredentialsException("Current password is incorrect");
+                return ResponseEntity.status(409)
+                    .body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Current password is incorrect")
+                                    .result(null)
+                                    .statusCode(HttpStatus.CONFLICT.value())
+                                    .build()
+                    );
 
             if (passwordEncoder.matches(request.getNewPassword(), user.getPassword()))
-                throw new RuntimeException("The new password cannot be the same as the old password");
+                return ResponseEntity.status(409)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("The new password cannot be the same as the old password")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
 
             user.setPassword(passwordEncoder.encode(request.getNewPassword()));
             save(user);

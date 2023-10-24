@@ -17,8 +17,8 @@ public class MovieController {
     private MovieService movieService;
 
     @GetMapping
-    public ResponseEntity<List<Movie>> getAllMovies() {
-        return new ResponseEntity<List<Movie>>(movieService.allMovies(), HttpStatus.OK);
+    public ResponseEntity<GenericResponse> getAllMovies() {
+        return movieService.allMovies();
     }
 
     @GetMapping("/{movieId}")
@@ -26,8 +26,8 @@ public class MovieController {
         return movieService.findById(movieId);
     }
 
-    @PostMapping("/movie")
-    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
-        return movieService.save(movie);
-    }
+//    @PostMapping("/movie")
+//    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
+//        return movieService.save(movie);
+//    }
 }

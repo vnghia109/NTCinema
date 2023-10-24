@@ -20,8 +20,15 @@ public class MovieService {
     @Autowired
     private MovieRepository movieRepository;
 
-    public List<Movie> allMovies() {
-        return movieRepository.findAll();
+    public ResponseEntity<GenericResponse> allMovies() {
+        List<Movie> movieList = movieRepository.findAll();
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GenericResponse.builder()
+                        .success(true)
+                        .message("Get all movie")
+                        .result(movieList)
+                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .build());
     }
 
     public ResponseEntity<GenericResponse> findById(String id) {

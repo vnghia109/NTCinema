@@ -2,6 +2,7 @@ package vn.iostar.NT_cinema.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -44,8 +45,18 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<GenericResponse> updateManager(@RequestBody UserReq req,
+    public ResponseEntity<GenericResponse> updateProfile(@RequestBody UserReq req,
                                                          @RequestHeader("Authorization") String authorizationHeader){
+        if (authorizationHeader.isEmpty()){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    GenericResponse.builder()
+                            .success(false)
+                            .message("Access Denied")
+                            .result(null)
+                            .statusCode(401)
+                            .build()
+            );
+        }
         String token = authorizationHeader.substring(7);
         String userId = jwtTokenProvider.getUserIdFromJwt(token);
         return userService.updateUser(req, userId);
