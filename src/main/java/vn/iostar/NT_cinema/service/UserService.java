@@ -46,14 +46,22 @@ public class UserService {
 
     public ResponseEntity<GenericResponse> userRegister(RegisterRequest registerRequest) {
         if (registerRequest.getPassword().length() < 8 || registerRequest.getPassword().length() > 32)
-            throw new RuntimeException("Password must be between 8 and 32 characters long");
+            return ResponseEntity.status(409)
+                    .body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("Password must be between 8 and 32 characters long")
+                                    .result(null)
+                                    .statusCode(HttpStatus.CONFLICT.value())
+                                    .build()
+                    );
 
         Optional<User> userOptional = userRepository.findByPhone(registerRequest.getPhone());
         if (userOptional.isPresent())
             return ResponseEntity.status(409)
                     .body(
                             GenericResponse.builder()
-                                    .success(true)
+                                    .success(false)
                                     .message("Phone number already in use")
                                     .result(null)
                                     .statusCode(HttpStatus.CONFLICT.value())
@@ -65,7 +73,7 @@ public class UserService {
             return ResponseEntity.status(409)
                     .body(
                             GenericResponse.builder()
-                                    .success(true)
+                                    .success(false)
                                     .message("Email already in use")
                                     .result(null)
                                     .statusCode(HttpStatus.CONFLICT.value())
@@ -77,7 +85,7 @@ public class UserService {
             return ResponseEntity.status(409)
                     .body(
                             GenericResponse.builder()
-                                    .success(true)
+                                    .success(false)
                                     .message("User name already in use")
                                     .result(null)
                                     .statusCode(HttpStatus.CONFLICT.value())
@@ -88,7 +96,7 @@ public class UserService {
             return ResponseEntity.status(409)
                     .body(
                             GenericResponse.builder()
-                                    .success(true)
+                                    .success(false)
                                     .message("Password and confirm password do not match")
                                     .result(null)
                                     .statusCode(HttpStatus.CONFLICT.value())
