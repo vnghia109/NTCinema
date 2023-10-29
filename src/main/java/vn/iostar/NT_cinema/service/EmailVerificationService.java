@@ -2,6 +2,7 @@ package vn.iostar.NT_cinema.service;
 
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +16,7 @@ import vn.iostar.NT_cinema.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 
@@ -32,6 +34,9 @@ public class EmailVerificationService {
     @Autowired
     TemplateEngine templateEngine;
 
+    @Autowired
+    Environment env;
+
     public void sendOtp(String email) {
         String otp = generateOtp();
         try {
@@ -47,7 +52,8 @@ public class EmailVerificationService {
             String mailContent = templateEngine.process("send-otp", context);
 
             helper.setText(mailContent, true);
-            helper.setSubject("The verification token for JobPort");
+            helper.setSubject("The verification token for TNCinemas");
+            helper.setFrom(Objects.requireNonNull(env.getProperty("spring.mail.username")),"TNCinemas Admin");
             mailSender.send(message);
 
             LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(5);

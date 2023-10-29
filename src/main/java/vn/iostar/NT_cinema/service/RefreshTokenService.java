@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.service;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -149,6 +150,11 @@ public class RefreshTokenService {
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
+    }
+
+    @PostConstruct
+    public void init() {
+        refreshTokenRepository.deleteAllByExpiredIsTrueAndRevokedIsTrue();
     }
 
     @Scheduled(fixedRate = 300000)

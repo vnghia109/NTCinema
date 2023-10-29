@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.ChangePasswordRequest;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.PasswordResetRequest;
 import vn.iostar.NT_cinema.dto.UserReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.UserService;
@@ -65,8 +66,13 @@ public class UserController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<GenericResponse> resetPassword(@RequestParam final String email) throws MessagingException, UnsupportedEncodingException {
-        return userService.resetPassword(email);
+    public ResponseEntity<GenericResponse> resetPassword(@RequestParam final String email) {
+        return userService.forgotPassword(email);
+    }
+
+    @PutMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestParam("token") String token,@RequestBody PasswordResetRequest passwordResetRequest){
+        return userService.resetPassword(token, passwordResetRequest);
     }
 
 }

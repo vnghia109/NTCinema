@@ -31,10 +31,10 @@ public class ManagerController {
     @Autowired
     ManagerService managerService;
 
-//    @PostMapping("/movies/movie")
-//    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
-//        return movieService.save(movie);
-//    }
+    @PostMapping("/movies/movie")
+    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
+        return movieService.save(movie);
+    }
 
     @PutMapping("/movies/{movieId}")
     public ResponseEntity<GenericResponse> updateMovie(@PathVariable("movieId") String movieId,

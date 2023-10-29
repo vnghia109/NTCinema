@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.service;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,21 +9,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.PasswordResetOtpRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserService {
@@ -42,7 +43,7 @@ public class UserService {
     TemplateEngine templateEngine;
     @Autowired
     Environment env;
-
+    @Autowired
     private JavaMailSender javaMailSender;
 //    @Autowired
 //    TemplateEngine templateEngine;
@@ -384,7 +385,7 @@ public class UserService {
         passwordResetOtpRepository.save(myOtp);
     }
 
-    public ResponseEntity<GenericResponse> resetPassword(String email) throws UnsupportedEncodingException, MessagingException {
+    public ResponseEntity<GenericResponse> forgotPassword(String email){
         Optional<User> user = userRepository.findByEmail(email);
         if (user.isEmpty())
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
@@ -393,30 +394,121 @@ public class UserService {
                     .result(null)
                     .statusCode(HttpStatus.NOT_FOUND.value())
                     .build());
+        try {
 
-        String otp = UUID.randomUUID().toString();
-        createPasswordResetOtpForUser(user.get(), otp);
-        String url = "http://localhost:5173/forget-password/confirm-password?token="+otp;
-        String subject = "Change Password For JobPost";
-        Context context = new Context();
-        context.setVariable("url",url);
-        String content = templateEngine.process("forgot-password",context);
+            String otp = UUID.randomUUID().toString();
+            createPasswordResetOtpForUser(user.get(), otp);
+            String url = "http://localhost:5173/forget-password/confirm-password?token="+otp;
+            String subject = "Change Password For TNCinemas";
+            Context context = new Context();
+            context.setVariable("url",url);
+            String content = templateEngine.process("forgot-password",context);
 
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message,true);
-        helper.setSubject(subject);
-        helper.setText(content,true);
-        helper.setTo(user.get().getEmail());
-        helper.setFrom(Objects.requireNonNull(env.getProperty("spring.mail.username")),"Recruiment Manager");
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message,true);
+            helper.setSubject(subject);
+            helper.setText(content,true);
+            helper.setTo(user.get().getEmail());
+            helper.setFrom(Objects.requireNonNull(env.getProperty("spring.mail.username")),"TNCinemas Admin");
 
-        javaMailSender.send(message);
+            javaMailSender.send(message);
 
-        return ResponseEntity.ok().body(GenericResponse.builder()
-                .success(true)
-                .message("Please check your email to reset your password!")
-                .result("Send Otp successfully!")
-                .statusCode(HttpStatus.OK.value())
-                .build());
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Please check your email to reset your password!")
+                    .result("Send Otp successfully!")
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    @Transactional
+    public void deleteUnverifiedAccounts() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.HOUR_OF_DAY, -24);
+        Date twentyFourHoursAgo = calendar.getTime();
+
+        List<User> unverifiedAccounts = userRepository.findByIsActiveFalseAndCreatedAtBefore(twentyFourHoursAgo);
+        userRepository.deleteAll(unverifiedAccounts);
+    }
+    @PostConstruct
+    public void init() {
+        deleteUnverifiedAccounts();
+    }
+    @Scheduled(fixedDelay = 86400000) // 24 hours
+    public void scheduledDeleteUnverifiedAccounts() {
+        deleteUnverifiedAccounts();
+    }
+
+    public ResponseEntity<GenericResponse> resetPassword(String token, PasswordResetRequest passwordResetRequest) {
+        try {
+
+            String result = validatePasswordResetOtp(token);
+            if(result == null){
+                Optional<PasswordResetOtp> user = passwordResetOtpRepository.findByOtp(token);
+                if (user.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message("User Not Found")
+                                    .result(null)
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build());
+                }
+                changeUserPassword(user.get().getUser(), passwordResetRequest.getNewPassword()
+                        , passwordResetRequest.getConfirmPassword());
+                return ResponseEntity.ok(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Reset password successful")
+                                .result(null)
+                                .statusCode(200)
+                                .build()
+                );
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(GenericResponse.builder()
+                        .success(false)
+                        .message(result)
+                        .result(null)
+                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                        .build());
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public void changeUserPassword(User user, String newPassword, String confirmPassword) {
+        if (!newPassword.equals(confirmPassword))
+            throw new RuntimeException("Password and confirm password do not match");
+        user.setPassword(passwordEncoder.encode(newPassword));
+        save(user);
+    }
+
+    public String validatePasswordResetOtp(String otp) {
+
+        Optional<PasswordResetOtp> passOtp = passwordResetOtpRepository.findByOtp(otp);
+        Calendar cal = Calendar.getInstance();
+
+        if (passOtp.isEmpty()) {
+            return "Invalid token/link";
+        }
+        if (passOtp.get().getExpiryDate().before(cal.getTime())) {
+            return "Token/link expired";
+        }
+        return null;
     }
 
 //    public String validateVerificationAccount(String token) {
