@@ -1,21 +1,26 @@
 package vn.iostar.NT_cinema.service;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
-import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
+import vn.iostar.NT_cinema.repository.PasswordResetOtpRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,6 +34,16 @@ public class UserService {
     RoleService roleService;
     @Autowired
     CinemaRepository cinemaRepository;
+    @Autowired
+    EmailVerificationService emailVerificationService;
+    @Autowired
+    PasswordResetOtpRepository passwordResetOtpRepository;
+    @Autowired
+    TemplateEngine templateEngine;
+    @Autowired
+    Environment env;
+
+    private JavaMailSender javaMailSender;
 //    @Autowired
 //    TemplateEngine templateEngine;
 
@@ -114,7 +129,7 @@ public class UserService {
 
         save(user);
 
-//        emailVerificationService.sendOtp(registerRequest.getEmail());
+        emailVerificationService.sendOtp(registerRequest.getEmail());
 
         return ResponseEntity.ok(
                 GenericResponse.builder()
@@ -357,46 +372,52 @@ public class UserService {
         }
     }
 
-//    public void createPasswordResetOtpForUser(User user, String otp) {
-//        PasswordResetOtp myOtp = null;
-//        if (passwordResetOtpRepository.findByUser(user).isPresent()) {
-//            myOtp = passwordResetOtpRepository.findByUser(user).get();
-//            myOtp.updateOtp(otp);
-//        } else {
-//
-//            myOtp = new PasswordResetOtp(otp, user);
-//        }
-//        passwordResetOtpRepository.save(myOtp);
-//    }
-//
-//    public ResponseEntity<GenericResponse> resetPassword(String email) throws UnsupportedEncodingException {
-//        User user = userRepository.findByEmail(email)
-//                .orElseThrow(()-> new UserNotFoundException("User Not Found"));
-//
-//        String otp = UUID.randomUUID().toString();
-//        createPasswordResetOtpForUser(user, otp);
-//        String url = "http://localhost:5173/forget-password/confirm-password?token="+otp;
-//        String subject = "Change Password For JobPost";
-//        Context context = new Context();
-//        context.setVariable("url",url);
-//        String content = templateEngine.process("forgot-password",context);
-//
-//        MimeMessage message = javaMailSender.createMimeMessage();
-//        MimeMessageHelper helper = new MimeMessageHelper(message,true);
-//        helper.setSubject(subject);
-//        helper.setText(content,true);
-//        helper.setTo(user.getEmail());
-//        helper.setFrom(env.getProperty("spring.mail.username"),"Recruiment Manager");
-//
-//        javaMailSender.send(message);
-//
-//        return GenericResponse.builder()
-//                .success(true)
-//                .message("Please check your email to reset your password!")
-//                .result("Send Otp successfully!")
-//                .statusCode(HttpStatus.OK.value())
-//                .build();
-//    }
+    public void createPasswordResetOtpForUser(User user, String otp) {
+        PasswordResetOtp myOtp = null;
+        if (passwordResetOtpRepository.findByUser(user).isPresent()) {
+            myOtp = (PasswordResetOtp) passwordResetOtpRepository.findByUser(user).get();
+            myOtp.updateOtp(otp);
+        } else {
+
+            myOtp = new PasswordResetOtp(otp, user);
+        }
+        passwordResetOtpRepository.save(myOtp);
+    }
+
+    public ResponseEntity<GenericResponse> resetPassword(String email) throws UnsupportedEncodingException, MessagingException {
+        Optional<User> user = userRepository.findByEmail(email);
+        if (user.isEmpty())
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                    .success(true)
+                    .message("User not found")
+                    .result(null)
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .build());
+
+        String otp = UUID.randomUUID().toString();
+        createPasswordResetOtpForUser(user.get(), otp);
+        String url = "http://localhost:5173/forget-password/confirm-password?token="+otp;
+        String subject = "Change Password For JobPost";
+        Context context = new Context();
+        context.setVariable("url",url);
+        String content = templateEngine.process("forgot-password",context);
+
+        MimeMessage message = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message,true);
+        helper.setSubject(subject);
+        helper.setText(content,true);
+        helper.setTo(user.get().getEmail());
+        helper.setFrom(Objects.requireNonNull(env.getProperty("spring.mail.username")),"Recruiment Manager");
+
+        javaMailSender.send(message);
+
+        return ResponseEntity.ok().body(GenericResponse.builder()
+                .success(true)
+                .message("Please check your email to reset your password!")
+                .result("Send Otp successfully!")
+                .statusCode(HttpStatus.OK.value())
+                .build());
+    }
 
 //    public String validateVerificationAccount(String token) {
 //

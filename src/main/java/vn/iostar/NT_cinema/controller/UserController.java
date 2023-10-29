@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.controller;
 
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import vn.iostar.NT_cinema.dto.UserReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.UserService;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Objects;
 
 @RestController
@@ -62,9 +64,9 @@ public class UserController {
         return userService.updateUser(req, userId);
     }
 
-//    @PostMapping("/forgot-password")
-//    public ResponseEntity<GenericResponse> resetPassword(@RequestParam final String email){
-//        return userService.resetPassword(email);
-//    }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<GenericResponse> resetPassword(@RequestParam final String email) throws MessagingException, UnsupportedEncodingException {
+        return userService.resetPassword(email);
+    }
 
 }

@@ -14,15 +14,13 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.TemplateEngine;
-import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.dto.LoginDTO;
-import vn.iostar.NT_cinema.dto.RegisterRequest;
-import vn.iostar.NT_cinema.dto.TokenRequest;
+import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.RefreshToken;
 import vn.iostar.NT_cinema.entity.User;
 import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.security.UserDetail;
+import vn.iostar.NT_cinema.service.EmailVerificationService;
 import vn.iostar.NT_cinema.service.RefreshTokenService;
 import vn.iostar.NT_cinema.service.UserService;
 
@@ -40,7 +38,8 @@ public class AuthController {
     UserService userService;
     @Autowired
     RefreshTokenService refreshTokenService;
-
+    @Autowired
+    EmailVerificationService emailVerificationService;
     TemplateEngine templateEngine;
 
 
@@ -165,4 +164,49 @@ public class AuthController {
 //        return content;
 //    }
 
+    @PostMapping("/sendOTP")
+    public ResponseEntity<GenericResponse> sendOtp(@RequestBody EmailVerificationRequest emailVerificationRequest) {
+        try {
+            emailVerificationService.sendOtp(emailVerificationRequest.getEmail());
+            return ResponseEntity.ok()
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("OTP sent successfully!")
+                            .result(null)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("An error occurred while sending OTP.")
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    @PostMapping("/verifyOTP")
+    public ResponseEntity<GenericResponse> verifyOtp(@RequestBody VerifyOtpRequest verifyOtpRequest) {
+        boolean isOtpVerified = emailVerificationService.verifyOtp(verifyOtpRequest.getEmail(), verifyOtpRequest.getOtp());
+
+        if (isOtpVerified) {
+            return ResponseEntity.ok()
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("OTP verified successfully!")
+                            .result(null)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } else {
+            return ResponseEntity.badRequest()
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Invalid OTP or expired.")
+                            .result(null)
+                            .statusCode(HttpStatus.BAD_REQUEST.value())
+                            .build());
+        }
+    }
 }

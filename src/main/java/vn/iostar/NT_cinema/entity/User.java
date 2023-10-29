@@ -51,7 +51,7 @@ public class User {
     @UniqueElements
     private String phone;
 
-    private boolean isActive = true;
+    private boolean isActive = false;
 
     private Date createdAt;
 

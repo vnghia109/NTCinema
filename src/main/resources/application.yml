@@ -3,3 +3,15 @@ spring:
     mongodb:
       uri: mongodb+srv://vnghiahi:vnghiahi@clustercinema.17xm64g.mongodb.net/?retryWrites=true&w=majority
       database: NTCinemaDB
+#
+#  mail:
+#    host: smtp.gmail.com
+#    username: vnghiahi@gmail.com
+#    password: vnghi@kng.com
+#    port: 587
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true

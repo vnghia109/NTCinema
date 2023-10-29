@@ -67,7 +67,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/v1/manager/**").hasRole("MANAGER")
                                 .requestMatchers("/api/v1/viewer/**").hasRole("VIEWER")
-//                                .anyRequest().authenticated()
+                                .anyRequest().authenticated()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic((basic) -> basic
