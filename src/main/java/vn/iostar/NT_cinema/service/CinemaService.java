@@ -98,16 +98,6 @@ public class CinemaService {
         }
     }
 
-    public ResponseEntity<GenericResponse> allMovies() {
-        List<Cinema> cinemas = cinemaRepository.findAll();
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(GenericResponse.builder()
-                        .success(true)
-                        .message("Get all movie")
-                        .result(cinemas)
-                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                        .build());
-    }
 
     public ResponseEntity<GenericResponse> findById(String movieId) {
         try {
@@ -115,13 +105,13 @@ public class CinemaService {
             return cinema.map(value -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get movie success")
+                            .message("Get Cinema success")
                             .result(value)
                             .statusCode(HttpStatus.OK.value())
                             .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("Movie not found")
+                            .message("Cinema not found")
                             .result(null)
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));

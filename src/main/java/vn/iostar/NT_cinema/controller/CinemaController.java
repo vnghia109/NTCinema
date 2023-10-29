@@ -16,12 +16,12 @@ public class CinemaController {
     CinemaService cinemaService;
 
     @GetMapping
-    public ResponseEntity<GenericResponse> getAllMovies() {
-        return cinemaService.allMovies();
+    public ResponseEntity<GenericResponse> getAllCinema() {
+        return cinemaService.getAllCinema();
     }
 
-    @GetMapping("/{movieId}")
-    public ResponseEntity<GenericResponse> getMovie(@PathVariable("movieId") String movieId) {
-        return cinemaService.findById(movieId);
+    @GetMapping("/{Id}")
+    public ResponseEntity<GenericResponse> getCinema(@PathVariable("Id") String Id) {
+        return cinemaService.findById(Id);
     }
 }
