@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -48,7 +49,12 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
 
         if (userService.findByUserName(loginDTO.getCredentialId()).isEmpty())
-            throw new UserNotFoundException("Account does not exist");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                    .success(false)
+                    .message("Your does not exist!")
+                    .result(null)
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .build());
         Optional<User> optionalUser = userService.findByUserName(loginDTO.getCredentialId());
         if (optionalUser.isPresent() && !optionalUser.get().isActive()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
@@ -58,34 +64,53 @@ public class AuthController {
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .build());
         }
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDTO.getCredentialId(),
-                        loginDTO.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetail userDetail = (UserDetail) authentication.getPrincipal();
-        String accessToken = jwtTokenProvider.generateAccessToken(userDetail);
-        RefreshToken refreshToken = new RefreshToken();
-        String token = jwtTokenProvider.generateRefreshToken(userDetail);
-        refreshToken.setToken(token);
-        refreshToken.setUser(userDetail.getUser());
-        //invalid all refreshToken before
-        refreshTokenService.revokeRefreshToken(userDetail.getUserId());
-        refreshTokenService.save(refreshToken);
-        Map<String, String> tokenMap = new HashMap<>();
-        tokenMap.put("accessToken", accessToken);
-        tokenMap.put("refreshToken", token);
 
-        if (optionalUser.isPresent()) {
-            optionalUser.get().setLastLoginAt(new Date());
-            userService.save(optionalUser.get());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDTO.getCredentialId(),
+                            loginDTO.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            UserDetail userDetail = (UserDetail) authentication.getPrincipal();
+            String accessToken = jwtTokenProvider.generateAccessToken(userDetail);
+            RefreshToken refreshToken = new RefreshToken();
+            String token = jwtTokenProvider.generateRefreshToken(userDetail);
+            refreshToken.setToken(token);
+            refreshToken.setUser(userDetail.getUser());
+            //invalid all refreshToken before
+            refreshTokenService.revokeRefreshToken(userDetail.getUserId());
+            refreshTokenService.save(refreshToken);
+            Map<String, String> tokenMap = new HashMap<>();
+            tokenMap.put("accessToken", accessToken);
+            tokenMap.put("refreshToken", token);
+
+            if (optionalUser.isPresent()) {
+                optionalUser.get().setLastLoginAt(new Date());
+                userService.save(optionalUser.get());
+            }
+
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Login successfully!")
+                    .result(tokenMap)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        } catch (BadCredentialsException e){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(GenericResponse.builder()
+                    .success(false)
+                    .message("Incorrect password!")
+                    .result(null)
+                    .statusCode(HttpStatus.UNAUTHORIZED.value())
+                    .build());
+        } catch (Exception e) {
+            // Xử lý các lỗi khác
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message("Internal server error!")
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
         }
-
-        return ResponseEntity.ok().body(GenericResponse.builder()
-                .success(true)
-                .message("Login successfully!")
-                .result(tokenMap)
-                .statusCode(HttpStatus.OK.value())
-                .build());
     }
 
 
