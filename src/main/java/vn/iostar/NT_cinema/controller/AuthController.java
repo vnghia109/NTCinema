@@ -49,12 +49,7 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
 
         if (userService.findByUserName(loginDTO.getCredentialId()).isEmpty())
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Your does not exist!")
-                    .result(null)
-                    .statusCode(HttpStatus.NOT_FOUND.value())
-                    .build());
+            throw new UserNotFoundException("Account does not exist");
         Optional<User> optionalUser = userService.findByUserName(loginDTO.getCredentialId());
         if (optionalUser.isPresent() && !optionalUser.get().isActive()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
@@ -65,71 +60,54 @@ public class AuthController {
                     .build());
         }
 
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginDTO.getCredentialId(),
-                            loginDTO.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            UserDetail userDetail = (UserDetail) authentication.getPrincipal();
-            String accessToken = jwtTokenProvider.generateAccessToken(userDetail);
-            RefreshToken refreshToken = new RefreshToken();
-            String token = jwtTokenProvider.generateRefreshToken(userDetail);
-            refreshToken.setToken(token);
-            refreshToken.setUser(userDetail.getUser());
-            //invalid all refreshToken before
-            refreshTokenService.revokeRefreshToken(userDetail.getUserId());
-            refreshTokenService.save(refreshToken);
-            Map<String, String> tokenMap = new HashMap<>();
-            tokenMap.put("accessToken", accessToken);
-            tokenMap.put("refreshToken", token);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginDTO.getCredentialId(),
+                        loginDTO.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetail userDetail = (UserDetail) authentication.getPrincipal();
+        String accessToken = jwtTokenProvider.generateAccessToken(userDetail);
+        RefreshToken refreshToken = new RefreshToken();
+        String token = jwtTokenProvider.generateRefreshToken(userDetail);
+        refreshToken.setToken(token);
+        refreshToken.setUser(userDetail.getUser());
+        //invalid all refreshToken before
+        refreshTokenService.revokeRefreshToken(userDetail.getUserId());
+        refreshTokenService.save(refreshToken);
+        Map<String, String> tokenMap = new HashMap<>();
+        tokenMap.put("accessToken", accessToken);
+        tokenMap.put("refreshToken", token);
 
-            if (optionalUser.isPresent()) {
-                optionalUser.get().setLastLoginAt(new Date());
-                userService.save(optionalUser.get());
-            }
-
-            return ResponseEntity.ok().body(GenericResponse.builder()
-                    .success(true)
-                    .message("Login successfully!")
-                    .result(tokenMap)
-                    .statusCode(HttpStatus.OK.value())
-                    .build());
-        } catch (BadCredentialsException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Incorrect password!")
-                    .result(null)
-                    .statusCode(HttpStatus.UNAUTHORIZED.value())
-                    .build());
-        } catch (Exception e) {
-            // Xử lý các lỗi khác
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Internal server error!")
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+        if (optionalUser.isPresent()) {
+            optionalUser.get().setLastLoginAt(new Date());
+            userService.save(optionalUser.get());
         }
+
+        return ResponseEntity.ok().body(GenericResponse.builder()
+                .success(true)
+                .message("Login successfully!")
+                .result(tokenMap)
+                .statusCode(HttpStatus.OK.value())
+                .build());
+
     }
 
 
     @PostMapping("/register")
     public ResponseEntity<GenericResponse> registerProcess(
-            @RequestBody @Valid RegisterRequest registerRequest,
+            @Valid @RequestBody RegisterRequest registerRequest,
             BindingResult bindingResult) {
 
         if (bindingResult.hasErrors()) {
             String errorMessage = Objects.requireNonNull(
                     bindingResult.getFieldError()).getDefaultMessage();
 
-            return ResponseEntity.status(500)
-                    .body(new GenericResponse(
-                            false,
-                            errorMessage,
-                            null,
-                            HttpStatus.INTERNAL_SERVER_ERROR.value()
-                    ));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(errorMessage)
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
         }
         return userService.userRegister(registerRequest);
     }
