@@ -198,7 +198,7 @@ public class AuthController {
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("OTP verified successfully!")
+                            .message("OTP verified successfully!!! You can proceed to login.")
                             .result(null)
                             .statusCode(HttpStatus.OK.value())
                             .build());
