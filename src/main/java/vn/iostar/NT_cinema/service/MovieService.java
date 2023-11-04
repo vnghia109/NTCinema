@@ -9,8 +9,12 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.MovieRequest;
 import vn.iostar.NT_cinema.entity.Movie;
+import vn.iostar.NT_cinema.entity.ShowTime;
 import vn.iostar.NT_cinema.repository.MovieRepository;
+import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +23,9 @@ public class MovieService {
 
     @Autowired
     private MovieRepository movieRepository;
+
+    @Autowired
+    ShowTimeRepository showTimeRepository;
 
     public ResponseEntity<GenericResponse> allMovies() {
         List<Movie> movieList = movieRepository.findAll();
@@ -164,6 +171,68 @@ public class MovieService {
                             .success(false)
                             .message(e.getMessage())
                             .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> findNowPlayingMovies() {
+        try {
+            List<Movie> movieList = movieRepository.findAll();
+            List<Movie> movies = new ArrayList<>();
+            Date now = new Date();
+            for (Movie item : movieList) {
+                List<ShowTime> list = showTimeRepository.findAllByMovieOrderByTimeAsc(item);
+                if (list.isEmpty())
+                    continue;
+                if (list.get(0).getTime().before(now) && list.get(list.size()-1).getTime().after(now)){
+                    movies.add(item);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get now playing movie success")
+                            .result(movies)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> findComingSoonMovies() {
+        try {
+            List<Movie> movieList = movieRepository.findAll();
+            List<Movie> movies = new ArrayList<>();
+            Date now = new Date();
+            for (Movie item : movieList) {
+                List<ShowTime> list = showTimeRepository.findAllByMovieOrderByTimeAsc(item);
+                if (list.isEmpty())
+                    continue;
+                if (list.get(0).getTime().after(now)){
+                    movies.add(item);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get coming soon movie success")
+                            .result(movies)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }

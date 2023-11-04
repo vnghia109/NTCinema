@@ -57,6 +57,7 @@ public class ShowTimeService {
             showTime.setRoom(optionalRoom.get());
             showTime.setMovie(optionalMovie.get());
             showTime.setTime(showTimeReq.getTime());
+            showTime.setSpecial(showTimeReq.isSpecial());
 
             ShowTime nShowTime = showTimeRepository.save(showTime);
 
@@ -145,6 +146,7 @@ public class ShowTimeService {
             showTimed.setRoom(optionalRoom.get());
             showTimed.setMovie(optionalMovie.get());
             showTimed.setTime(showTimeReq.getTime());
+            showTimed.setSpecial(showTimeReq.isSpecial());
 
             ShowTime updateShowTime = showTimeRepository.save(showTimed);
 

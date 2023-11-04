@@ -18,4 +18,5 @@ public class ShowTimeReq {
     private String roomId;
     private String movieId;
     private Date time;
+    private boolean isSpecial;
 }

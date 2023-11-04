@@ -23,6 +23,8 @@ public class ShowTime {
 
     private Date time;
 
+    private boolean isSpecial;
+
     @DBRef
     private List<Seat> seats;
 }

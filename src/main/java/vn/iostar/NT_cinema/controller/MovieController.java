@@ -26,8 +26,13 @@ public class MovieController {
         return movieService.findById(movieId);
     }
 
-//    @PostMapping("/movie")
-//    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
-//        return movieService.save(movie);
-//    }
+    @GetMapping("/now-playing")
+    public ResponseEntity<GenericResponse> getNowPlayingMovies() {
+        return movieService.findNowPlayingMovies();
+    }
+
+    @GetMapping("/coming-soon")
+    public ResponseEntity<GenericResponse> getComingSoonMovies() {
+        return movieService.findComingSoonMovies();
+    }
 }
