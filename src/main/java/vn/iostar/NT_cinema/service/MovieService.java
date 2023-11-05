@@ -237,4 +237,35 @@ public class MovieService {
                             .build());
         }
     }
+
+    public ResponseEntity<GenericResponse> findSpecialMovies() {
+        try {
+            List<Movie> movieList = movieRepository.findAll();
+            List<Movie> movies = new ArrayList<>();
+            Date now = new Date();
+            for (Movie item : movieList) {
+                List<ShowTime> list = showTimeRepository.findAllByMovieAndIsSpecialIsTrue(item);
+                if (list.isEmpty())
+                    continue;
+
+                movies.add(item);
+
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get special movie success")
+                            .result(movies)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

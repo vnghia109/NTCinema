@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     List<ShowTime> findAllByMovieOrderByTimeAsc (Movie movie);
+    List<ShowTime> findAllByMovieAndIsSpecialIsTrue (Movie movie);
 }

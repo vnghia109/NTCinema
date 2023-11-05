@@ -35,4 +35,9 @@ public class MovieController {
     public ResponseEntity<GenericResponse> getComingSoonMovies() {
         return movieService.findComingSoonMovies();
     }
+
+    @GetMapping("/special-movie")
+    public ResponseEntity<GenericResponse> getSpecialMovies() {
+        return movieService.findSpecialMovies();
+    }
 }
