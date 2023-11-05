@@ -42,9 +42,8 @@ public class Movie {
 
     private List<Review> reviews;
 
-    private List<ShowTime> showTimes;
 
-    public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String poster, String trailerLink, List<Review> reviews, List<ShowTime> showTimes) {
+    public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String poster, String trailerLink, List<Review> reviews) {
         this.title = title;
         this.director = director;
         this.genres = genres;
@@ -54,6 +53,5 @@ public class Movie {
         this.poster = poster;
         this.trailerLink = trailerLink;
         this.reviews = reviews;
-        this.showTimes = showTimes;
     }
 }

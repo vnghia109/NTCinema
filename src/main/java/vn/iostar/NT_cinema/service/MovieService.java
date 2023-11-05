@@ -3,20 +3,23 @@ package vn.iostar.NT_cinema.service;
 import org.bson.types.ObjectId;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.MovieRequest;
+import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Movie;
+import vn.iostar.NT_cinema.entity.Room;
 import vn.iostar.NT_cinema.entity.ShowTime;
+import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.MovieRepository;
+import vn.iostar.NT_cinema.repository.RoomRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class MovieService {
@@ -176,19 +179,33 @@ public class MovieService {
         }
     }
 
+    public List<Movie> checkPlayingMovies(List<Movie> movieList){
+        Date now = new Date();
+        List<Movie> movies = new ArrayList<>();
+        for (Movie item : movieList) {
+            List<ShowTime> list = showTimeRepository.findAllByMovieOrderByTimeAsc(item);
+            if (list.isEmpty())
+                continue;
+            if (list.get(0).getTime().before(now) && list.get(list.size()-1).getTime().after(now)){
+                movies.add(item);
+            }
+        }
+        return movies;
+    }
+
     public ResponseEntity<GenericResponse> findNowPlayingMovies() {
         try {
             List<Movie> movieList = movieRepository.findAll();
-            List<Movie> movies = new ArrayList<>();
-            Date now = new Date();
-            for (Movie item : movieList) {
-                List<ShowTime> list = showTimeRepository.findAllByMovieOrderByTimeAsc(item);
-                if (list.isEmpty())
-                    continue;
-                if (list.get(0).getTime().before(now) && list.get(list.size()-1).getTime().after(now)){
-                    movies.add(item);
-                }
-            }
+            List<Movie> movies = checkPlayingMovies(movieList);
+//            Date now = new Date();
+//            for (Movie item : movieList) {
+//                List<ShowTime> list = showTimeRepository.findAllByMovieOrderByTimeAsc(item);
+//                if (list.isEmpty())
+//                    continue;
+//                if (list.get(0).getTime().before(now) && list.get(list.size()-1).getTime().after(now)){
+//                    movies.add(item);
+//                }
+//            }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -255,6 +272,46 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Get special movie success")
+                            .result(movies)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> findNowPlayingMoviesByCinema(String id) {
+        try {
+            List<Movie> movieList = new ArrayList<>();
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_Cinema_CinemaId(id);
+            for (ShowTime item: showTimes) {
+                Movie currentMovie = item.getMovie();
+                boolean isDuplicate = false;
+//                if (!movieList.contains(item.getMovie())){
+//                    movieList.add(item.getMovie());
+//                }
+                for (Movie existingMovie : movieList) {
+                    if (currentMovie.getMovieId().equals(existingMovie.getMovieId())) {
+                        isDuplicate = true;
+                        break;
+                    }
+                }
+
+                if (!isDuplicate) {
+                    movieList.add(currentMovie);
+                }
+            }
+            List<Movie> movies = checkPlayingMovies(movieList);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get movie by cinema success")
                             .result(movies)
                             .statusCode(HttpStatus.OK.value())
                             .build());

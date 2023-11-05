@@ -75,7 +75,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleUserNotFoundException(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Incorrect email")
+                .message("Incorrect username")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
