@@ -14,6 +14,7 @@ import vn.iostar.NT_cinema.repository.RoomRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -154,6 +155,33 @@ public class ShowTimeService {
                     .success(true)
                     .message("Update showtime success")
                     .result(updateShowTime)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> findShowTimesByMovie(String movieId) {
+        try {
+            Optional<Movie> optionalMovie = movieRepository.findById(movieId);
+            if (optionalMovie.isEmpty())
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Movie not found")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            List<ShowTime> showTimes = showTimeRepository.findAllByMovieOrderByTimeAsc(optionalMovie.get());
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get show time success")
+                    .result(showTimes)
                     .statusCode(HttpStatus.OK.value())
                     .build());
         }catch (Exception e){

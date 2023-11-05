@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.service.MovieService;
+import vn.iostar.NT_cinema.service.ShowTimeService;
 
 import java.util.List;
 
@@ -15,6 +16,8 @@ import java.util.List;
 public class MovieController {
     @Autowired
     private MovieService movieService;
+    @Autowired
+    ShowTimeService showTimeService;
 
     @GetMapping
     public ResponseEntity<GenericResponse> getAllMovies() {
@@ -39,5 +42,10 @@ public class MovieController {
     @GetMapping("/special-movie")
     public ResponseEntity<GenericResponse> getSpecialMovies() {
         return movieService.findSpecialMovies();
+    }
+
+    @GetMapping("/{movieId}/show-times")
+    public ResponseEntity<GenericResponse> getShowTimesByMovie(@PathVariable("movieId") String movieId) {
+        return showTimeService.findShowTimesByMovie(movieId);
     }
 }
