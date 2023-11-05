@@ -72,7 +72,7 @@
     <div class="verify-text">
         <p>Please enter the code above onto the following URL to verify your account.</p>
     </div>
-    <a  th:href="@{'http://localhost:5173/signup/verify'}"><button class="verify-link">
+    <a  th:href="@{'http://localhost:5173/signup/verify' + ${verifyEmail}}"><button class="verify-link">
         GO TO VERIFY PAGE</button>
     </a>
     <div class="footer">
