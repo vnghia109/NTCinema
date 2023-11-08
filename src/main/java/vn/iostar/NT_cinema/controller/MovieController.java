@@ -48,4 +48,8 @@ public class MovieController {
     public ResponseEntity<GenericResponse> getShowTimesByMovie(@PathVariable("movieId") String movieId) {
         return showTimeService.findShowTimesByMovie(movieId);
     }
+    @GetMapping("/search")
+    public ResponseEntity<GenericResponse> searchMovie(@RequestParam(defaultValue = "") String keyWord){
+        return movieService.searchMovie(keyWord);
+    }
 }

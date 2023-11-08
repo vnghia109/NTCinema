@@ -325,4 +325,36 @@ public class MovieService {
                             .build());
         }
     }
+
+    public ResponseEntity<GenericResponse> searchMovie(String keyWord) {
+        try {
+            List<Movie> foundMovies = movieRepository.searchMoviesByKeyword(keyWord);
+
+            if (foundMovies.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Movie not found")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            } else {
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(GenericResponse.builder()
+                                .success(true)
+                                .message("Search movie success")
+                                .result(foundMovies)
+                                .statusCode(HttpStatus.OK.value())
+                                .build());
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

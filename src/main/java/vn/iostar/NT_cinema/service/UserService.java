@@ -430,14 +430,14 @@ public class UserService {
         List<User> unverifiedAccounts = userRepository.findByIsActiveFalseAndCreatedAtBefore(twentyFourHoursAgo);
         userRepository.deleteAll(unverifiedAccounts);
     }
-    @PostConstruct
-    public void init() {
-        deleteUnverifiedAccounts();
-    }
-    @Scheduled(fixedDelay = 86400000) // 24 hours
-    public void scheduledDeleteUnverifiedAccounts() {
-        deleteUnverifiedAccounts();
-    }
+//    @PostConstruct
+//    public void init() {
+//        deleteUnverifiedAccounts();
+//    }
+//    @Scheduled(fixedDelay = 86400000) // 24 hours
+//    public void scheduledDeleteUnverifiedAccounts() {
+//        deleteUnverifiedAccounts();
+//    }
 
     public ResponseEntity<GenericResponse> resetPassword(String token, PasswordResetRequest passwordResetRequest) {
         try {
