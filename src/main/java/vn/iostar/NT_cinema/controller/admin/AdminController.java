@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.controller.admin;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,8 +48,14 @@ public class AdminController {
         return cinemaService.updateCinema(cinemaId, cinemaReq);
     }
 
+    @DeleteMapping("/cinemas/{cinemaId}")
+    public ResponseEntity<GenericResponse> deleteCinema(@PathVariable("cinemaId") String cinemaId){
+        return cinemaService.deleteCinema(cinemaId);
+    }
+
     @GetMapping("/cinemas")
-    public ResponseEntity<GenericResponse> getAllCinema(){
-        return cinemaService.getAllCinema();
+    public ResponseEntity<GenericResponse> getAllCinema(@RequestParam(defaultValue = "1") int index,
+                                                        @RequestParam(defaultValue = "10") int size){
+        return cinemaService.getAllCinema(PageRequest.of(index-1, size));
     }
 }

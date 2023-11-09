@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.entity;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
@@ -41,6 +42,9 @@ public class Movie {
     private String trailerLink;
 
     private List<Review> reviews;
+
+    @Size(min = 0, max = 5)
+    private int rating;
 
 
     public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String poster, String trailerLink, List<Review> reviews) {

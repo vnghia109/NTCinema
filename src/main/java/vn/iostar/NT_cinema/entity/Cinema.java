@@ -22,4 +22,6 @@ public class Cinema {
 
     private String desc;
 
+    private boolean status;
+
 }
