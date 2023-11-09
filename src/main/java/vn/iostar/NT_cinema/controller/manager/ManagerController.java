@@ -67,17 +67,17 @@ public class ManagerController {
         return roomService.deleteRoom(roomId);
     }
 
-    @PostMapping("/showtime")
+    @PostMapping("/showtimes/showtime")
     public ResponseEntity<GenericResponse> addShowTime(@RequestBody ShowTimeReq showTimeReq){
         return showTimeService.addShowTime(showTimeReq);
     }
 
-    @DeleteMapping("/showtime/{id}")
+    @DeleteMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> deleteShowTime(@PathVariable("id") String id){
         return showTimeService.deleteShowTime(id);
     }
 
-    @PutMapping("/showtime/{id}")
+    @PutMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> updateShowTime(@PathVariable("id") String id,
                                                           @RequestBody ShowTimeReq showTimeReq){
         return showTimeService.updateShowTime(id, showTimeReq);

@@ -5,8 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.dto.UserReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
+import vn.iostar.NT_cinema.service.FoodService;
 import vn.iostar.NT_cinema.service.ViewerService;
 
 @RestController
@@ -19,4 +19,11 @@ public class ViewerController {
     @Autowired
     ViewerService viewerService;
 
+    @Autowired
+    FoodService foodService;
+
+    @GetMapping("/foods")
+    public ResponseEntity<GenericResponse> getFoods(@RequestParam(defaultValue = "") String type){
+        return foodService.getFoods(type);
+    }
 }

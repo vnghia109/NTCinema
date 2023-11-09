@@ -9,10 +9,12 @@ import org.springframework.security.config.annotation.web.oauth2.resourceserver.
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.CinemaReq;
+import vn.iostar.NT_cinema.dto.FoodReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.ManagerRequest;
 import vn.iostar.NT_cinema.repository.UserRepository;
 import vn.iostar.NT_cinema.service.CinemaService;
+import vn.iostar.NT_cinema.service.FoodService;
 import vn.iostar.NT_cinema.service.UserService;
 
 @RestController
@@ -24,6 +26,8 @@ public class AdminController {
     @Autowired
     CinemaService cinemaService;
 
+    @Autowired
+    FoodService foodService;
     @PostMapping("/manager")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
                                                       BindingResult bindingResult){
@@ -57,5 +61,21 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getAllCinema(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size){
         return cinemaService.getAllCinema(PageRequest.of(index-1, size));
+    }
+
+    @PostMapping("/foods/food")
+    public ResponseEntity<GenericResponse> addFood(@RequestBody FoodReq foodReq){
+        return foodService.addFood(foodReq);
+    }
+
+    @DeleteMapping("/foods/{id}")
+    public ResponseEntity<GenericResponse> deleteFood(@PathVariable("id") String id){
+        return foodService.deleteFood(id);
+    }
+
+    @PutMapping("/foods/{id}")
+    public ResponseEntity<GenericResponse> updateFood(@PathVariable("id") String id,
+                                                      @RequestBody FoodReq foodReq){
+        return foodService.updateFood(id, foodReq);
     }
 }

@@ -53,6 +53,8 @@ public class User {
 
     private boolean isActive = false;
 
+    private boolean isDelete = false;
+
     private Date createdAt;
 
     private Date updatedAt;
