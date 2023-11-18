@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.controller.admin;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -8,14 +9,14 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.web.oauth2.resourceserver.OAuth2ResourceServerSecurityMarker;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import vn.iostar.NT_cinema.dto.CinemaReq;
-import vn.iostar.NT_cinema.dto.FoodReq;
-import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.dto.ManagerRequest;
+import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.repository.UserRepository;
 import vn.iostar.NT_cinema.service.CinemaService;
 import vn.iostar.NT_cinema.service.FoodService;
+import vn.iostar.NT_cinema.service.PriceService;
 import vn.iostar.NT_cinema.service.UserService;
+
+import java.util.Objects;
 
 @RestController
 @PreAuthorize("hasRole('ADMIN')")
@@ -28,6 +29,10 @@ public class AdminController {
 
     @Autowired
     FoodService foodService;
+
+    @Autowired
+    PriceService priceService;
+
     @PostMapping("/manager")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
                                                       BindingResult bindingResult){
@@ -77,5 +82,19 @@ public class AdminController {
     public ResponseEntity<GenericResponse> updateFood(@PathVariable("id") String id,
                                                       @RequestBody FoodReq foodReq){
         return foodService.updateFood(id, foodReq);
+    }
+
+    @GetMapping("/prices")
+    public ResponseEntity<GenericResponse> getListPrice(){
+        return priceService.getAllPrice();
+    }
+
+    @PostMapping("/prices/price")
+    public ResponseEntity<GenericResponse> addPrice(@RequestBody @Valid PriceReq priceReq,
+                                                    BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            throw new RuntimeException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
+        }
+        return priceService.addPrice(priceReq);
     }
 }
