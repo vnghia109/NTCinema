@@ -14,6 +14,7 @@ import java.security.Key;
 import javax.crypto.SecretKey;
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @Log4j2
@@ -40,6 +41,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setSubject((userDetail.getUser().getUserId()))
                 .claim("userId", userDetail.getUser().getUserId())
+                .claim("role", userDetail.getAuthorities())
                 .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
@@ -55,6 +57,7 @@ public class JwtTokenProvider {
         return Jwts.builder()
                 .setSubject((userDetail.getUser().getUserId()))
                 //.claim("userId", userDetail.getUser().getUserId())
+                .claim("role", userDetail.getAuthorities())
                 .setIssuer(issuer)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
