@@ -388,12 +388,11 @@ public class UserService {
                     .build());
         try {
 
-            String otp = UUID.randomUUID().toString();
+            String otp = emailVerificationService.generateOtp();
             createPasswordResetOtpForUser(user.get(), otp);
-            String url = "http://localhost:5173/forget-password/confirm-password?token="+otp;
             String subject = "Change Password For TNCinemas";
             Context context = new Context();
-            context.setVariable("url",url);
+            context.setVariable("otpCode",otp);
             String content = templateEngine.process("forgot-password",context);
 
             MimeMessage message = javaMailSender.createMimeMessage();
@@ -439,11 +438,36 @@ public class UserService {
 //        deleteUnverifiedAccounts();
 //    }
 
+    public ResponseEntity<?> validateOtp(String token) {
+        try {
+            String result = validatePasswordResetOtp(token);
+            if (result == null){
+                return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                        .success(true)
+                        .message("Validate otp success.")
+                        .result(null)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+            }else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(GenericResponse.builder()
+                        .success(false)
+                        .message(result)
+                        .result(null)
+                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                        .build());
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
     public ResponseEntity<GenericResponse> resetPassword(String token, PasswordResetRequest passwordResetRequest) {
         try {
-
-            String result = validatePasswordResetOtp(token);
-            if(result == null){
                 Optional<PasswordResetOtp> user = passwordResetOtpRepository.findByOtp(token);
                 if (user.isEmpty()){
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
@@ -464,14 +488,7 @@ public class UserService {
                                 .statusCode(200)
                                 .build()
                 );
-            }else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(GenericResponse.builder()
-                        .success(false)
-                        .message(result)
-                        .result(null)
-                        .statusCode(HttpStatus.BAD_REQUEST.value())
-                        .build());
-            }
+
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
                     .success(false)

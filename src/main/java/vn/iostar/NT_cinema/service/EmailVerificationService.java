@@ -84,7 +84,7 @@ public class EmailVerificationService {
         return false;
     }
 
-    private String generateOtp() {
+    public String generateOtp() {
         StringBuilder otp = new StringBuilder();
         Random random = new Random();
         int OTP_LENGTH = 6;

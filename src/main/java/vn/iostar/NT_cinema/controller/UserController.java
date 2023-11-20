@@ -75,4 +75,9 @@ public class UserController {
         return userService.resetPassword(token, passwordResetRequest);
     }
 
+    @PutMapping("/valid-otp")
+    public ResponseEntity<?> validateOtp(@RequestParam("token") String token){
+        return userService.validateOtp(token);
+    }
+
 }
