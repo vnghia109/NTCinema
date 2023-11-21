@@ -16,8 +16,6 @@ import vn.iostar.NT_cinema.service.*;
 @PreAuthorize("hasRole('MANAGER')")
 @RequestMapping("/api/v1/manager")
 public class ManagerController {
-    @Autowired
-    MovieService movieService;
 
     @Autowired
     JwtTokenProvider jwtTokenProvider;
@@ -30,32 +28,6 @@ public class ManagerController {
 
     @Autowired
     ManagerService managerService;
-
-    @PostMapping("/movies/movie")
-    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
-        return movieService.save(movie);
-    }
-
-    @PutMapping("/movies/{movieId}")
-    public ResponseEntity<GenericResponse> updateMovie(@PathVariable("movieId") String movieId,
-                                                       @RequestBody MovieRequest movieRequest,
-                                                       BindingResult bindingResult) throws Exception{
-//        String token = authHeader.substring(7);
-//        String userId = jwtTokenProvider.getUserIdFromJwt(token);
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new GenericResponse(
-                    false,
-                    "Invalid input data!",
-                    null,
-                    HttpStatus.BAD_REQUEST.value()));
-        }
-        return movieService.update(movieId, movieRequest);
-    }
-
-    @DeleteMapping("/movies/{movieId}")
-    public ResponseEntity<GenericResponse> deleteMovie(@PathVariable("movieId") String movieId) throws Exception{
-        return movieService.delete(movieId);
-    }
 
     @PostMapping("/rooms")
     public ResponseEntity<GenericResponse> addRoom(@RequestBody RoomReq roomReq){

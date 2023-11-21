@@ -10,11 +10,9 @@ import org.springframework.security.config.annotation.web.oauth2.resourceserver.
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
+import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.repository.UserRepository;
-import vn.iostar.NT_cinema.service.CinemaService;
-import vn.iostar.NT_cinema.service.FoodService;
-import vn.iostar.NT_cinema.service.PriceService;
-import vn.iostar.NT_cinema.service.UserService;
+import vn.iostar.NT_cinema.service.*;
 
 import java.util.Objects;
 
@@ -32,6 +30,9 @@ public class AdminController {
 
     @Autowired
     PriceService priceService;
+
+    @Autowired
+    MovieService movieService;
 
     @PostMapping("/manager")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -66,6 +67,32 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getAllCinema(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size){
         return cinemaService.getAllCinema(PageRequest.of(index-1, size));
+    }
+
+    @PostMapping("/movies/movie")
+    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
+        return movieService.save(movie);
+    }
+
+    @PutMapping("/movies/{movieId}")
+    public ResponseEntity<GenericResponse> updateMovie(@PathVariable("movieId") String movieId,
+                                                       @RequestBody MovieRequest movieRequest,
+                                                       BindingResult bindingResult) throws Exception{
+//        String token = authHeader.substring(7);
+//        String userId = jwtTokenProvider.getUserIdFromJwt(token);
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new GenericResponse(
+                    false,
+                    "Invalid input data!",
+                    null,
+                    HttpStatus.BAD_REQUEST.value()));
+        }
+        return movieService.update(movieId, movieRequest);
+    }
+
+    @DeleteMapping("/movies/{movieId}")
+    public ResponseEntity<GenericResponse> deleteMovie(@PathVariable("movieId") String movieId) throws Exception{
+        return movieService.delete(movieId);
     }
 
     @PostMapping("/foods/food")
