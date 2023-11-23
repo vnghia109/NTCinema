@@ -23,6 +23,10 @@ public class UserDetail implements UserDetails {
         return authorities;
     }
 
+    public String getRole(){
+        return user.getRole().getRoleName();
+    }
+
     public String getUserId() {
         return user.getUserId();
     }
