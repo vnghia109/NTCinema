@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     Optional<ShowTime> findByMovieAndStatusIsTrue (Movie movie);
     Optional<ShowTime> findByMovieAndIsSpecialIsFalseAndStatusIsTrue (Movie movie);
-    Optional<ShowTime> findByMovieAndIsSpecialIsTrueAndStatusIsTrue (Movie movie);
+    Optional<ShowTime> findByMovie_MovieIdAndIsSpecialIsTrueAndStatusIsTrue (String movieId);
     List<ShowTime> findAllByRoom_Cinema_CinemaIdAndStatusIsTrue(String cinemaId);
     List<ShowTime> findAllByStatusIsTrue();
 }
