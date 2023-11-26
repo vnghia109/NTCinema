@@ -6,10 +6,13 @@ import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.ShowTime;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
-    List<ShowTime> findAllByMovieOrderByTimeAsc (Movie movie);
-    List<ShowTime> findAllByMovieAndIsSpecialIsTrue (Movie movie);
-    List<ShowTime> findAllByRoom_Cinema_CinemaId(String cinemaId);
+    Optional<ShowTime> findByMovieAndStatusIsTrue (Movie movie);
+    Optional<ShowTime> findByMovieAndIsSpecialIsFalseAndStatusIsTrue (Movie movie);
+    Optional<ShowTime> findByMovieAndIsSpecialIsTrueAndStatusIsTrue (Movie movie);
+    List<ShowTime> findAllByRoom_Cinema_CinemaIdAndStatusIsTrue(String cinemaId);
+    List<ShowTime> findAllByStatusIsTrue();
 }

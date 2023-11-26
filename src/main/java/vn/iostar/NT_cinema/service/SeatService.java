@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.SeatReq;
+import vn.iostar.NT_cinema.entity.Price;
 import vn.iostar.NT_cinema.entity.Seat;
 import vn.iostar.NT_cinema.repository.PriceRepository;
 import vn.iostar.NT_cinema.repository.SeatRepository;
@@ -26,17 +27,28 @@ public class SeatService {
             List<Seat> seats = new ArrayList<>();
             List<String> seatIds = new ArrayList<>();
             for (SeatReq item : seatReq) {
-                Optional<Seat> optionalSeat = seatRepository.findByColumnAndRowAndShowTimeIdAndStatusIsTrue(item.getColumn(), item.getRow(), showtimeId);
+                Optional<Seat> optionalSeat = seatRepository.findByColumnAndRowAndShowTimeIdAndTimeShowAndStatusIsTrue(item.getColumn(), item.getRow(), showtimeId, item.getTimeShow());
                 if (optionalSeat.isPresent()){
                     seatIds.add(optionalSeat.get().getSeatId());
                     continue;
                 }
+                Optional<Price> price = priceRepository.findByType(item.getPriceType());
+                if (price.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(GenericResponse.builder()
+                                    .success(false)
+                                    .message("Price type does not exist")
+                                    .result(null)
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build());
+                }
                 Seat seat = new Seat();
                 seat.setShowTimeId(showtimeId);
-                seat.setPrice(priceRepository.findByType(item.getPriceType()).get());
+                seat.setPrice(price.get());
                 seat.setColumn(item.getColumn());
                 seat.setRow(item.getRow());
                 seat.setStatus(true);
+                seat.setTimeShow(item.getTimeShow());
 
                 seats.add(seat);
             }

@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,9 @@ public class MovieController {
     ShowTimeService showTimeService;
 
     @GetMapping
-    public ResponseEntity<GenericResponse> getAllMovies() {
-        return movieService.allMovies();
+    public ResponseEntity<GenericResponse> getAllMovies(@RequestParam(defaultValue = "1") int index,
+                                                        @RequestParam(defaultValue = "10") int size) {
+        return movieService.allMovies(PageRequest.of(index-1, size));
     }
 
     @GetMapping("/{movieId}")

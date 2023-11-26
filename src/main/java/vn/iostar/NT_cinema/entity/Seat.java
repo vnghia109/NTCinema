@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -21,6 +23,7 @@ public class Seat {
     private String row;
     private String column;
     private boolean status;
+    private String timeShow;
 //
 //    @DBRef
 //    private Booking booking;

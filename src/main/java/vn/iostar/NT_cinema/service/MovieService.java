@@ -1,6 +1,5 @@
 package vn.iostar.NT_cinema.service;
 
-import org.bson.types.ObjectId;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -10,13 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.MovieRequest;
-import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Movie;
-import vn.iostar.NT_cinema.entity.Room;
 import vn.iostar.NT_cinema.entity.ShowTime;
-import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.MovieRepository;
-import vn.iostar.NT_cinema.repository.RoomRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
 import java.util.*;
@@ -30,13 +25,21 @@ public class MovieService {
     @Autowired
     ShowTimeRepository showTimeRepository;
 
-    public ResponseEntity<GenericResponse> allMovies() {
-        List<Movie> movieList = movieRepository.findAll();
+    public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
+        Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalse(pageable);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("content", moviePage.getContent());
+        map.put("pageNumber", moviePage.getPageable().getPageNumber() + 1);
+        map.put("pageSize", moviePage.getSize());
+        map.put("totalPages", moviePage.getTotalPages());
+        map.put("totalElements", moviePage.getTotalElements());
+
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GenericResponse.builder()
                         .success(true)
                         .message("Get all movie")
-                        .result(movieList)
+                        .result(map)
                         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .build());
     }
@@ -117,6 +120,7 @@ public class MovieService {
                 movie.setReleaseDate(movieRequest.getReleaseDate());
                 movie.setPoster(movieRequest.getPoster());
                 movie.setTrailerLink(movieRequest.getTrailerLink());
+                movie.setDuration(movieRequest.getDuration());
 
                 Movie updateMovie = movieRepository.save(movie);
 
@@ -151,7 +155,8 @@ public class MovieService {
         try {
             Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
-                movieRepository.deleteById(movieId);
+                optionalMovie.get().setDelete(true);
+                movieRepository.save(optionalMovie.get());
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -183,10 +188,10 @@ public class MovieService {
         Date now = new Date();
         List<Movie> movies = new ArrayList<>();
         for (Movie item : movieList) {
-            List<ShowTime> list = showTimeRepository.findAllByMovieOrderByTimeAsc(item);
-            if (list.isEmpty())
+            Optional<ShowTime> showTime = showTimeRepository.findByMovieAndIsSpecialIsFalseAndStatusIsTrue(item);
+            if (showTime.isEmpty())
                 continue;
-            if (list.get(0).getTime().before(now) && list.get(list.size()-1).getTime().after(now)){
+            if (showTime.get().getTimeStart().before(now) && showTime.get().getTimeEnd().after(now)){
                 movies.add(item);
             }
         }
@@ -230,10 +235,10 @@ public class MovieService {
             List<Movie> movies = new ArrayList<>();
             Date now = new Date();
             for (Movie item : movieList) {
-                List<ShowTime> list = showTimeRepository.findAllByMovieOrderByTimeAsc(item);
-                if (list.isEmpty())
+                Optional<ShowTime> showTime = showTimeRepository.findByMovieAndIsSpecialIsFalseAndStatusIsTrue(item);
+                if (showTime.isEmpty())
                     continue;
-                if (list.get(0).getTime().after(now)){
+                if (showTime.get().getTimeStart().after(now)){
                     movies.add(item);
                 }
             }
@@ -259,10 +264,9 @@ public class MovieService {
         try {
             List<Movie> movieList = movieRepository.findAll();
             List<Movie> movies = new ArrayList<>();
-            Date now = new Date();
             for (Movie item : movieList) {
-                List<ShowTime> list = showTimeRepository.findAllByMovieAndIsSpecialIsTrue(item);
-                if (list.isEmpty())
+                Optional<ShowTime> showTime = showTimeRepository.findByMovieAndIsSpecialIsTrueAndStatusIsTrue(item);
+                if (showTime.isEmpty())
                     continue;
 
                 movies.add(item);
@@ -289,13 +293,10 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findNowPlayingMoviesByCinema(String id) {
         try {
             List<Movie> movieList = new ArrayList<>();
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_Cinema_CinemaId(id);
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_Cinema_CinemaIdAndStatusIsTrue(id);
             for (ShowTime item: showTimes) {
                 Movie currentMovie = item.getMovie();
                 boolean isDuplicate = false;
-//                if (!movieList.contains(item.getMovie())){
-//                    movieList.add(item.getMovie());
-//                }
                 for (Movie existingMovie : movieList) {
                     if (currentMovie.getMovieId().equals(existingMovie.getMovieId())) {
                         isDuplicate = true;

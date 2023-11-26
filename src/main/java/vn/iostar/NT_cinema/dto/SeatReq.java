@@ -13,4 +13,5 @@ public class SeatReq {
     private String priceType;
     private String row;
     private String column;
+    private String timeShow;
 }

@@ -41,6 +41,10 @@ public class Movie {
     @NotBlank
     private String trailerLink;
 
+    private String duration;
+
+    private boolean isDelete = false;
+
     private List<Review> reviews;
 
     @Size(min = 0, max = 5)

@@ -24,4 +24,5 @@ public class Cinema {
 
     private boolean status;
 
+    private String urlLocation;
 }

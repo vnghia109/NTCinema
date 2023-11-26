@@ -31,4 +31,7 @@ public class MovieRequest {
 
     @NotBlank
     private String trailerLink;
+
+    @NotBlank
+    private String duration;
 }

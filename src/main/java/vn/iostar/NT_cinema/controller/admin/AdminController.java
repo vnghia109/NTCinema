@@ -78,8 +78,6 @@ public class AdminController {
     public ResponseEntity<GenericResponse> updateMovie(@PathVariable("movieId") String movieId,
                                                        @RequestBody MovieRequest movieRequest,
                                                        BindingResult bindingResult) throws Exception{
-//        String token = authHeader.substring(7);
-//        String userId = jwtTokenProvider.getUserIdFromJwt(token);
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
                     false,

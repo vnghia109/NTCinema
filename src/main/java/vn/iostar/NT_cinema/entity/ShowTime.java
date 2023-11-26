@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+import vn.iostar.NT_cinema.constant.TimeShow;
 
 import java.util.Date;
 import java.util.List;
@@ -21,9 +22,15 @@ public class ShowTime {
 
     private Movie movie;
 
-    private Date time;
+    private Date timeStart;
+
+    private Date timeEnd;
 
     private boolean isSpecial;
+
+    private boolean status;
+
+    private List<TimeShow> listTimeShow;
 
     @DBRef
     private List<Seat> seats;

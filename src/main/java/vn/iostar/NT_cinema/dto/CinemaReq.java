@@ -13,4 +13,6 @@ public class CinemaReq {
     private String cinemaName;
 
     private String desc;
+
+    private String urlLocation;
 }

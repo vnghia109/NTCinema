@@ -63,6 +63,7 @@ public class CinemaService {
             cinema.setCinemaName(cinemaReq.getCinemaName());
             cinema.setLocation(cinemaReq.getLocation());
             cinema.setDesc(cinemaReq.getDesc());
+            cinema.setUrlLocation(cinemaReq.getUrlLocation());
             cinema.setStatus(true);
 
             Cinema nCinema = cinemaRepository.save(cinema);
@@ -92,6 +93,7 @@ public class CinemaService {
                 cinema.setCinemaName(cinemaReq.getCinemaName());
                 cinema.setLocation(cinemaReq.getLocation());
                 cinema.setDesc(cinemaReq.getDesc());
+                cinema.setUrlLocation(cinemaReq.getUrlLocation());
 
                 Cinema updateCinema = cinemaRepository.save(cinema);
 

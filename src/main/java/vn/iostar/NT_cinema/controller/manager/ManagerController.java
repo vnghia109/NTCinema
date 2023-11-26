@@ -54,4 +54,9 @@ public class ManagerController {
                                                           @RequestBody ShowTimeReq showTimeReq){
         return showTimeService.updateShowTime(id, showTimeReq);
     }
+
+    @GetMapping("/showtimes")
+    public ResponseEntity<GenericResponse> getShowTimes(){
+        return showTimeService.getShowTimes();
+    }
 }
