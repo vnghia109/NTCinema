@@ -202,15 +202,6 @@ public class MovieService {
         try {
             List<Movie> movieList = movieRepository.findAll();
             List<Movie> movies = checkPlayingMovies(movieList);
-//            Date now = new Date();
-//            for (Movie item : movieList) {
-//                List<ShowTime> list = showTimeRepository.findAllByMovieOrderByTimeAsc(item);
-//                if (list.isEmpty())
-//                    continue;
-//                if (list.get(0).getTime().before(now) && list.get(list.size()-1).getTime().after(now)){
-//                    movies.add(item);
-//                }
-//            }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)

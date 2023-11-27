@@ -188,6 +188,7 @@ public class UserService {
             user.setCreatedAt(new Date());
             user.setPhone(request.getPhone());
             user.setRole(roleService.findByRoleName("MANAGER"));
+            user.setActive(true);
             user.setCinema(cinema.get());
 
             User manager = save(user);
