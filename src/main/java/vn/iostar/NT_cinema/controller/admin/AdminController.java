@@ -40,7 +40,10 @@ public class AdminController {
     @Autowired
     RoomService roomService;
 
-    @PostMapping("/manager")
+    @Autowired
+    ManagerService managerService;
+
+    @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
                                                       BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
@@ -51,6 +54,17 @@ public class AdminController {
                     HttpStatus.BAD_REQUEST.value()));
         }
         return userService.addManager(request);
+    }
+
+    @GetMapping("/managers")
+    public ResponseEntity<GenericResponse> getManagers(@RequestParam(defaultValue = "1") int index,
+                                                    @RequestParam(defaultValue = "10") int size){
+        return managerService.getAllManager(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/managers/{id}")
+    public ResponseEntity<GenericResponse> getManager(@PathVariable("id") String id){
+        return managerService.getManager(id);
     }
 
     @GetMapping("/users")
@@ -184,5 +198,16 @@ public class AdminController {
     @GetMapping("/rooms/{id}")
     public ResponseEntity<GenericResponse> getRoom(@PathVariable("id") String id){
         return roomService.getRoom(id);
+    }
+
+    @GetMapping("/cinemas/unmanaged")
+    public ResponseEntity<GenericResponse> getAllCinemaUnmanaged(){
+        return cinemaService.getAllCinemaUnmanaged();
+    }
+
+    @PutMapping("/managers/{managerId}/cinema/{cinemaId}")
+    public ResponseEntity<GenericResponse> updateCinemaManager(@PathVariable("managerId") String userId,
+                                                               @PathVariable("cinemaId") String cinemaId){
+        return managerService.updateCinemaManager(userId, cinemaId);
     }
 }

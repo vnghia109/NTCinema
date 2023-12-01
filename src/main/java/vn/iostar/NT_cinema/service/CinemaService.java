@@ -5,22 +5,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.config.annotation.web.oauth2.resourceserver.OAuth2ResourceServerSecurityMarker;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.CinemaReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Cinema;
+import vn.iostar.NT_cinema.entity.Manager;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
+import vn.iostar.NT_cinema.repository.ManagerRepository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CinemaService {
     @Autowired
     CinemaRepository cinemaRepository;
+
+    @Autowired
+    ManagerRepository managerRepository;
 
     public ResponseEntity<GenericResponse> getAllCinema(Pageable pageable){
         try {
@@ -202,6 +205,35 @@ public class CinemaService {
                             .result(null)
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getAllCinemaUnmanaged() {
+        try {
+            List<Cinema> cinemas = cinemaRepository.findAllByStatusIsTrue();
+            List<Cinema> cinemaList = new ArrayList<>();
+            for (Cinema item : cinemas) {
+                Optional<Manager> manager = managerRepository.findByCinema(item);
+                if (manager.isPresent()){
+                    continue;
+                }
+                cinemaList.add(item);
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get cinema unmanaged success")
+                            .result(cinemaList)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
