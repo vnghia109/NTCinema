@@ -34,6 +34,12 @@ public class AdminController {
     @Autowired
     MovieService movieService;
 
+    @Autowired
+    ShowTimeService showTimeService;
+
+    @Autowired
+    RoomService roomService;
+
     @PostMapping("/manager")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
                                                       BindingResult bindingResult){
@@ -156,5 +162,27 @@ public class AdminController {
             throw new RuntimeException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
         return priceService.addPrice(priceReq);
+    }
+
+    @GetMapping("/showtimes")
+    public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
+                                                        @RequestParam(defaultValue = "10") int size){
+        return showTimeService.getShowTimes(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/showtimes/{id}")
+    public ResponseEntity<GenericResponse> getShowTime(@PathVariable("id") String id){
+        return showTimeService.getShowtime(id);
+    }
+
+    @GetMapping("/rooms")
+    public ResponseEntity<GenericResponse> getAllRoom(@RequestParam(defaultValue = "1") int index,
+                                                      @RequestParam(defaultValue = "10") int size){
+        return roomService.getRooms(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/rooms/{id}")
+    public ResponseEntity<GenericResponse> getRoom(@PathVariable("id") String id){
+        return roomService.getRoom(id);
     }
 }
