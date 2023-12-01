@@ -1,6 +1,8 @@
 package vn.iostar.NT_cinema.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,9 +13,7 @@ import vn.iostar.NT_cinema.entity.Room;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.RoomRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class RoomService {
@@ -86,6 +86,59 @@ public class RoomService {
                         .build());
             }
         } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getRooms(Pageable pageable) {
+        try {
+            Page<Room> rooms = roomRepository.findAll(pageable);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", rooms.getContent());
+            map.put("pageNumber", rooms.getPageable().getPageNumber() + 1);
+            map.put("pageSize", rooms.getSize());
+            map.put("totalPages", rooms.getTotalPages());
+            map.put("totalElements", rooms.getTotalElements());
+
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get all room success")
+                    .result(map)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getRoom(String id) {
+        try {
+            Optional<Room> roomOptional = roomRepository.findById(id);
+            return roomOptional.map(room -> ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get room success")
+                    .result(room)
+                    .statusCode(HttpStatus.OK.value())
+                    .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                    .success(false)
+                    .message("Room not found")
+                    .result(null)
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .build()));
+        }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)

@@ -47,6 +47,36 @@ public class AdminController {
         return userService.addManager(request);
     }
 
+    @GetMapping("/users")
+    public ResponseEntity<GenericResponse> getUsers(@RequestParam(defaultValue = "1") int index,
+                                                    @RequestParam(defaultValue = "10") int size){
+        return userService.getAllUser(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/users/{userId}")
+    public ResponseEntity<GenericResponse> getUser(@PathVariable("userId") String id){
+        return userService.getUser(id);
+    }
+
+    @PutMapping("/users/{userId}")
+    public ResponseEntity<GenericResponse> updateUser(@PathVariable("userId") String id,
+                                                      @RequestBody UpdateUserReq userReq,
+                                                      BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new GenericResponse(
+                    false,
+                    "Invalid input data!",
+                    null,
+                    HttpStatus.BAD_REQUEST.value()));
+        }
+        return userService.adminUpdateUser(id, userReq);
+    }
+
+    @DeleteMapping("/users/{userId}")
+    public ResponseEntity<GenericResponse> deleteUser(@PathVariable("userId") String id){
+        return userService.deleteUser(id);
+    }
+
     @PostMapping("/cinemas/cinema")
     public ResponseEntity<GenericResponse> addCinema(@RequestBody CinemaReq cinemaReq){
         return cinemaService.addCinema(cinemaReq);
@@ -67,6 +97,11 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getAllCinema(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size){
         return cinemaService.getAllCinema(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/cinemas/{id}")
+    public ResponseEntity<GenericResponse> getCinema(@PathVariable("id") String id){
+        return cinemaService.getCinema(id);
     }
 
     @PostMapping("/movies/movie")

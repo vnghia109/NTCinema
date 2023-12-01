@@ -185,4 +185,31 @@ public class CinemaService {
                             .build());
         }
     }
+
+    public ResponseEntity<GenericResponse> getCinema(String id) {
+        try {
+            Optional<Cinema> cinema = cinemaRepository.findById(id);
+            return cinema.map(value -> ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get cinema success")
+                            .result(value)
+                            .statusCode(HttpStatus.OK.value())
+                            .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Get cinema success")
+                            .result(null)
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .build()));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package vn.iostar.NT_cinema.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,9 +16,7 @@ import vn.iostar.NT_cinema.repository.MovieRepository;
 import vn.iostar.NT_cinema.repository.RoomRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ShowTimeService {
@@ -214,16 +214,47 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getShowTimes() {
+    public ResponseEntity<GenericResponse> getShowTimes(Pageable pageable) {
         try {
-            List<ShowTime> showTimes = showTimeRepository.findAllByStatusIsTrue();
+            Page<ShowTime> showTimes = showTimeRepository.findAllByStatusIsTrue(pageable);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", showTimes.getContent());
+            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
+            map.put("pageSize", showTimes.getSize());
+            map.put("totalPages", showTimes.getTotalPages());
+            map.put("totalElements", showTimes.getTotalElements());
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get all show time success")
-                    .result(showTimes)
+                    .result(map)
                     .statusCode(HttpStatus.OK.value())
                     .build());
         } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getShowtime(String id) {
+        try {
+            Optional<ShowTime> showTime = showTimeRepository.findById(id);
+            return showTime.map(time -> ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get show time success")
+                    .result(time)
+                    .statusCode(HttpStatus.OK.value())
+                    .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                    .success(false)
+                    .message("Show time not found")
+                    .result(null)
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .build()));
+        }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
                     .success(false)
                     .message(e.getMessage())

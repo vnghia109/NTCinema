@@ -1,5 +1,7 @@
 package vn.iostar.NT_cinema.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import vn.iostar.NT_cinema.entity.Movie;
@@ -14,5 +16,5 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     Optional<ShowTime> findByMovieAndIsSpecialIsFalseAndStatusIsTrue (Movie movie);
     Optional<ShowTime> findByMovie_MovieIdAndIsSpecialIsTrueAndStatusIsTrue (String movieId);
     List<ShowTime> findAllByRoom_Cinema_CinemaIdAndStatusIsTrue(String cinemaId);
-    List<ShowTime> findAllByStatusIsTrue();
+    Page<ShowTime> findAllByStatusIsTrue(Pageable pageable);
 }

@@ -2,6 +2,7 @@ package vn.iostar.NT_cinema.controller.manager;
 
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,6 +40,17 @@ public class ManagerController {
         return roomService.deleteRoom(roomId);
     }
 
+    @GetMapping("/rooms")
+    public ResponseEntity<GenericResponse> getAllRoom(@RequestParam(defaultValue = "1") int index,
+                                                      @RequestParam(defaultValue = "10") int size){
+        return roomService.getRooms(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/rooms/{id}")
+    public ResponseEntity<GenericResponse> getRoom(@PathVariable("id") String id){
+        return roomService.getRoom(id);
+    }
+
     @PostMapping("/showtimes/showtime")
     public ResponseEntity<GenericResponse> addShowTime(@RequestBody ShowTimeReq showTimeReq){
         return showTimeService.addShowTime(showTimeReq);
@@ -56,7 +68,13 @@ public class ManagerController {
     }
 
     @GetMapping("/showtimes")
-    public ResponseEntity<GenericResponse> getShowTimes(){
-        return showTimeService.getShowTimes();
+    public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
+                                                        @RequestParam(defaultValue = "10") int size){
+        return showTimeService.getShowTimes(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/showtimes/{id}")
+    public ResponseEntity<GenericResponse> getShowTime(@PathVariable("id") String id){
+        return showTimeService.getShowtime(id);
     }
 }

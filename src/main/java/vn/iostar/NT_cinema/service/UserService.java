@@ -5,6 +5,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -519,6 +521,128 @@ public class UserService {
             return "Token/link expired";
         }
         return null;
+    }
+
+    public ResponseEntity<GenericResponse> getAllUser(PageRequest pageRequest) {
+        try {
+            Page<User> users = userRepository.findAll(pageRequest);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", users.getContent());
+            map.put("pageNumber", users.getPageable().getPageNumber() + 1);
+            map.put("pageSize", users.getSize());
+            map.put("totalPages", users.getTotalPages());
+            map.put("totalElements", users.getTotalElements());
+
+            return ResponseEntity.ok(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Get all user success")
+                            .result(map)
+                            .statusCode(200)
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getUser(String id) {
+        try {
+            Optional<User> user = userRepository.findById(id);
+
+            return ResponseEntity.ok(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Get user success")
+                            .result(user.get())
+                            .statusCode(200)
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> adminUpdateUser(String userId, UpdateUserReq request) {
+        try {
+            Optional<User> optionalUser = userRepository.findById(userId);
+            if (optionalUser.isPresent()) {
+                User user = optionalUser.get();
+
+                user.setPhone(request.getPhone());
+                user.setFullName(request.getFullName());
+                user.setEmail(request.getEmail());
+                user.setDob(request.getDob());
+                user.setRole(roleService.findByRoleName(request.getRole()));
+                user.setUserName(request.getUserName());
+                user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+                user.setUpdatedAt(new Date());
+
+                userRepository.save(user);
+
+                return ResponseEntity.ok().body(GenericResponse.builder()
+                        .success(true)
+                        .message("Update success")
+                        .result(user)
+                        .statusCode(200)
+                        .build());
+            }else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Update fail")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> deleteUser(String id) {
+        try {
+            Optional<User> user = userRepository.findById(id);
+            if (user.isPresent()){
+                user.get().setDelete(true);
+                userRepository.save(user.get());
+                return ResponseEntity.ok().body(GenericResponse.builder()
+                        .success(true)
+                        .message("Update success")
+                        .result(user.get())
+                        .statusCode(200)
+                        .build());
+            }else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("User not found")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
     }
 
 //    public String validateVerificationAccount(String token) {
