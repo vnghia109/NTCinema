@@ -4,9 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import vn.iostar.NT_cinema.dto.BookReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.SeatReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
+import vn.iostar.NT_cinema.service.BookingService;
 import vn.iostar.NT_cinema.service.FoodService;
 import vn.iostar.NT_cinema.service.SeatService;
 import vn.iostar.NT_cinema.service.ViewerService;
@@ -29,6 +31,9 @@ public class ViewerController {
     @Autowired
     SeatService seatService;
 
+    @Autowired
+    BookingService bookingService;
+
     @GetMapping("/foods")
     public ResponseEntity<GenericResponse> getFoods(@RequestParam(defaultValue = "") String type){
         return foodService.getFoods(type);
@@ -37,5 +42,14 @@ public class ViewerController {
     @PostMapping("/checkSeat/{showTimeId}")
     public ResponseEntity<GenericResponse> checkSeat(@PathVariable("showTimeId") String showTimeId, @RequestBody List<SeatReq> seatReqList){
         return seatService.checkSeat(showTimeId, seatReqList);
+    }
+
+    @PostMapping("/book")
+    public ResponseEntity<GenericResponse> bookTicket(@RequestHeader("Authorization") String authorizationHeader,
+                                                      @RequestBody BookReq bookReq){
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        return bookingService.bookTicket(userId, bookReq);
     }
 }

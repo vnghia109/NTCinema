@@ -1,7 +1,5 @@
 package vn.iostar.NT_cinema.service;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -11,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,12 +16,10 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
-import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.PasswordResetOtpRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 @Service
