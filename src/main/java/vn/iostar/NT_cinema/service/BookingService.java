@@ -34,7 +34,20 @@ public class BookingService {
             List<Seat> seats = new ArrayList<>();
             for (String item: seatIds) {
                 Optional<Seat> seat = seatRepository.findById(item);
-                seat.ifPresent(seats::add);
+                if (seat.isPresent()){
+                    if (!seat.get().isStatus()){
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(GenericResponse.builder()
+                                        .success(false)
+                                        .message("Seat already book")
+                                        .result(seat.get())
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build());
+                    }
+                    seat.get().setStatus(false);
+                    seatRepository.save(seat.get());
+                    seats.add(seat.get());
+                }
             }
             List<Food> foods = new ArrayList<>();
             for (String item : foodIds) {
