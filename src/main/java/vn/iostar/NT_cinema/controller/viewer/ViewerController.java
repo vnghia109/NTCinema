@@ -52,4 +52,9 @@ public class ViewerController {
         );
         return bookingService.bookTicket(userId, bookReq);
     }
+
+    @GetMapping("/seats/booked/{showtimeId}")
+    public ResponseEntity<GenericResponse> getSeatBooked(@PathVariable("showtimeId") String showtimeId){
+        return seatService.getSeatBooked(showtimeId);
+    }
 }

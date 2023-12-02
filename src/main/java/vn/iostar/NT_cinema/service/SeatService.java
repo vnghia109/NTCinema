@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.SeatBookedRes;
 import vn.iostar.NT_cinema.dto.SeatReq;
 import vn.iostar.NT_cinema.entity.Price;
 import vn.iostar.NT_cinema.entity.Seat;
@@ -71,10 +72,35 @@ public class SeatService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result(null)
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
 
+    }
+
+    public ResponseEntity<GenericResponse> getSeatBooked(String showtimeId) {
+        try {
+            List<Seat> seats = seatRepository.findAllByShowTimeIdAndStatusIsFalse(showtimeId);
+            List<SeatBookedRes> seatBookedRes = seats.stream()
+                    .map(item -> new SeatBookedRes(item.getRow(), item.getColumn()))
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get all seat booked success")
+                            .result(seatBookedRes)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
     }
 }

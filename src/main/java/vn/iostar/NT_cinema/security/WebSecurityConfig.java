@@ -66,7 +66,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("/api/v1/user/**").permitAll()
                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                                 .requestMatchers("/api/v1/manager/**").hasRole("MANAGER")
-//                                .requestMatchers("/api/v1/viewer/**").hasRole("VIEWER")
+                                .requestMatchers("/api/v1/viewer/**").hasRole("VIEWER")
                                 .anyRequest().permitAll()
                 )
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
