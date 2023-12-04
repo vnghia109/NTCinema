@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import vn.iostar.NT_cinema.dto.*;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.AccessDeniedException;
 import java.text.ParseException;
 import java.util.HashMap;
@@ -200,6 +201,17 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                         .success(false)
                         .message(ex.getMessage())
                         .result("Format is not correct!")
+                        .statusCode(HttpStatus.BAD_REQUEST.value()).build()
+        );
+    }
+
+    @ExceptionHandler(UnsupportedEncodingException.class)
+    public ResponseEntity<Object> handleUnsupportedEncodingException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                GenericResponse.builder()
+                        .success(false)
+                        .message(ex.getMessage())
+                        .result("Unsupported Encoding!")
                         .statusCode(HttpStatus.BAD_REQUEST.value()).build()
         );
     }
