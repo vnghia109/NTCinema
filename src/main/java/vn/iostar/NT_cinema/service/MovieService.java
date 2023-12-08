@@ -196,10 +196,20 @@ public class MovieService {
         Date now = new Date();
         List<Movie> movies = new ArrayList<>();
         for (Movie item : movieList) {
-            Optional<ShowTime> showTime = showTimeRepository.findByMovieAndIsSpecialIsFalseAndStatusIsTrue(item);
-            if (showTime.isEmpty())
+            List<ShowTime> showTimes = showTimeRepository.findAllByMovieAndIsSpecialIsFalseAndStatusIsTrue(item);
+            if (showTimes.isEmpty())
                 continue;
-            if (showTime.get().getTimeStart().before(now) && showTime.get().getTimeEnd().after(now)){
+            Date max = showTimes.get(0).getTimeEnd();
+            Date min = showTimes.get(0).getTimeStart();
+            for (ShowTime showTime : showTimes) {
+                if (showTime.getTimeStart().before(min)){
+                    min = showTime.getTimeStart();
+                }
+                if (showTime.getTimeEnd().after(max)){
+                    max = showTime.getTimeEnd();
+                }
+            }
+            if (min.before(now) && max.after(now)){
                 movies.add(item);
             }
         }
@@ -234,10 +244,16 @@ public class MovieService {
             List<Movie> movies = new ArrayList<>();
             Date now = new Date();
             for (Movie item : movieList) {
-                Optional<ShowTime> showTime = showTimeRepository.findByMovieAndIsSpecialIsFalseAndStatusIsTrue(item);
-                if (showTime.isEmpty())
+                List<ShowTime> showTimes = showTimeRepository.findAllByMovieAndIsSpecialIsFalseAndStatusIsTrue(item);
+                if (showTimes.isEmpty())
                     continue;
-                if (showTime.get().getTimeStart().after(now)){
+                Date min = showTimes.get(0).getTimeStart();
+                for (ShowTime showTime : showTimes) {
+                    if (showTime.getTimeStart().before(min)){
+                        min = showTime.getTimeStart();
+                    }
+                }
+                if (min.after(now)){
                     movies.add(item);
                 }
             }

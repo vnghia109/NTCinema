@@ -21,6 +21,6 @@ public class ShowTimeReq {
     private String movieId;
     private Date timeStart;
     private Date timeEnd;
-    private boolean isSpecial;
+    private boolean special;
     private List<TimeShow> listTimeShow;
 }
