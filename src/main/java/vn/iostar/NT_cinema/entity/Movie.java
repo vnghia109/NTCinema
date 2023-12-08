@@ -51,15 +51,13 @@ public class Movie {
     private int rating;
 
 
-    public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String poster, String trailerLink, List<Review> reviews) {
+    public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String trailerLink) {
         this.title = title;
         this.director = director;
         this.genres = genres;
         this.actor = actor;
         this.releaseDate = releaseDate;
         this.desc = desc;
-        this.poster = poster;
         this.trailerLink = trailerLink;
-        this.reviews = reviews;
     }
 }

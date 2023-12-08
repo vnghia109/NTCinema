@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.controller.admin;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
@@ -9,11 +10,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.config.annotation.web.oauth2.resourceserver.OAuth2ResourceServerSecurityMarker;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.repository.UserRepository;
 import vn.iostar.NT_cinema.service.*;
 
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -125,7 +128,15 @@ public class AdminController {
     }
 
     @PostMapping("/movies/movie")
-    public ResponseEntity<GenericResponse> addMovie(@RequestBody Movie movie) {
+    public ResponseEntity<GenericResponse> addMovie(@Valid @ModelAttribute MovieReq movie,
+                                                    BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new GenericResponse(
+                    false,
+                    "Invalid input data!",
+                    null,
+                    HttpStatus.BAD_REQUEST.value()));
+        }
         return movieService.save(movie);
     }
 

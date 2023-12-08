@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,6 +17,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.repository.AddressRepository;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.PasswordResetOtpRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
@@ -42,6 +44,8 @@ public class UserService {
     Environment env;
     @Autowired
     private JavaMailSender javaMailSender;
+    @Autowired
+    AddressRepository addressRepository;
 //    @Autowired
 //    TemplateEngine templateEngine;
 
@@ -579,9 +583,18 @@ public class UserService {
                 user.setDob(request.getDob());
                 user.setRole(roleService.findByRoleName(request.getRole()));
                 user.setUserName(request.getUserName());
-                user.setPassword(passwordEncoder.encode(request.getPassword()));
-
                 user.setUpdatedAt(new Date());
+                Optional<Address> optionalAddress = addressRepository.findByStreetAndProvinceAndDistrictAndCountry(
+                        request.getAddress().getStreet(),
+                        request.getAddress().getProvince(),
+                        request.getAddress().getDistrict(),
+                        request.getAddress().getCountry());
+                if (optionalAddress.isPresent()){
+                    user.setAddress(optionalAddress.get());
+                }else {
+                    Address address = addressRepository.save(request.getAddress());
+                    user.setAddress(address);
+                }
 
                 userRepository.save(user);
 

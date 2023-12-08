@@ -67,11 +67,11 @@ public class ManagerController {
         return showTimeService.updateShowTime(id, showTimeReq);
     }
 
-    @GetMapping("/showtimes")
-    public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size){
-        return showTimeService.getShowTimes(PageRequest.of(index-1, size));
-    }
+//    @GetMapping("/showtimes")
+//    public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
+//                                                        @RequestParam(defaultValue = "10") int size){
+//        return showTimeService.getShowTimes(PageRequest.of(index-1, size));
+//    }
 
     @GetMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> getShowTime(@PathVariable("id") String id){

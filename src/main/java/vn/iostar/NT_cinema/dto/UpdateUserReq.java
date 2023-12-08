@@ -22,10 +22,6 @@ public class UpdateUserReq {
 
     @NotBlank
     @NotEmpty
-    private String password;
-
-    @NotBlank
-    @NotEmpty
     @Email
     private String email;
 
@@ -35,4 +31,6 @@ public class UpdateUserReq {
 
     @Size(max = 10)
     private String phone;
+
+    private Address address;
 }

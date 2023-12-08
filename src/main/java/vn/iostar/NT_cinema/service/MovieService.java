@@ -7,7 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.MovieReq;
 import vn.iostar.NT_cinema.dto.MovieRequest;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.ShowTime;
@@ -24,6 +26,8 @@ public class MovieService {
 
     @Autowired
     ShowTimeRepository showTimeRepository;
+    @Autowired
+    CloudinaryService cloudinaryService;
 
     public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
         Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalse(pageable);
@@ -74,17 +78,21 @@ public class MovieService {
     }
 
 
-    public ResponseEntity<GenericResponse> save(Movie entity) {
+    public ResponseEntity<GenericResponse> save(MovieReq req) {
         try {
-            if (movieRepository.findByTitle(entity.getTitle()).isEmpty()) {
-                movieRepository.save(entity);
-                Movie movie = new Movie();
-                BeanUtils.copyProperties(entity, movie);
+            if (movieRepository.findByTitle(req.getTitle()).isEmpty()) {
+                Movie movie = new Movie(req.getTitle(), req.getDirector(), req.getGenres(), req.getActor(), req.getReleaseDate(), req.getDesc(), req.getTrailerLink());
+
+                String url = cloudinaryService.uploadImage(req.getPoster());
+                movie.setPoster(url);
+
+                Movie movieRes = movieRepository.save(movie);
+                BeanUtils.copyProperties(req, movie);
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
                                 .message("Add movie success")
-                                .result(movie)
+                                .result(movieRes)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } else {
