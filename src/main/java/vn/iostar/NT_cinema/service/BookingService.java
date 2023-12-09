@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.BookReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
@@ -14,6 +15,10 @@ import vn.iostar.NT_cinema.repository.BookingRepository;
 import vn.iostar.NT_cinema.repository.FoodRepository;
 import vn.iostar.NT_cinema.repository.SeatRepository;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -92,4 +97,17 @@ public class BookingService {
         }
         return total;
     }
+
+    public void deleteBookingNotPay(){
+        Date now = new Date();
+        List<Booking> bookings = bookingRepository.findAllByIsPaymentIsFalse();
+        for (Booking item : bookings) {
+            long diffInMinutes = (now.getTime() - item.getCreateAt().getTime()) / (60 * 1000);
+            if (diffInMinutes > 5){
+                bookingRepository.delete(item);
+            }
+        }
+    }
+    @Scheduled(fixedDelay = 6000) //1 minutes
+    public void cleanupBooking(){ deleteBookingNotPay(); }
 }

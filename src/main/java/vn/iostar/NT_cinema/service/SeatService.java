@@ -11,6 +11,7 @@ import vn.iostar.NT_cinema.entity.Price;
 import vn.iostar.NT_cinema.entity.Seat;
 import vn.iostar.NT_cinema.repository.PriceRepository;
 import vn.iostar.NT_cinema.repository.SeatRepository;
+import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -23,8 +24,20 @@ public class SeatService {
     @Autowired
     PriceRepository priceRepository;
 
+    @Autowired
+    ShowTimeRepository showTimeRepository;
+
     public ResponseEntity<GenericResponse> checkSeat(String showtimeId, List<SeatReq> seatReq){
         try {
+            if (showTimeRepository.findById(showtimeId).isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Showtime does not exist")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
             List<Seat> seats = new ArrayList<>();
             List<String> seatIds = new ArrayList<>();
             for (SeatReq item : seatReq) {
