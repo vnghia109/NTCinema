@@ -109,7 +109,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleDisabledException(DisabledException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Your account has not been activated")
+                .message("Your account has not been activated or deleted")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.FORBIDDEN.value())
                 .build();

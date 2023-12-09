@@ -47,11 +47,11 @@ public class AuthController {
     @PostMapping("/login")
     @Transactional
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
-
-        if (userService.findByUserName(loginDTO.getCredentialId()).isEmpty())
-            throw new UserNotFoundException("Account does not exist");
         Optional<User> optionalUser = userService.findByUserName(loginDTO.getCredentialId());
-        if (optionalUser.isPresent() && !optionalUser.get().isActive()) {
+        if (optionalUser.isEmpty()){
+            throw new UserNotFoundException("Account does not exist");
+        }
+        if (!optionalUser.get().isActive()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
                     .success(false)
                     .message("Your account is not verified!")
@@ -61,7 +61,7 @@ public class AuthController {
         }
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginDTO.getCredentialId(),
+                new UsernamePasswordAuthenticationToken(optionalUser.get().getUserName(),
                         loginDTO.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetail userDetail = (UserDetail) authentication.getPrincipal();
@@ -77,10 +77,8 @@ public class AuthController {
         tokenMap.put("accessToken", accessToken);
         tokenMap.put("refreshToken", token);
 
-        if (optionalUser.isPresent()) {
-            optionalUser.get().setLastLoginAt(new Date());
-            userService.save(optionalUser.get());
-        }
+        optionalUser.get().setLastLoginAt(new Date());
+        userService.save(optionalUser.get());
 
         return ResponseEntity.ok().body(GenericResponse.builder()
                 .success(true)

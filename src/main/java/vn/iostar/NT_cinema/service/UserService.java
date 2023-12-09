@@ -50,7 +50,11 @@ public class UserService {
 //    TemplateEngine templateEngine;
 
     public Optional<User> findByUserName(String userName) {
-        return userRepository.findByUserName(userName);
+        Optional<User> user = userRepository.findByUserName(userName);
+        if (user.isPresent()){
+            return user;
+        }
+        return userRepository.findByEmail(userName);
     }
 
     public <S extends User> S save(S entity) {
