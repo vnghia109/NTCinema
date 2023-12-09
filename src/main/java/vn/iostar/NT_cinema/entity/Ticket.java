@@ -4,6 +4,8 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -13,6 +15,21 @@ public class Ticket {
     @Id
     private String ticketId;
 
-    private User user;
+    private String userId;
 
+    private String cinemaName;
+
+    private String cinemaAddress;
+
+    private Date createAt;
+
+    private String movieName;
+
+    private String showtime;
+
+    private String duration;
+
+    private String seat;
+
+    private int ticketPrice;
 }

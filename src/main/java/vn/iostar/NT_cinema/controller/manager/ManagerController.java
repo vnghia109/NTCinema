@@ -31,8 +31,11 @@ public class ManagerController {
     ManagerService managerService;
 
     @PostMapping("/rooms")
-    public ResponseEntity<GenericResponse> addRoom(@RequestBody RoomReq roomReq){
-        return roomService.addRoom(roomReq);
+    public ResponseEntity<GenericResponse> addRoom(@RequestHeader("Authorization") String authorizationHeader,
+                                                   @RequestParam String roomName){
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return roomService.addRoom(roomName, managerId);
     }
 
     @DeleteMapping("/rooms/{roomId}")
@@ -41,9 +44,12 @@ public class ManagerController {
     }
 
     @GetMapping("/rooms")
-    public ResponseEntity<GenericResponse> getAllRoom(@RequestParam(defaultValue = "1") int index,
+    public ResponseEntity<GenericResponse> getAllRoom(@RequestHeader("Authorization") String authorizationHeader,
+                                                      @RequestParam(defaultValue = "1") int index,
                                                       @RequestParam(defaultValue = "10") int size){
-        return roomService.getRooms(PageRequest.of(index-1, size));
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return roomService.getRoomsOfManager(managerId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/rooms/{id}")
@@ -67,11 +73,14 @@ public class ManagerController {
         return showTimeService.updateShowTime(id, showTimeReq);
     }
 
-//    @GetMapping("/showtimes")
-//    public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
-//                                                        @RequestParam(defaultValue = "10") int size){
-//        return showTimeService.getShowTimes(PageRequest.of(index-1, size));
-//    }
+    @GetMapping("/showtimes")
+    public ResponseEntity<GenericResponse> getShowTimes(@RequestHeader("Authorization") String authorizationHeader,
+                                                        @RequestParam(defaultValue = "1") int index,
+                                                        @RequestParam(defaultValue = "10") int size){
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return showTimeService.getShowTimesOfManager(managerId, PageRequest.of(index-1, size));
+    }
 
     @GetMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> getShowTime(@PathVariable("id") String id){
