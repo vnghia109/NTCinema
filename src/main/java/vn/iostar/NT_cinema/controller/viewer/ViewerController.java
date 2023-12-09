@@ -34,11 +34,6 @@ public class ViewerController {
     @Autowired
     BookingService bookingService;
 
-    @GetMapping("/foods")
-    public ResponseEntity<GenericResponse> getFoods(@RequestParam(defaultValue = "") String type){
-        return foodService.getFoods(type);
-    }
-
     @PostMapping("/checkSeat/{showTimeId}")
     public ResponseEntity<GenericResponse> checkSeat(@PathVariable("showTimeId") String showTimeId, @RequestBody List<SeatReq> seatReqList){
         return seatService.checkSeat(showTimeId, seatReqList);
