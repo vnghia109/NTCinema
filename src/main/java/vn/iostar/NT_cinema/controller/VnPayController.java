@@ -7,8 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.config.VnPayConfig;
 import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.entity.Booking;
+import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.BookingRepository;
+import vn.iostar.NT_cinema.repository.ShowTimeRepository;
+import vn.iostar.NT_cinema.repository.TicketRepository;
 import vn.iostar.NT_cinema.service.BookingService;
 
 import java.io.IOException;
@@ -26,9 +28,22 @@ public class VnPayController {
 
     @Autowired
     BookingRepository bookingRepository;
+    @Autowired
+    TicketRepository ticketRepository;
+    @Autowired
+    ShowTimeRepository showTimeRepository;
     @GetMapping("/payment")
     public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId) throws UnsupportedEncodingException {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
+        if (booking.get().isPayment()){
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("The bill has been paid")
+                            .result(booking.get())
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+        }
         String orderType = "other";
         long amount = booking.get().getTotal()*100;
         String bankCode = "NCB";
@@ -105,6 +120,21 @@ public class VnPayController {
         if (booking.isPresent()) {
             booking.get().setPayment(true);
             bookingRepository.save(booking.get());
+            for (Seat item: booking.get().getSeats()) {
+                Ticket ticket = new Ticket();
+                ticket.setUserId(booking.get().getUserId());
+                Optional<ShowTime> showTime = showTimeRepository.findById(item.getShowTimeId());
+                Cinema cinema = showTime.get().getRoom().getCinema();
+                ticket.setCinemaName(cinema.getCinemaName());
+                ticket.setCinemaAddress(cinema.getLocation());
+                ticket.setCreateAt(new Date());
+                ticket.setMovieName(showTime.get().getMovie().getTitle());
+                ticket.setShowtime(item.getTimeShow());
+                ticket.setDuration(showTime.get().getMovie().getDuration());
+                ticket.setSeat(item.getPrice().getType().toString()+"Class: row "+item.getRow()+"/column "+item.getColumn());
+                ticket.setTicketPrice(item.getPrice().getPrice());
+                ticketRepository.save(ticket);
+            }
             response.sendRedirect("http://localhost:5173/movie");
         }
     }
