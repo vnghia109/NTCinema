@@ -47,7 +47,7 @@ public class ShowTimeService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
-            Optional<ShowTime> showTimeFind = showTimeRepository.findByMovieAndStatusIsTrueAndRoom_RoomId(optionalMovie.get(), showTimeReq.getRoomId());
+            Optional<ShowTime> showTimeFind = showTimeRepository.findByMovieAndStatusIsTrueAndRoom_Cinema_CinemaId(optionalMovie.get(), optionalRoom.get().getCinema().getCinemaId());
             if (showTimeFind.isPresent()){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)
@@ -197,7 +197,7 @@ public class ShowTimeService {
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
-            Optional<ShowTime> showTimes = showTimeRepository.findByMovieAndStatusIsTrue(optionalMovie.get());
+            List<ShowTime> showTimes = showTimeRepository.findByMovieAndStatusIsTrue(optionalMovie.get());
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get show time success")
