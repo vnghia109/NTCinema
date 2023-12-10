@@ -17,4 +17,6 @@ public class Room {
 
     private String roomName;
 
+    private boolean isDelete;
+
 }

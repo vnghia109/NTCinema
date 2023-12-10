@@ -43,6 +43,11 @@ public class ManagerController {
         return roomService.deleteRoom(roomId);
     }
 
+    @PatchMapping("/rooms/{roomId}")
+    public ResponseEntity<GenericResponse> updateIsDeleteRoom(@PathVariable("roomId") String roomId){
+        return roomService.updateIsDeleteRoom(roomId);
+    }
+
     @GetMapping("/rooms")
     public ResponseEntity<GenericResponse> getAllRoom(@RequestHeader("Authorization") String authorizationHeader,
                                                       @RequestParam(defaultValue = "1") int index,
@@ -65,6 +70,11 @@ public class ManagerController {
     @DeleteMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> deleteShowTime(@PathVariable("id") String id){
         return showTimeService.deleteShowTime(id);
+    }
+
+    @PatchMapping("/showtimes/{id}")
+    public ResponseEntity<GenericResponse> updateIsDeleteShowTime(@PathVariable("id") String id){
+        return showTimeService.updateIsDeleteShowTime(id);
     }
 
     @PutMapping("/showtimes/{id}")

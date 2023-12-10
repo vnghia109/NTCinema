@@ -95,6 +95,11 @@ public class AdminController {
         return userService.adminUpdateUser(id, userReq);
     }
 
+    @PatchMapping("/users/{userId}")
+    public ResponseEntity<GenericResponse> updateIsDeleteUser(@PathVariable("userId") String id){
+        return userService.updateIsDeleteUser(id);
+    }
+
     @DeleteMapping("/users/{userId}")
     public ResponseEntity<GenericResponse> deleteUser(@PathVariable("userId") String id){
         return userService.deleteUser(id);
@@ -114,6 +119,11 @@ public class AdminController {
     @DeleteMapping("/cinemas/{cinemaId}")
     public ResponseEntity<GenericResponse> deleteCinema(@PathVariable("cinemaId") String cinemaId){
         return cinemaService.deleteCinema(cinemaId);
+    }
+
+    @PatchMapping("/cinemas/{cinemaId}")
+    public ResponseEntity<GenericResponse> updateIsDeleteCinema(@PathVariable("cinemaId") String cinemaId){
+        return cinemaService.updateIsDeleteCinema(cinemaId);
     }
 
     @GetMapping("/cinemas")
@@ -159,6 +169,11 @@ public class AdminController {
         return movieService.delete(movieId);
     }
 
+    @PatchMapping("/movies/{movieId}")
+    public ResponseEntity<GenericResponse> updateIsDeleteMovie(@PathVariable("movieId") String movieId) throws Exception{
+        return movieService.updateIsDelete(movieId);
+    }
+
     @PostMapping("/foods/food")
     public ResponseEntity<GenericResponse> addFood(@RequestBody FoodReq foodReq){
         return foodService.addFood(foodReq);
@@ -167,6 +182,11 @@ public class AdminController {
     @DeleteMapping("/foods/{id}")
     public ResponseEntity<GenericResponse> deleteFood(@PathVariable("id") String id){
         return foodService.deleteFood(id);
+    }
+
+    @PatchMapping("/foods/{id}")
+    public ResponseEntity<GenericResponse> updateIsDeleteFood(@PathVariable("id") String id){
+        return foodService.updateIsDeleteFood(id);
     }
 
     @PutMapping("/foods/{id}")
@@ -187,6 +207,11 @@ public class AdminController {
             throw new RuntimeException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
         }
         return priceService.addPrice(priceReq);
+    }
+
+    @PutMapping("/prices/price/{id}")
+    public ResponseEntity<?> updatePrice(@PathVariable("id") String id, @RequestBody PriceReq priceReq){
+        return priceService.updatePrice(id, priceReq);
     }
 
     @GetMapping("/showtimes")

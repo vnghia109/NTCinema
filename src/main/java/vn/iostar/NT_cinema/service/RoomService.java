@@ -102,6 +102,37 @@ public class RoomService {
         }
     }
 
+    public ResponseEntity<GenericResponse> updateIsDeleteRoom(String roomId) {
+        try {
+            Optional<Room> roomOptional = roomRepository.findById(roomId);
+            if (roomOptional.isPresent()){
+                roomOptional.get().setDelete(!roomOptional.get().isDelete());
+                Room room = roomRepository.save(roomOptional.get());
+                return ResponseEntity.ok().body(GenericResponse.builder()
+                        .success(true)
+                        .message("Delete room success!")
+                        .result(room)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+            }else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Room not found")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
     public ResponseEntity<GenericResponse> getRooms(Pageable pageable) {
         try {
             Page<Room> rooms = roomRepository.findAll(pageable);

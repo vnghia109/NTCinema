@@ -12,6 +12,7 @@ import vn.iostar.NT_cinema.entity.Price;
 import vn.iostar.NT_cinema.repository.PriceRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class PriceService {
@@ -36,6 +37,41 @@ public class PriceService {
             price.setType(PriceType.valueOf(priceReq.getType()));
 
             Price price1 = priceRepository.save(price);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Success")
+                            .result(price1)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> updatePrice(String id, PriceReq priceReq) {
+        try {
+            Optional<Price> price = priceRepository.findById(id);
+            if (price.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Price not found")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            price.get().setPrice(priceReq.getPrice());
+            price.get().setType(PriceType.valueOf(priceReq.getType()));
+
+            Price price1 = priceRepository.save(price.get());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()

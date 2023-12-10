@@ -626,16 +626,46 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<GenericResponse> deleteUser(String id) {
+    public ResponseEntity<GenericResponse> updateIsDeleteUser(String id) {
         try {
             Optional<User> user = userRepository.findById(id);
             if (user.isPresent()){
-                user.get().setDelete(true);
+                user.get().setDelete(!user.get().isDelete());
                 userRepository.save(user.get());
                 return ResponseEntity.ok().body(GenericResponse.builder()
                         .success(true)
                         .message("Update success")
                         .result(user.get())
+                        .statusCode(200)
+                        .build());
+            }else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("User not found")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> deleteUser(String id) {
+        try {
+            Optional<User> user = userRepository.findById(id);
+            if (user.isPresent()){
+                userRepository.delete(user.get());
+                return ResponseEntity.ok().body(GenericResponse.builder()
+                        .success(true)
+                        .message("Update success")
+                        .result(null)
                         .statusCode(200)
                         .build());
             }else {

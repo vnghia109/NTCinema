@@ -57,7 +57,39 @@ public class FoodService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
 
-            food.get().setStatus(false);
+            foodRepository.delete(food.get());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Delete food success")
+                            .result(null)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> updateIsDeleteFood(String id) {
+        try {
+            Optional<Food> food = foodRepository.findById(id);
+            if (food.isEmpty())
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Food notfound")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+
+            food.get().setStatus(!food.get().isStatus());
 
             Food foodRes = foodRepository.save(food.get());
 
@@ -65,7 +97,7 @@ public class FoodService {
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Delete food success")
-                            .result(null)
+                            .result(foodRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e){

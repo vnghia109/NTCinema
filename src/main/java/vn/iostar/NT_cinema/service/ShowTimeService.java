@@ -108,12 +108,40 @@ public class ShowTimeService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
-            optionalShowTime.get().setStatus(false);
-            showTimeRepository.save(optionalShowTime.get());
+            showTimeRepository.delete(optionalShowTime.get());
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
                     .message("Delete Showtime success")
                     .result(null)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> updateIsDeleteShowTime(String id) {
+        try {
+            Optional<ShowTime> optionalShowTime = showTimeRepository.findById(id);
+            if (optionalShowTime.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Showtime not found")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+            optionalShowTime.get().setStatus(!optionalShowTime.get().isStatus());
+            ShowTime showTime = showTimeRepository.save(optionalShowTime.get());
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Delete Showtime success")
+                    .result(showTime)
                     .statusCode(HttpStatus.OK.value())
                     .build());
         } catch (Exception e){

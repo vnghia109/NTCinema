@@ -167,7 +167,39 @@ public class CinemaService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
             }
-            cinema.get().setStatus(false);
+            cinemaRepository.delete(cinema.get());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Delete cinema success")
+                            .result(null)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> updateIsDeleteCinema(String cinemaId) {
+        try {
+            Optional<Cinema> cinema = cinemaRepository.findById(cinemaId);
+            if (cinema.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Cinema notfound")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            cinema.get().setStatus(!cinema.get().isStatus());
 
             cinemaRepository.save(cinema.get());
 
@@ -175,7 +207,7 @@ public class CinemaService {
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Delete cinema success")
-                            .result(null)
+                            .result(cinema.get())
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
