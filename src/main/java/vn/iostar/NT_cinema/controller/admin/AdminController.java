@@ -129,7 +129,7 @@ public class AdminController {
     @GetMapping("/cinemas")
     public ResponseEntity<GenericResponse> getAllCinema(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size){
-        return cinemaService.getAllCinema(PageRequest.of(index-1, size));
+        return cinemaService.adminGetAllCinema(PageRequest.of(index-1, size));
     }
 
     @GetMapping("/cinemas/{id}")
@@ -172,6 +172,12 @@ public class AdminController {
     @PatchMapping("/movies/{movieId}")
     public ResponseEntity<GenericResponse> updateIsDeleteMovie(@PathVariable("movieId") String movieId) throws Exception{
         return movieService.updateIsDelete(movieId);
+    }
+
+    @GetMapping("/movies")
+    public ResponseEntity<GenericResponse> getAllMovies(@RequestParam(defaultValue = "1") int index,
+                                                        @RequestParam(defaultValue = "10") int size) {
+        return movieService.adminGetAllMovie(PageRequest.of(index-1, size));
     }
 
     @PostMapping("/foods/food")
@@ -217,7 +223,7 @@ public class AdminController {
     @GetMapping("/showtimes")
     public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size){
-        return showTimeService.getShowTimes(PageRequest.of(index-1, size));
+        return showTimeService.adminGetShowTimes(PageRequest.of(index-1, size));
     }
 
     @GetMapping("/showtimes/{id}")

@@ -272,10 +272,36 @@ public class ShowTimeService {
         }
     }
 
+    public ResponseEntity<GenericResponse> adminGetShowTimes(Pageable pageable) {
+        try {
+            Page<ShowTime> showTimes = showTimeRepository.findAll(pageable);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", showTimes.getContent());
+            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
+            map.put("pageSize", showTimes.getSize());
+            map.put("totalPages", showTimes.getTotalPages());
+            map.put("totalElements", showTimes.getTotalElements());
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get all show time success")
+                    .result(map)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
     public ResponseEntity<GenericResponse> getShowTimesOfManager(String id, Pageable pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(id);
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_Cinema_CinemaIdAndStatusIsTrue(manager.get().getCinema().getCinemaId(), pageable);
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_Cinema_CinemaId(manager.get().getCinema().getCinemaId(), pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", showTimes.getContent());

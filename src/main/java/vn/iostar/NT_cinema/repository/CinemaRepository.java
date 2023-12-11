@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.repository;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -15,6 +16,10 @@ public interface CinemaRepository extends MongoRepository<Cinema, String> {
     Optional<Cinema> findByCinemaName(String cinemaName);
 
     Page<Cinema> findAllByStatusIsTrue(Pageable pageable);
+
+    @Override
+    @NotNull
+    Page<Cinema> findAll(@NotNull Pageable pageable);
 
     List<Cinema> findAllByStatusIsTrue();
 }

@@ -51,6 +51,34 @@ public class CinemaService {
                             .build());
         }
     }
+
+    public ResponseEntity<GenericResponse> adminGetAllCinema(Pageable pageable){
+        try {
+            Page<Cinema> cinemas = cinemaRepository.findAll(pageable);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", cinemas.getContent());
+            map.put("pageNumber", cinemas.getPageable().getPageNumber() + 1);
+            map.put("pageSize", cinemas.getSize());
+            map.put("totalPages", cinemas.getTotalPages());
+            map.put("totalElements", cinemas.getTotalElements());
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get all cinema success")
+                    .result(map)
+                    .statusCode(200)
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
     public ResponseEntity<GenericResponse> addCinema(CinemaReq cinemaReq) {
         try {
             if (cinemaRepository.findByCinemaName(cinemaReq.getCinemaName()).isPresent()){

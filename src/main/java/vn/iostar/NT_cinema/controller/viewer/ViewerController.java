@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.controller.viewer;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,12 @@ import vn.iostar.NT_cinema.dto.SeatReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.*;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
@@ -50,7 +57,7 @@ public class ViewerController {
         return bookingService.bookTicket(userId, bookReq);
     }
 
-    @GetMapping("/seats/booked")
+    @PostMapping("/seats/booked")
     public ResponseEntity<GenericResponse> getSeatBooked(@RequestBody BookedSeatReq req){
         return seatService.getSeatBooked(req);
     }

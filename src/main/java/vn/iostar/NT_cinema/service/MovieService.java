@@ -48,6 +48,25 @@ public class MovieService {
                         .build());
     }
 
+    public ResponseEntity<GenericResponse> adminGetAllMovie(Pageable pageable) {
+        Page<Movie> moviePage = movieRepository.findAll(pageable);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("content", moviePage.getContent());
+        map.put("pageNumber", moviePage.getPageable().getPageNumber() + 1);
+        map.put("pageSize", moviePage.getSize());
+        map.put("totalPages", moviePage.getTotalPages());
+        map.put("totalElements", moviePage.getTotalElements());
+
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(GenericResponse.builder()
+                        .success(true)
+                        .message("Get all movie")
+                        .result(map)
+                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .build());
+    }
+
     public ResponseEntity<GenericResponse> findById(String id) {
         try {
             Optional<Movie> movie = movieRepository.findById(id);
