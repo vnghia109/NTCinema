@@ -16,11 +16,9 @@ public class Review {
     @Id
     private String reviewId;
 
-    @DBRef
-    private Movie movie;
+    private String movie;
 
-    @DBRef
-    private User user;
+    private String user;
 
     private String comment;
 

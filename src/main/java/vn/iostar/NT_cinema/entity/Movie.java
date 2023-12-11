@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -45,7 +46,7 @@ public class Movie {
 
     private boolean isDelete = false;
 
-    private List<Review> reviews;
+    private List<Review> reviews = new ArrayList<>();
 
     @Size(min = 0, max = 5)
     private int rating;
@@ -59,5 +60,22 @@ public class Movie {
         this.releaseDate = releaseDate;
         this.desc = desc;
         this.trailerLink = trailerLink;
+    }
+
+    public void addReview(Review review) {
+        this.reviews.add(review);
+        updateRating();
+    }
+
+    private void updateRating() {
+        if (this.reviews.isEmpty()) {
+            this.rating = 0;
+        } else {
+            int totalRating = 0;
+            for (Review review : this.reviews) {
+                totalRating += review.getRating();
+            }
+            this.rating = totalRating / this.reviews.size();
+        }
     }
 }

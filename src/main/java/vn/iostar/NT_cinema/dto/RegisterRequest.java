@@ -11,7 +11,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class RegisterRequest {
 
     @NotEmpty(message = "Full name is required")
