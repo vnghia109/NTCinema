@@ -90,4 +90,31 @@ public class PriceService {
                             .build());
         }
     }
+
+    public ResponseEntity<?> getPriceOfSeat(String type) {
+        try {
+            Optional<Price> price = priceRepository.findByType(PriceType.valueOf(type));
+            return price.map(value -> ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get seat price success")
+                            .result(value)
+                            .statusCode(HttpStatus.OK.value())
+                            .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("seat price not found")
+                            .result(null)
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .build()));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

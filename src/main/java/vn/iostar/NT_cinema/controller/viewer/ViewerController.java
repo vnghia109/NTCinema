@@ -5,14 +5,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.BookReq;
+import vn.iostar.NT_cinema.dto.BookedSeatReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.SeatReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
-import vn.iostar.NT_cinema.service.BookingService;
-import vn.iostar.NT_cinema.service.FoodService;
-import vn.iostar.NT_cinema.service.SeatService;
-import vn.iostar.NT_cinema.service.ViewerService;
+import vn.iostar.NT_cinema.service.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -34,7 +33,10 @@ public class ViewerController {
     @Autowired
     BookingService bookingService;
 
-    @PostMapping("/checkSeat/{showTimeId}")
+    @Autowired
+    PriceService priceService;
+
+    @PostMapping("/selectSeat/{showTimeId}")
     public ResponseEntity<GenericResponse> checkSeat(@PathVariable("showTimeId") String showTimeId, @RequestBody List<SeatReq> seatReqList){
         return seatService.checkSeat(showTimeId, seatReqList);
     }
@@ -48,8 +50,13 @@ public class ViewerController {
         return bookingService.bookTicket(userId, bookReq);
     }
 
-    @GetMapping("/seats/booked/{showtimeId}")
-    public ResponseEntity<GenericResponse> getSeatBooked(@PathVariable("showtimeId") String showtimeId){
-        return seatService.getSeatBooked(showtimeId);
+    @GetMapping("/seats/booked")
+    public ResponseEntity<GenericResponse> getSeatBooked(@RequestBody BookedSeatReq req){
+        return seatService.getSeatBooked(req);
+    }
+
+    @GetMapping("/seat/price")
+    public ResponseEntity<?> getSeatPrice(@RequestParam("type") String type){
+        return priceService.getPriceOfSeat(type);
     }
 }

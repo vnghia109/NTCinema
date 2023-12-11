@@ -25,7 +25,7 @@ public class Ticket {
 
     private String movieName;
 
-    private String showtime;
+    private Date showtime;
 
     private String duration;
 

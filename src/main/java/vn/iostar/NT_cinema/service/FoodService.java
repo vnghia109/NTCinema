@@ -10,6 +10,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Food;
 import vn.iostar.NT_cinema.repository.FoodRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -149,8 +150,13 @@ public class FoodService {
 
     public ResponseEntity<GenericResponse> getFoods(String type) {
         try {
-            FoodType foodType = FoodType.valueOf(type);
-            List<Food> foods = foodRepository.findAllByFoodType(foodType);
+            List<Food> foods;
+            if (type.isEmpty()){
+                foods = foodRepository.findAll();
+            }else {
+                FoodType foodType = FoodType.valueOf(type);
+                foods = foodRepository.findAllByFoodType(foodType);
+            }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)

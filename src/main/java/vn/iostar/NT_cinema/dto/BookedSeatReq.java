@@ -7,13 +7,11 @@ import lombok.Setter;
 
 import java.util.Date;
 
-@Setter
 @Getter
-@NoArgsConstructor
+@Setter
 @AllArgsConstructor
-public class SeatReq {
-    private String priceType;
-    private String row;
-    private String column;
+@NoArgsConstructor
+public class BookedSeatReq {
+    private String showtimeId;
     private Date timeShow;
 }

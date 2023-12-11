@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import vn.iostar.NT_cinema.constant.PriceType;
+import vn.iostar.NT_cinema.dto.BookedSeatReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.SeatBookedRes;
 import vn.iostar.NT_cinema.dto.SeatReq;
@@ -46,7 +48,7 @@ public class SeatService {
                     seatIds.add(optionalSeat.get().getSeatId());
                     continue;
                 }
-                Optional<Price> price = priceRepository.findByType(item.getPriceType());
+                Optional<Price> price = priceRepository.findByType(PriceType.valueOf(item.getPriceType()));
                 if (price.isEmpty()){
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(GenericResponse.builder()
@@ -92,9 +94,9 @@ public class SeatService {
 
     }
 
-    public ResponseEntity<GenericResponse> getSeatBooked(String showtimeId) {
+    public ResponseEntity<GenericResponse> getSeatBooked(BookedSeatReq req) {
         try {
-            List<Seat> seats = seatRepository.findAllByShowTimeIdAndStatusIsFalse(showtimeId);
+            List<Seat> seats = seatRepository.findAllByShowTimeIdAndTimeShowAndStatusIsFalse(req.getShowtimeId(), req.getTimeShow());
             List<SeatBookedRes> seatBookedRes = seats.stream()
                     .map(item -> new SeatBookedRes(item.getRow(), item.getColumn()))
                     .collect(Collectors.toList());

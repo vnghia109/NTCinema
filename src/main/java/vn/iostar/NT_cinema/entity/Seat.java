@@ -23,7 +23,7 @@ public class Seat {
     private String row;
     private String column;
     private boolean status;
-    private String timeShow;
+    private Date timeShow;
 //
 //    @DBRef
 //    private Booking booking;
