@@ -73,7 +73,7 @@ public class SeatService {
                     .map(Seat::getSeatId)
                     .toList());
             Map<Object, List<String>> map = new HashMap<>();
-            map.put("List seatId", seatIds);
+            map.put("seatIds", seatIds);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
