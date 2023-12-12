@@ -174,4 +174,31 @@ public class FoodService {
                             .build());
         }
     }
+
+    public ResponseEntity<?> getFood(String foodId) {
+        try {
+            Optional<Food> foodOptional = foodRepository.findById(foodId);
+            return foodOptional.map(food -> ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get food success")
+                            .result(food)
+                            .statusCode(HttpStatus.OK.value())
+                            .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Food not found")
+                            .result(null)
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .build()));
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

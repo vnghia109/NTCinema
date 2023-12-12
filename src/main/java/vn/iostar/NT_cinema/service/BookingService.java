@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.BookReq;
+import vn.iostar.NT_cinema.dto.FoodWithCount;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Booking;
 import vn.iostar.NT_cinema.entity.Food;
@@ -19,10 +20,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class BookingService {
@@ -64,7 +62,7 @@ public class BookingService {
             booking.setUserId(userId);
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
-            booking.setFoods(foods);
+            booking.setFoods(convertToFoodWithCountList(foodIds));
             booking.setTotal(totalBooking(seats, foods));
 
             Booking bookingRes = bookingRepository.save(booking);
@@ -85,6 +83,22 @@ public class BookingService {
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
+    }
+
+    public List<FoodWithCount> convertToFoodWithCountList(List<String> foods) {
+        Map<String, Integer> foodCountMap = new HashMap<>();
+
+        for (String food : foods) {
+            foodCountMap.put(food, foodCountMap.getOrDefault(food, 0) + 1);
+        }
+
+        List<FoodWithCount> foodWithCounts = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : foodCountMap.entrySet()) {
+            FoodWithCount foodWithCount = new FoodWithCount(foodRepository.findById(entry.getKey()).get(), entry.getValue());
+            foodWithCounts.add(foodWithCount);
+        }
+
+        return foodWithCounts;
     }
 
     public int totalBooking(List<Seat> seats, List<Food> foods){
