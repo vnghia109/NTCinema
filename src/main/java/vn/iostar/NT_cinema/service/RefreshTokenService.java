@@ -157,7 +157,7 @@ public class RefreshTokenService {
         refreshTokenRepository.deleteAllByExpiredIsTrueAndRevokedIsTrue();
     }
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 60000)
     public void cleanUpToken(){
         refreshTokenRepository.deleteAllByExpiredIsTrueAndRevokedIsTrue();
     }

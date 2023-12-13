@@ -120,6 +120,7 @@ public class VnPayController {
         if (booking.isPresent()) {
             booking.get().setPayment(true);
             bookingRepository.save(booking.get());
+            bookingService.sendEmailBookingSuccess(booking.get());
             for (Seat item: booking.get().getSeats()) {
                 Ticket ticket = new Ticket();
                 ticket.setUserId(booking.get().getUserId());

@@ -23,7 +23,7 @@ public class JwtTokenProvider {
     private UserRepository userRepository;
 
     private final Long JWT_ACCESS_EXPIRATION = 3600000L;
-    private final Long JWT_REFRESH_EXPIRATION = 604800000L;
+    private final Long JWT_REFRESH_EXPIRATION = 86400000L;
 
     private final SecretKey secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     private final String issuer = "Nhom 4";

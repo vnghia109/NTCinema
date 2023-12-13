@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Đặt vé thành công</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #cbd18f;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #3a6b35;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(185, 69, 69, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            color: #cbd18f;
+            line-height: 1.5;
+        }
+
+        strong {
+            color: #e3b448;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Chào mừng bạn đến với TN-Cinemas</h2>
+
+    <p>Cảm ơn bạn đã đặt vé xem phim tại rạp chúng tôi. Dưới đây là chi tiết đặt vé của bạn:</p>
+
+    <p><strong>Mã đặt vé: </strong> <span th:text="${bookingCode}"></span></p>
+    <p><strong>Tên phim: </strong> <span th:text="${movieName}"></span></p>
+    <p><strong>Ngày và giờ chiếu: </strong> <span th:text="${showtime}"></span></p>
+    <p><strong>Số lượng vé: </strong> <span th:text="${ticketCount}"></span></p>
+    <p><strong>Ghế: </strong></p>
+    <ul>
+        <li th:each="seat : ${seats}">
+            <strong>Hàng/cột: </strong>
+            <span th:text="${seat.getRow()} / ${seat.getColumn()}"></span>
+        </li>
+    </ul>
+    <p><strong>Bắp nước: </strong></p>
+    <ul>
+        <li th:each="food : ${foods}">
+            <strong th:text="${food.getFood().getName()}"></strong>
+            <span th:text="${food.count}"></span>
+        </li>
+    </ul>
+    <p><strong>Tổng cộng thanh toán: </strong> <span th:text="${totalAmount}"></span></p>
+
+    <p>Xin vui lòng mang theo mã đặt vé khi đến rạp phim. Chúng tôi mong bạn có một trải nghiệm xem phim tuyệt vời!</p>
+
+    <p>Trân trọng,<br>Đội ngũ NT-Cinemas</p>
+</div>
+</body>
+</html>
