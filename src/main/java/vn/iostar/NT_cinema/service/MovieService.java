@@ -11,8 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.MovieReq;
 import vn.iostar.NT_cinema.dto.MovieRequest;
+import vn.iostar.NT_cinema.dto.UpcomingMovieRes;
+import vn.iostar.NT_cinema.entity.Booking;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.ShowTime;
+import vn.iostar.NT_cinema.repository.BookingRepository;
 import vn.iostar.NT_cinema.repository.MovieRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
@@ -23,7 +26,8 @@ public class MovieService {
 
     @Autowired
     private MovieRepository movieRepository;
-
+    @Autowired
+    BookingRepository bookingRepository;
     @Autowired
     ShowTimeRepository showTimeRepository;
     @Autowired
@@ -414,6 +418,78 @@ public class MovieService {
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> getUpcomingMovies(String userId) {
+        try {
+            List<Booking> bookings = bookingRepository.findAllByUserId(userId);
+            List<UpcomingMovieRes> upcomingMovieRes = new ArrayList<>();
+            for (Booking item : bookings) {
+                if (item.getSeats().get(0).getTimeShow().after(new Date())){
+                    Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
+                    UpcomingMovieRes upcoming = new UpcomingMovieRes();
+                    upcoming.setBookingId(item.getBookingId());
+                    upcoming.setMovieName(showTime.get().getMovie().getTitle());
+                    upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
+                    upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
+                    upcoming.setPrice(item.getTotal());
+
+                    upcomingMovieRes.add(upcoming);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get list movie upcoming success")
+                            .result(upcomingMovieRes)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Internal Server Error")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> getViewedMovies(String userId) {
+        try {
+            List<Booking> bookings = bookingRepository.findAllByUserId(userId);
+            List<UpcomingMovieRes> upcomingMovieRes = new ArrayList<>();
+            Date now = new Date();
+            for (Booking item : bookings) {
+                Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
+                long diffInMinutes = (now.getTime() - (item.getSeats().get(0).getTimeShow().getTime() + Integer.parseInt(showTime.get().getMovie().getDuration()))) / (60 * 1000);
+                if (diffInMinutes > 0){
+                    UpcomingMovieRes upcoming = new UpcomingMovieRes();
+                    upcoming.setBookingId(item.getBookingId());
+                    upcoming.setMovieName(showTime.get().getMovie().getTitle());
+                    upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
+                    upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
+                    upcoming.setPrice(item.getTotal());
+
+                    upcomingMovieRes.add(upcoming);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get list movie upcoming success")
+                            .result(upcomingMovieRes)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()

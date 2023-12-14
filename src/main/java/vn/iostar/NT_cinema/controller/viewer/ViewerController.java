@@ -39,6 +39,8 @@ public class ViewerController {
     PriceService priceService;
     @Autowired
     ReviewService reviewService;
+    @Autowired
+    MovieService movieService;
 
     @PostMapping("/selectSeat/{showTimeId}")
     public ResponseEntity<GenericResponse> checkSeat(@PathVariable("showTimeId") String showTimeId, @RequestBody List<SeatReq> seatReqList){
@@ -54,7 +56,7 @@ public class ViewerController {
         return bookingService.bookTicket(userId, bookReq);
     }
 
-    @GetMapping("/book-info")
+    @PostMapping("/book-info")
     public ResponseEntity<GenericResponse> bookingInfo(@RequestBody BookReq bookReq){
         return bookingService.bookingInfo(bookReq);
     }
@@ -85,5 +87,26 @@ public class ViewerController {
                 authorizationHeader.substring(7)
         );
         return reviewService.reviewMovie(req, userId, movieId);
+    }
+
+    @GetMapping("/movies/upcoming")
+    public ResponseEntity<?> getUpcomingMovies(@RequestHeader("Authorization") String authorizationHeader){
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        return movieService.getUpcomingMovies(userId);
+    }
+
+    @GetMapping("/movies/viewed")
+    public ResponseEntity<?> getViewedMovies(@RequestHeader("Authorization") String authorizationHeader){
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        return movieService.getViewedMovies(userId);
+    }
+
+    @GetMapping("/ticket/detail/{bookingId}")
+    public ResponseEntity<?> getTicketDetail(@PathVariable("bookingId") String id){
+        return bookingService.getTicketDetail(id);
     }
 }

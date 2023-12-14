@@ -12,10 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import vn.iostar.NT_cinema.dto.BookReq;
-import vn.iostar.NT_cinema.dto.BookingInfoRes;
-import vn.iostar.NT_cinema.dto.FoodWithCount;
-import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
@@ -24,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -220,4 +218,44 @@ public class BookingService {
     }
     @Scheduled(fixedDelay = 6000) //1 minutes
     public void cleanupBooking(){ deleteBookingNotPay(); }
+
+    public ResponseEntity<?> getTicketDetail(String bookingId) {
+        try {
+            Optional<Booking> booking = bookingRepository.findById(bookingId);
+            if (booking.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Booking not found")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTimeId());
+            TicketDetailRes ticket = new TicketDetailRes();
+            ticket.setMovieName(showTime.get().getMovie().getTitle());
+            ticket.setTimeShow(booking.get().getSeats().get(0).getTimeShow());
+            ticket.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
+            ticket.setDuration(Integer.parseInt(showTime.get().getMovie().getDuration()));
+            ticket.setRoomName(showTime.get().getRoom().getRoomName());
+            ticket.setSeats(booking.get().getSeats());
+            ticket.setFoods(booking.get().getFoods());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get ticket detail success")
+                            .result(ticket)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }
