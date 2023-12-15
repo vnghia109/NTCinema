@@ -5,13 +5,19 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.UniqueElements;
+import org.springframework.data.annotation.Id;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
-public class MovieRequest {
+public class MovieRes {
+    @Id
+    private String movieId;
+
     @NotBlank
+    @UniqueElements
     private String title;
 
     private String director;
@@ -32,6 +38,7 @@ public class MovieRequest {
     @NotBlank
     private String trailerLink;
 
-    @NotBlank
     private String duration;
+
+    private String rating;
 }

@@ -83,7 +83,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Booking ticket success")
+                            .message("Confirmed information successfully")
                             .result(bookingRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -233,6 +233,7 @@ public class BookingService {
             }
             Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTimeId());
             TicketDetailRes ticket = new TicketDetailRes();
+            ticket.setMovieId(showTime.get().getMovie().getMovieId());
             ticket.setMovieName(showTime.get().getMovie().getTitle());
             ticket.setTimeShow(booking.get().getSeats().get(0).getTimeShow());
             ticket.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());

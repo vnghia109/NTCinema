@@ -7,6 +7,7 @@ import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +49,7 @@ public class Movie {
 
     private List<Review> reviews = new ArrayList<>();
 
-    @Size(min = 0, max = 5)
-    private int rating;
+    private String rating;
 
 
     public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String trailerLink) {
@@ -69,13 +69,15 @@ public class Movie {
 
     private void updateRating() {
         if (this.reviews.isEmpty()) {
-            this.rating = 0;
+            this.rating = "0";
         } else {
             int totalRating = 0;
             for (Review review : this.reviews) {
                 totalRating += review.getRating();
             }
-            this.rating = totalRating / this.reviews.size();
+            DecimalFormat decimalFormat = new DecimalFormat("#.##");
+            float rating = (float) totalRating / this.reviews.size();
+            this.rating = decimalFormat.format(rating);
         }
     }
 }

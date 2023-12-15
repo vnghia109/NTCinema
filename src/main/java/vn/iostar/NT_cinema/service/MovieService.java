@@ -7,12 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.dto.MovieReq;
-import vn.iostar.NT_cinema.dto.MovieRequest;
-import vn.iostar.NT_cinema.dto.UpcomingMovieRes;
+import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.Booking;
+import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.ShowTime;
 import vn.iostar.NT_cinema.repository.BookingRepository;
@@ -20,6 +17,7 @@ import vn.iostar.NT_cinema.repository.MovieRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class MovieService {
@@ -35,9 +33,12 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
         Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalse(pageable);
+        List<MovieRes> movieRes = moviePage.getContent().stream()
+                .map(this::mapCinemaToMovieRes)
+                .collect(Collectors.toList());
 
         Map<String, Object> map = new HashMap<>();
-        map.put("content", moviePage.getContent());
+        map.put("content", movieRes);
         map.put("pageNumber", moviePage.getPageable().getPageNumber() + 1);
         map.put("pageSize", moviePage.getSize());
         map.put("totalPages", moviePage.getTotalPages());
@@ -50,6 +51,23 @@ public class MovieService {
                         .result(map)
                         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .build());
+    }
+
+    private MovieRes mapCinemaToMovieRes(Movie movie) {
+        MovieRes movieRes = new MovieRes();
+        movieRes.setMovieId(movie.getMovieId());
+        movieRes.setTitle(movie.getTitle());
+        movieRes.setDirector(movie.getDirector());
+        movieRes.setGenres(movie.getGenres());
+        movieRes.setActor(movie.getActor());
+        movieRes.setReleaseDate(movie.getReleaseDate());
+        movieRes.setDesc(movie.getDesc());
+        movieRes.setPoster(movie.getPoster());
+        movieRes.setTrailerLink(movie.getTrailerLink());
+        movieRes.setDuration(movie.getDuration());
+        movieRes.setRating(String.valueOf(movie.getRating()));
+
+        return movieRes;
     }
 
     public ResponseEntity<GenericResponse> adminGetAllMovie(Pageable pageable) {
@@ -138,7 +156,7 @@ public class MovieService {
         }
     }
 
-    public ResponseEntity<GenericResponse> update(String movieId, MovieRequest movieRequest) {
+    public ResponseEntity<GenericResponse> update(String movieId, MovieReq movieRequest) {
         try {
             Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
@@ -149,7 +167,8 @@ public class MovieService {
                 movie.setActor(movieRequest.getActor());
                 movie.setDesc(movieRequest.getDesc());
                 movie.setReleaseDate(movieRequest.getReleaseDate());
-                movie.setPoster(movieRequest.getPoster());
+                String url = cloudinaryService.uploadImage(movieRequest.getPoster());
+                movie.setPoster(url);
                 movie.setTrailerLink(movieRequest.getTrailerLink());
                 movie.setDuration(movieRequest.getDuration());
 
@@ -431,26 +450,27 @@ public class MovieService {
 
     public ResponseEntity<?> getUpcomingMovies(String userId) {
         try {
-            List<Booking> bookings = bookingRepository.findAllByUserId(userId);
-            List<UpcomingMovieRes> upcomingMovieRes = new ArrayList<>();
+            List<Booking> bookings = bookingRepository.findAllByUserIdAndIsPaymentIsTrue(userId);
+            List<HistoryMovieRes> historyMovieRes = new ArrayList<>();
             for (Booking item : bookings) {
                 if (item.getSeats().get(0).getTimeShow().after(new Date())){
                     Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
-                    UpcomingMovieRes upcoming = new UpcomingMovieRes();
+                    HistoryMovieRes upcoming = new HistoryMovieRes();
                     upcoming.setBookingId(item.getBookingId());
+                    upcoming.setMovieId(showTime.get().getMovie().getMovieId());
                     upcoming.setMovieName(showTime.get().getMovie().getTitle());
                     upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
                     upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
                     upcoming.setPrice(item.getTotal());
 
-                    upcomingMovieRes.add(upcoming);
+                    historyMovieRes.add(upcoming);
                 }
             }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Get list movie upcoming success")
-                            .result(upcomingMovieRes)
+                            .result(historyMovieRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -466,28 +486,29 @@ public class MovieService {
 
     public ResponseEntity<?> getViewedMovies(String userId) {
         try {
-            List<Booking> bookings = bookingRepository.findAllByUserId(userId);
-            List<UpcomingMovieRes> upcomingMovieRes = new ArrayList<>();
+            List<Booking> bookings = bookingRepository.findAllByUserIdAndIsPaymentIsTrue(userId);
+            List<HistoryMovieRes> historyMovieRes = new ArrayList<>();
             Date now = new Date();
             for (Booking item : bookings) {
                 Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
                 long diffInMinutes = (now.getTime() - (item.getSeats().get(0).getTimeShow().getTime() + Integer.parseInt(showTime.get().getMovie().getDuration()))) / (60 * 1000);
                 if (diffInMinutes > 0){
-                    UpcomingMovieRes upcoming = new UpcomingMovieRes();
+                    HistoryMovieRes upcoming = new HistoryMovieRes();
                     upcoming.setBookingId(item.getBookingId());
+                    upcoming.setMovieId(showTime.get().getMovie().getMovieId());
                     upcoming.setMovieName(showTime.get().getMovie().getTitle());
                     upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
                     upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
                     upcoming.setPrice(item.getTotal());
 
-                    upcomingMovieRes.add(upcoming);
+                    historyMovieRes.add(upcoming);
                 }
             }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Get list movie upcoming success")
-                            .result(upcomingMovieRes)
+                            .result(historyMovieRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){

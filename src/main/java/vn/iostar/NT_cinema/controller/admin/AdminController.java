@@ -152,7 +152,7 @@ public class AdminController {
 
     @PutMapping("/movies/{movieId}")
     public ResponseEntity<GenericResponse> updateMovie(@PathVariable("movieId") String movieId,
-                                                       @RequestBody MovieRequest movieRequest,
+                                                       @RequestBody MovieReq movieRequest,
                                                        BindingResult bindingResult) throws Exception{
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(

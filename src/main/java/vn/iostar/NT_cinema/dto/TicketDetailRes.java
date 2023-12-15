@@ -12,6 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class TicketDetailRes {
+    private String movieId;
     private String movieName;
     private Date timeShow;
     private int duration;
