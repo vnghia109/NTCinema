@@ -211,11 +211,23 @@ public class BookingService {
         List<Booking> bookings = bookingRepository.findAllByIsPaymentIsFalse();
         for (Booking item : bookings) {
             long diffInMinutes = (now.getTime() - item.getCreateAt().getTime()) / (60 * 1000);
-            if (diffInMinutes > 5){
+            if (diffInMinutes > 10){
+                setSeatStatusTrue(item.getSeats());
                 bookingRepository.delete(item);
             }
         }
     }
+
+    public  void setSeatStatusTrue(List<Seat> seats){
+        for (Seat item : seats) {
+            Optional<Seat> seat = seatRepository.findById(item.getSeatId());
+            if (seat.isPresent()){
+                seat.get().setStatus(true);
+                seatRepository.save(seat.get());
+            }
+        }
+    }
+
     @Scheduled(fixedDelay = 6000) //1 minutes
     public void cleanupBooking(){ deleteBookingNotPay(); }
 

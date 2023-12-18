@@ -96,4 +96,9 @@ public class ManagerController {
     public ResponseEntity<GenericResponse> getShowTime(@PathVariable("id") String id){
         return showTimeService.getShowtime(id);
     }
+
+    @GetMapping("/rooms/{roomId}/timeShow")
+    public ResponseEntity<GenericResponse> getTimeShowOfRoom(@PathVariable String roomId){
+        return showTimeService.getTimeShowOfRoom(roomId);
+    }
 }

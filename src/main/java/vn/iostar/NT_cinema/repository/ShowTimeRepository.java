@@ -20,6 +20,7 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     List<ShowTime> findAllByRoom_Cinema_CinemaIdAndStatusIsTrue(String cinemaId);
     Page<ShowTime> findAllByRoom_Cinema_CinemaId(String cinemaId, Pageable pageable);
     Page<ShowTime> findAllByStatusIsTrue(Pageable pageable);
+    List<ShowTime> findAllByRoom_RoomIdAndStatusIsTrue(String roomId);
     @Override
     @NotNull
     Page<ShowTime> findAll(@NotNull Pageable pageable);
