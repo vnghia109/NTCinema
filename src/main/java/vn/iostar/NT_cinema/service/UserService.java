@@ -634,7 +634,7 @@ public class UserService {
                 userRepository.save(user.get());
                 return ResponseEntity.ok().body(GenericResponse.builder()
                         .success(true)
-                        .message("Update success")
+                        .message("Update status user success")
                         .result(user.get())
                         .statusCode(200)
                         .build());

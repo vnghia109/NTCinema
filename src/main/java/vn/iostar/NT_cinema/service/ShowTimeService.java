@@ -144,7 +144,7 @@ public class ShowTimeService {
             ShowTime showTime = showTimeRepository.save(optionalShowTime.get());
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
-                    .message("Delete Showtime success")
+                    .message("Update status Showtime success")
                     .result(showTime)
                     .statusCode(HttpStatus.OK.value())
                     .build());

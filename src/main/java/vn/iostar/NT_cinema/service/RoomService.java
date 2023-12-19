@@ -110,7 +110,7 @@ public class RoomService {
                 Room room = roomRepository.save(roomOptional.get());
                 return ResponseEntity.ok().body(GenericResponse.builder()
                         .success(true)
-                        .message("Delete room success!")
+                        .message("Update status room success!")
                         .result(room)
                         .statusCode(HttpStatus.OK.value())
                         .build());

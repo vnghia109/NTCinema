@@ -242,7 +242,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Delete movie success")
+                                .message("Update status movie success")
                                 .result(optionalMovie.get())
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -250,7 +250,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Delete failed! movie not found")
+                                .message("Update failed! movie not found")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());

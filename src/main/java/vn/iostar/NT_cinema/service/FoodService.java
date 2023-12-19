@@ -97,7 +97,7 @@ public class FoodService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Delete food success")
+                            .message("Update status food success")
                             .result(foodRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());

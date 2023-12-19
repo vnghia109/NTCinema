@@ -234,7 +234,7 @@ public class CinemaService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Delete cinema success")
+                            .message("Update status cinema success")
                             .result(cinema.get())
                             .statusCode(HttpStatus.OK.value())
                             .build());
