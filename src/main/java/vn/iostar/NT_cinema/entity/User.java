@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -24,8 +25,10 @@ public class User {
     @Id
     private String userId;
 
+    @DBRef
     private Address address;
 
+    @DBRef
     private Role role;
 
     @NotBlank

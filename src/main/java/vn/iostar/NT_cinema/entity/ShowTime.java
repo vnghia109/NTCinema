@@ -18,8 +18,10 @@ public class ShowTime {
     @Id
     private String showTimeId;
 
+    @DBRef
     private Room room;
 
+    @DBRef
     private Movie movie;
 
     private Date timeStart;

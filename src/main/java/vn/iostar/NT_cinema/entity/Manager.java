@@ -4,11 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 @NoArgsConstructor
 @Getter
 @Setter
 @AllArgsConstructor
 public class Manager extends User{
+    @DBRef
     private Cinema cinema;
 }

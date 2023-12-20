@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -19,6 +20,7 @@ public class PasswordResetOtp implements Serializable {
 
     private String otp;
 
+    @DBRef
     private User user;
 
     private Date expiryDate;
