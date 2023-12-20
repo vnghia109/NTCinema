@@ -586,6 +586,14 @@ public class UserService {
             if (optionalUser.isPresent()) {
                 User user = optionalUser.get();
 
+                if (Objects.equals(user.getRole().getRoleName(), "ADMIN")){
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Update fail!You can not update admin account.")
+                            .result(null)
+                            .statusCode(HttpStatus.UNAUTHORIZED.value())
+                            .build());
+                }
                 user.setPhone(request.getPhone());
                 user.setFullName(request.getFullName());
                 user.setEmail(request.getEmail());
@@ -635,6 +643,15 @@ public class UserService {
         try {
             Optional<User> user = userRepository.findById(id);
             if (user.isPresent()){
+                if (Objects.equals(user.get().getRole().getRoleName(), "ADMIN")){
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Update fail!You can not update admin account.")
+                            .result(null)
+                            .statusCode(HttpStatus.UNAUTHORIZED.value())
+                            .build());
+                }
+
                 user.get().setDelete(!user.get().isDelete());
                 userRepository.save(user.get());
                 return ResponseEntity.ok().body(GenericResponse.builder()
@@ -666,6 +683,15 @@ public class UserService {
         try {
             Optional<User> user = userRepository.findById(id);
             if (user.isPresent()){
+                if (Objects.equals(user.get().getRole().getRoleName(), "ADMIN")){
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Delete fail!You can not update admin account.")
+                            .result(null)
+                            .statusCode(HttpStatus.UNAUTHORIZED.value())
+                            .build());
+                }
+
                 userRepository.delete(user.get());
                 return ResponseEntity.ok().body(GenericResponse.builder()
                         .success(true)
