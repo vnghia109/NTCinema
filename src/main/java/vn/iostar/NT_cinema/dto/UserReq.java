@@ -11,6 +11,8 @@ public class UserReq {
     @NotBlank(message = "Full name is required")
     private String fullName;
 
+    private String userName;
+
     private String phone;
 
     private String email;

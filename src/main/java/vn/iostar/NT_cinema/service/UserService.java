@@ -342,6 +342,9 @@ public class UserService {
                 if (request.getDob() != null){
                     user.setDob(request.getDob());
                 }
+                if (request.getUserName() != null){
+                    user.setUserName(request.getUserName());
+                }
 
                 user.setUpdatedAt(new Date());
 
