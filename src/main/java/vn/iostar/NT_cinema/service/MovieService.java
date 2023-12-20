@@ -455,15 +455,17 @@ public class MovieService {
             for (Booking item : bookings) {
                 if (item.getSeats().get(0).getTimeShow().after(new Date())){
                     Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
-                    HistoryMovieRes upcoming = new HistoryMovieRes();
-                    upcoming.setBookingId(item.getBookingId());
-                    upcoming.setMovieId(showTime.get().getMovie().getMovieId());
-                    upcoming.setMovieName(showTime.get().getMovie().getTitle());
-                    upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
-                    upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
-                    upcoming.setPrice(item.getTotal());
+                    if (showTime.isPresent()){
+                        HistoryMovieRes upcoming = new HistoryMovieRes();
+                        upcoming.setBookingId(item.getBookingId());
+                        upcoming.setMovieId(showTime.get().getMovie().getMovieId());
+                        upcoming.setMovieName(showTime.get().getMovie().getTitle());
+                        upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
+                        upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
+                        upcoming.setPrice(item.getTotal());
 
-                    historyMovieRes.add(upcoming);
+                        historyMovieRes.add(upcoming);
+                    }
                 }
             }
             return ResponseEntity.status(HttpStatus.OK)
@@ -491,17 +493,19 @@ public class MovieService {
             Date now = new Date();
             for (Booking item : bookings) {
                 Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
-                long diffInMinutes = (now.getTime() - (item.getSeats().get(0).getTimeShow().getTime() + Integer.parseInt(showTime.get().getMovie().getDuration()))) / (60 * 1000);
-                if (diffInMinutes > 0){
-                    HistoryMovieRes upcoming = new HistoryMovieRes();
-                    upcoming.setBookingId(item.getBookingId());
-                    upcoming.setMovieId(showTime.get().getMovie().getMovieId());
-                    upcoming.setMovieName(showTime.get().getMovie().getTitle());
-                    upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
-                    upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
-                    upcoming.setPrice(item.getTotal());
+                if (showTime.isPresent()){
+                    long diffInMinutes = (now.getTime() - (item.getSeats().get(0).getTimeShow().getTime() + Integer.parseInt(showTime.get().getMovie().getDuration()))) / (60 * 1000);
+                    if (diffInMinutes > 0){
+                        HistoryMovieRes upcoming = new HistoryMovieRes();
+                        upcoming.setBookingId(item.getBookingId());
+                        upcoming.setMovieId(showTime.get().getMovie().getMovieId());
+                        upcoming.setMovieName(showTime.get().getMovie().getTitle());
+                        upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
+                        upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
+                        upcoming.setPrice(item.getTotal());
 
-                    historyMovieRes.add(upcoming);
+                        historyMovieRes.add(upcoming);
+                    }
                 }
             }
             return ResponseEntity.status(HttpStatus.OK)
