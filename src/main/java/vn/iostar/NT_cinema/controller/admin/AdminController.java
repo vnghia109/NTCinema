@@ -27,26 +27,22 @@ public class AdminController {
     UserService userService;
     @Autowired
     CinemaService cinemaService;
-
     @Autowired
     FoodService foodService;
-
     @Autowired
     PriceService priceService;
-
     @Autowired
     MovieService movieService;
-
     @Autowired
     ShowTimeService showTimeService;
-
     @Autowired
     RoomService roomService;
-
     @Autowired
     ManagerService managerService;
     @Autowired
     BookingService bookingService;
+    @Autowired
+    ReviewService reviewService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -273,5 +269,11 @@ public class AdminController {
     @PostMapping("/year/total-revenue")
     public ResponseEntity<?> getTotalRevenueYear(@RequestBody TotalRevenueReq req) {
         return bookingService.getBookingsInYear(req.getStartDate(), req.getEndDate());
+    }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
+                                                    @RequestParam(defaultValue = "10") int size){
+        return reviewService.getReviews(PageRequest.of(index-1, size));
     }
 }

@@ -29,6 +29,8 @@ public class ManagerController {
 
     @Autowired
     ManagerService managerService;
+    @Autowired
+    ReviewService reviewService;
 
     @PostMapping("/rooms")
     public ResponseEntity<GenericResponse> addRoom(@RequestHeader("Authorization") String authorizationHeader,
@@ -100,5 +102,11 @@ public class ManagerController {
     @GetMapping("/rooms/{roomId}/timeShow")
     public ResponseEntity<GenericResponse> getTimeShowOfRoom(@PathVariable String roomId){
         return showTimeService.getTimeShowOfRoom(roomId);
+    }
+
+    @GetMapping("/reviews")
+    public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
+                                                      @RequestParam(defaultValue = "10") int size){
+        return reviewService.getReviews(PageRequest.of(index-1, size));
     }
 }
