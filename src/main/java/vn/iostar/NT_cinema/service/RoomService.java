@@ -40,7 +40,7 @@ public class RoomService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
-            Optional<Room> roomOptional = roomRepository.findByRoomNameAndCinemaCinemaId(roomName, optionalCinema.get().getCinemaId());
+            Optional<Room> roomOptional = roomRepository.findByRoomNameAndCinema(roomName, optionalCinema.get());
             if (roomOptional.isPresent()){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)

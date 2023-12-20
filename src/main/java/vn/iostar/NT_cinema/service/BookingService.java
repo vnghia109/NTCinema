@@ -271,4 +271,102 @@ public class BookingService {
                             .build());
         }
     }
+
+    public int calculateTotalRevenue(List<Booking> paidBookings) {
+        int totalRevenue = 0;
+
+        for (Booking booking : paidBookings) {
+            totalRevenue += booking.getTotal();
+        }
+
+        return totalRevenue;
+    }
+
+    public ResponseEntity<?> getBookingsInDateRange(Date startDate, Date endDate) {
+        try {
+            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInDateRange(startDate, endDate));
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get total Revenue success")
+                            .result(total)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> getBookingsInWeek(Date startOfWeek, Date endOfWeek) {
+        try {
+            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInWeek(startOfWeek, endOfWeek));
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get total Revenue success")
+                            .result(total)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> getBookingsInMonth(Date startOfMonth, Date endOfMonth) {
+        try {
+            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInMonth(startOfMonth, endOfMonth));
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get total Revenue success")
+                            .result(total)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> getBookingsInYear(Date startOfYear, Date endOfYear) {
+        try {
+            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInYear(startOfYear, endOfYear));
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get total Revenue success")
+                            .result(total)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

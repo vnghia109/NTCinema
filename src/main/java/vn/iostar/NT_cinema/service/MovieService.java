@@ -8,12 +8,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.*;
-import vn.iostar.NT_cinema.entity.Booking;
-import vn.iostar.NT_cinema.entity.Cinema;
-import vn.iostar.NT_cinema.entity.Movie;
-import vn.iostar.NT_cinema.entity.ShowTime;
+import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.BookingRepository;
 import vn.iostar.NT_cinema.repository.MovieRepository;
+import vn.iostar.NT_cinema.repository.RoomRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
 import java.util.*;
@@ -30,6 +28,8 @@ public class MovieService {
     ShowTimeRepository showTimeRepository;
     @Autowired
     CloudinaryService cloudinaryService;
+    @Autowired
+    RoomRepository roomRepository;
 
     public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
         Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalse(pageable);
@@ -122,7 +122,7 @@ public class MovieService {
     public ResponseEntity<GenericResponse> save(MovieReq req) {
         try {
             if (movieRepository.findByTitle(req.getTitle()).isEmpty()) {
-                Movie movie = new Movie(req.getTitle(), req.getDirector(), req.getGenres(), req.getActor(), req.getReleaseDate(), req.getDesc(), req.getTrailerLink());
+                Movie movie = new Movie(req.getTitle(), req.getDirector(), req.getGenres(), req.getActor(), req.getReleaseDate(), req.getDesc(), req.getTrailerLink(), req.getDuration());
 
                 String url = cloudinaryService.uploadImage(req.getPoster());
                 movie.setPoster(url);
@@ -382,7 +382,8 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findNowPlayingMoviesByCinema(String id) {
         try {
             List<Movie> movieList = new ArrayList<>();
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_Cinema_CinemaIdAndStatusIsTrue(id);
+            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoomInAndStatusIsTrue(rooms);
             for (ShowTime item: showTimes) {
                 Movie currentMovie = item.getMovie();
                 boolean isDuplicate = false;
@@ -511,7 +512,7 @@ public class MovieService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get list movie upcoming success")
+                            .message("Get list movie viewed success")
                             .result(historyMovieRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());

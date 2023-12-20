@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.text.DecimalFormat;
@@ -47,12 +48,13 @@ public class Movie {
 
     private boolean isDelete = false;
 
+    @DBRef
     private List<Review> reviews = new ArrayList<>();
 
     private String rating;
 
 
-    public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String trailerLink) {
+    public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String trailerLink, String duration) {
         this.title = title;
         this.director = director;
         this.genres = genres;
@@ -60,6 +62,7 @@ public class Movie {
         this.releaseDate = releaseDate;
         this.desc = desc;
         this.trailerLink = trailerLink;
+        this.duration = duration;
     }
 
     public void addReview(Review review) {

@@ -45,6 +45,8 @@ public class AdminController {
 
     @Autowired
     ManagerService managerService;
+    @Autowired
+    BookingService bookingService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -251,5 +253,25 @@ public class AdminController {
     public ResponseEntity<GenericResponse> updateCinemaManager(@PathVariable("managerId") String userId,
                                                                @PathVariable("cinemaId") String cinemaId){
         return managerService.updateCinemaManager(userId, cinemaId);
+    }
+
+    @PostMapping("/day/total-revenue")
+    public ResponseEntity<?> getTotalRevenueDay(@RequestBody TotalRevenueReq req) {
+        return bookingService.getBookingsInDateRange(req.getStartDate(), req.getEndDate());
+    }
+
+    @PostMapping("/week/total-revenue")
+    public ResponseEntity<?> getTotalRevenueWeek(@RequestBody TotalRevenueReq req) {
+        return bookingService.getBookingsInWeek(req.getStartDate(), req.getEndDate());
+    }
+
+    @PostMapping("/month/total-revenue")
+    public ResponseEntity<?> getTotalRevenueMonth(@RequestBody TotalRevenueReq req) {
+        return bookingService.getBookingsInMonth(req.getStartDate(), req.getEndDate());
+    }
+
+    @PostMapping("/year/total-revenue")
+    public ResponseEntity<?> getTotalRevenueYear(@RequestBody TotalRevenueReq req) {
+        return bookingService.getBookingsInYear(req.getStartDate(), req.getEndDate());
     }
 }

@@ -24,6 +24,5 @@ public class RefreshToken {
     private boolean expired;
     private boolean revoked;
 
-    @DBRef
     private User user;
 }

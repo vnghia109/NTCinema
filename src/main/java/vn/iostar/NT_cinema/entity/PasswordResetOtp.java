@@ -20,7 +20,6 @@ public class PasswordResetOtp implements Serializable {
 
     private String otp;
 
-    @DBRef
     private User user;
 
     private Date expiryDate;

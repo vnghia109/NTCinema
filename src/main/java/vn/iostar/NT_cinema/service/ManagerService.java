@@ -10,9 +10,11 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.UserReq;
 import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Manager;
+import vn.iostar.NT_cinema.entity.Role;
 import vn.iostar.NT_cinema.entity.User;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.ManagerRepository;
+import vn.iostar.NT_cinema.repository.RoleRepository;
 
 import java.util.*;
 
@@ -24,9 +26,11 @@ public class ManagerService {
     @Autowired
     CinemaRepository cinemaRepository;
 
+    @Autowired
+    RoleRepository roleRepository;
     public ResponseEntity<GenericResponse> getAllManager(Pageable pageable) {
         try {
-            Page<Manager> managers = managerRepository.findAllByRole_RoleName("MANAGER", pageable);
+            Page<Manager> managers = managerRepository.findAllByRole( roleRepository.findByRoleName("MANAGER"), pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", managers.getContent());
