@@ -334,7 +334,9 @@ public class UserService {
                     user.setFullName(request.getFullName());
                 }
                 if (request.getAddress() != null){
-                    user.setAddress(request.getAddress());
+                    Address address = request.getAddress();
+                    Address address1 = addressRepository.save(address);
+                    user.setAddress(address1);
                 }
                 if (request.getEmail() != null) {
                     user.setEmail(request.getEmail());
