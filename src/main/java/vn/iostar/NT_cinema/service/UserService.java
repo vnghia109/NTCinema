@@ -664,7 +664,7 @@ public class UserService {
                 userRepository.delete(user.get());
                 return ResponseEntity.ok().body(GenericResponse.builder()
                         .success(true)
-                        .message("Update success")
+                        .message("Delete success")
                         .result(null)
                         .statusCode(200)
                         .build());
