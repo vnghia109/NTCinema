@@ -14,4 +14,5 @@ public interface RoomRepository extends MongoRepository<Room, String> {
     Optional<Room> findByRoomNameAndCinemaCinemaId(String roomName, String cinemaId);
 
     Page<Room> findAllByCinema_CinemaId(String cinemaId, Pageable pageable);
+    List<Room> findAllByCinema_CinemaId(String cinemaId);
 }

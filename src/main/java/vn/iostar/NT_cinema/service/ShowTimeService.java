@@ -305,7 +305,16 @@ public class ShowTimeService {
     public ResponseEntity<GenericResponse> getShowTimesOfManager(String id, Pageable pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(id);
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_Cinema_CinemaId(manager.get().getCinema().getCinemaId(), pageable);
+            if (manager.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Manager not have cinema")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms, pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", showTimes.getContent());
