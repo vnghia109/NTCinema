@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
-    Optional<ShowTime> findByMovieAndStatusIsTrueAndRoom_RoomId (Movie movie, String roomId);
+    Optional<ShowTime> findByMovieAndStatusIsTrueAndRoom (Movie movie, Room room);
     List<ShowTime> findByMovieAndStatusIsTrue (Movie movie);
     List<ShowTime> findAllByMovieAndIsSpecialIsFalseAndStatusIsTrue (Movie movie);
     Optional<ShowTime> findByMovieAndIsSpecialIsTrueAndStatusIsTrue (Movie movie);

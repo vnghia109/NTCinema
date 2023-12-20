@@ -55,7 +55,7 @@ public class ShowTimeService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
-            Optional<ShowTime> showTimeFind = showTimeRepository.findByMovieAndStatusIsTrueAndRoom_RoomId(optionalMovie.get(), optionalRoom.get().getCinema().getCinemaId());
+            Optional<ShowTime> showTimeFind = showTimeRepository.findByMovieAndStatusIsTrueAndRoom(optionalMovie.get(), optionalRoom.get());
             if (showTimeFind.isPresent()){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)
