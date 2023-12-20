@@ -164,7 +164,7 @@ public class RoomService {
     public ResponseEntity<GenericResponse> getRoomsOfManager(String id, Pageable pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(id);
-            Page<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId(), pageable);
+            Page<Room> rooms = roomRepository.findAllByCinema(manager.get().getCinema(), pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", rooms.getContent());

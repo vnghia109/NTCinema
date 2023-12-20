@@ -354,7 +354,7 @@ public class MovieService {
             List<Movie> movieList = movieRepository.findAll();
             List<Movie> movies = new ArrayList<>();
             for (Movie item : movieList) {
-                Optional<ShowTime> showTime = showTimeRepository.findByMovie_MovieIdAndIsSpecialIsTrueAndStatusIsTrue(item.getMovieId());
+                Optional<ShowTime> showTime = showTimeRepository.findByMovieAndIsSpecialIsTrueAndStatusIsTrue(item);
                 if (showTime.isEmpty())
                     continue;
 
