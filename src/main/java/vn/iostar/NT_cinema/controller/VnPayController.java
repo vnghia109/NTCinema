@@ -136,7 +136,7 @@ public class VnPayController {
                 ticket.setTicketPrice(item.getPrice().getPrice());
                 ticketRepository.save(ticket);
             }
-            response.sendRedirect("http://localhost:5173/" + booking.get().getSeats().get(0).getShowTimeId() + "/order/ve");
+            response.sendRedirect("http://localhost:5173/user/payment-success");
         }
     }
 }
