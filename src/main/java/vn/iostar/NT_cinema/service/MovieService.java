@@ -384,26 +384,26 @@ public class MovieService {
             List<Movie> movieList = new ArrayList<>();
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
             List<ShowTime> showTimes = showTimeRepository.findAllByRoomInAndStatusIsTrue(rooms);
-            for (ShowTime item: showTimes) {
-                Movie currentMovie = item.getMovie();
-                boolean isDuplicate = false;
-                for (Movie existingMovie : movieList) {
-                    if (currentMovie.getMovieId().equals(existingMovie.getMovieId())) {
-                        isDuplicate = true;
-                        break;
-                    }
-                }
-
-                if (!isDuplicate) {
-                    movieList.add(currentMovie);
-                }
-            }
-            List<Movie> movies = checkPlayingMovies(movieList);
+//            for (ShowTime item: showTimes) {
+//                Movie currentMovie = item.getMovie();
+//                boolean isDuplicate = false;
+//                for (Movie existingMovie : movieList) {
+//                    if (currentMovie.getMovieId().equals(existingMovie.getMovieId())) {
+//                        isDuplicate = true;
+//                        break;
+//                    }
+//                }
+//
+//                if (!isDuplicate) {
+//                    movieList.add(currentMovie);
+//                }
+//            }
+//            List<Movie> movies = checkPlayingMovies(movieList);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get movie by cinema success")
-                            .result(movies)
+                            .message("Get all` showtime by cinema success")
+                            .result(showTimes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){

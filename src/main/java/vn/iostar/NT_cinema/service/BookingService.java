@@ -4,6 +4,9 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -43,6 +46,10 @@ public class BookingService {
     UserRepository userRepository;
     @Autowired
     ShowTimeRepository showTimeRepository;
+    @Autowired
+    ManagerRepository managerRepository;
+    @Autowired
+    RoomRepository roomRepository;
 
     public ResponseEntity<GenericResponse> bookTicket(String userId, BookReq bookReq) {
         try {
@@ -73,6 +80,7 @@ public class BookingService {
             }
             Booking booking = new Booking();
             booking.setUserId(userId);
+            booking.setShowtimeId(seats.get(0).getShowTimeId());
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
             booking.setFoods(convertToFoodWithCountList(foodIds));
@@ -304,15 +312,22 @@ public class BookingService {
         }
     }
 
-    public ResponseEntity<?> getBookingsInWeek(Date startOfWeek, Date endOfWeek) {
+    public ResponseEntity<GenericResponse> getBookings(Pageable pageable) {
         try {
-            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInWeek(startOfWeek, endOfWeek));
+            Page<Booking> bookings = bookingRepository.findAll(pageable);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", bookings.getContent());
+            map.put("pageNumber", bookings.getPageable().getPageNumber() + 1);
+            map.put("pageSize", bookings.getSize());
+            map.put("totalPages", bookings.getTotalPages());
+            map.put("totalElements", bookings.getTotalElements());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get total Revenue success")
-                            .result(total)
+                            .message("Get all booking success")
+                            .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -326,36 +341,27 @@ public class BookingService {
         }
     }
 
-    public ResponseEntity<?> getBookingsInMonth(Date startOfMonth, Date endOfMonth) {
+    public ResponseEntity<?> getTotalRevenueOfCinemaManager(String managerId) {
         try {
-            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInMonth(startOfMonth, endOfMonth));
+            Optional<Manager> manager = managerRepository.findById(managerId);
+            if (manager.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Manager not have cinema")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
+            List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
+            List<Booking> bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds);
+            int total = calculateTotalRevenue(bookings);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get total Revenue success")
-                            .result(total)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
-    public ResponseEntity<?> getBookingsInYear(Date startOfYear, Date endOfYear) {
-        try {
-            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInYear(startOfYear, endOfYear));
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Get total Revenue success")
+                            .message("Get total Revenue by cinema of manager success")
                             .result(total)
                             .statusCode(HttpStatus.OK.value())
                             .build());

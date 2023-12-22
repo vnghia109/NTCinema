@@ -14,13 +14,5 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     List<Booking> findAllByUserIdAndIsPaymentIsTrue(String userId);
     @Query("{'createAt': {'$gte': ?0, '$lt': ?1}, 'isPayment': true}")
     List<Booking> findAllPaidBookingsInDateRange(Date startDate, Date endDate);
-
-    @Query("{'createAt': {'$gte': ?0, '$lt': ?1}, 'isPayment': true}")
-    List<Booking> findAllPaidBookingsInWeek(Date startOfWeek, Date endOfWeek);
-
-    @Query("{'createAt': {'$gte': ?0, '$lt': ?1}, 'isPayment': true}")
-    List<Booking> findAllPaidBookingsInMonth(Date startOfMonth, Date endOfMonth);
-
-    @Query("{'createAt': {'$gte': ?0, '$lt': ?1}, 'isPayment': true}")
-    List<Booking> findAllPaidBookingsInYear(Date startOfYear, Date endOfYear);
+    List<Booking> findAllByShowtimeIdIn(List<String> showtimeIds);
 }

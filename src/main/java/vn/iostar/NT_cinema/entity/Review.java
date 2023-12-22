@@ -1,10 +1,13 @@
 package vn.iostar.NT_cinema.entity;
 
+import com.fasterxml.jackson.databind.DatabindException;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,11 +19,15 @@ public class Review {
     @Id
     private String reviewId;
 
-    private String movie;
+    private String movieId;
 
-    private String user;
+    private String movieName;
+
+    private String userName;
 
     private String comment;
+
+    private Date createAt;
 
     @Size(min = 0, max = 5)
     private int rating;

@@ -19,6 +19,8 @@ public class Booking {
 
     private String userId;
 
+    private String showtimeId;
+
     private Date createAt;
 
     private boolean isPayment = false;

@@ -10,7 +10,6 @@ import vn.iostar.NT_cinema.entity.Review;
 
 @Repository
 public interface ReviewRepository extends MongoRepository<Review, String> {
-    @NotNull
-    @Override
-    Page<Review> findAll(@NotNull Pageable pageable);
+
+    Page<Review> findAllByOrderByCreateAtDesc(@NotNull Pageable pageable);
 }

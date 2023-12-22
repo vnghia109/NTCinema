@@ -27,7 +27,5 @@ public interface UserRepository extends MongoRepository<User, String> {
 
     List<User> findByIsActiveFalseAndCreatedAtBefore(Date twentyFourHoursAgo);
 
-    @Override
-    @NotNull
-    Page<User> findAll(@NotNull Pageable pageable);
+    Page<User> findAllByOrderByLastLoginAtDesc(@NotNull Pageable pageable);
 }

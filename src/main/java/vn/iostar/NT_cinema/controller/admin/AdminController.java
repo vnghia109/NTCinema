@@ -43,6 +43,8 @@ public class AdminController {
     BookingService bookingService;
     @Autowired
     ReviewService reviewService;
+    @Autowired
+    TicketService ticketService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -251,29 +253,36 @@ public class AdminController {
         return managerService.updateCinemaManager(userId, cinemaId);
     }
 
-    @PostMapping("/day/total-revenue")
+    @PostMapping("/total-revenue")
     public ResponseEntity<?> getTotalRevenueDay(@RequestBody TotalRevenueReq req) {
         return bookingService.getBookingsInDateRange(req.getStartDate(), req.getEndDate());
     }
 
-    @PostMapping("/week/total-revenue")
-    public ResponseEntity<?> getTotalRevenueWeek(@RequestBody TotalRevenueReq req) {
-        return bookingService.getBookingsInWeek(req.getStartDate(), req.getEndDate());
-    }
-
-    @PostMapping("/month/total-revenue")
-    public ResponseEntity<?> getTotalRevenueMonth(@RequestBody TotalRevenueReq req) {
-        return bookingService.getBookingsInMonth(req.getStartDate(), req.getEndDate());
-    }
-
-    @PostMapping("/year/total-revenue")
-    public ResponseEntity<?> getTotalRevenueYear(@RequestBody TotalRevenueReq req) {
-        return bookingService.getBookingsInYear(req.getStartDate(), req.getEndDate());
-    }
 
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
                                                     @RequestParam(defaultValue = "10") int size){
         return reviewService.getReviews(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/bookings")
+    public ResponseEntity<GenericResponse> getBookings(@RequestParam(defaultValue = "1") int index,
+                                                       @RequestParam(defaultValue = "10") int size){
+        return bookingService.getBookings(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/total-tickets")
+    public ResponseEntity<GenericResponse> getTotalTickets() {
+        return ticketService.getTotalTickets();
+    }
+
+    @GetMapping("/cinema/total-tickets")
+    public ResponseEntity<GenericResponse> getTotalTicketsByCinema(@RequestParam("cinemaName") String cinemaName) {
+        return ticketService.getTotalTicketsByCinema(cinemaName);
+    }
+
+    @PostMapping("/tickets/dates")
+    public ResponseEntity<GenericResponse> getTicketsSoldBetweenDates(@RequestBody TotalRevenueReq req) {
+        return ticketService.getTicketsSoldBetweenDates(req.getStartDate(), req.getEndDate());
     }
 }

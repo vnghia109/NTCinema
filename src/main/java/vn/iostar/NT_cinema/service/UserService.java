@@ -533,7 +533,7 @@ public class UserService {
 
     public ResponseEntity<GenericResponse> getAllUser(PageRequest pageRequest) {
         try {
-            Page<User> users = userRepository.findAll(pageRequest);
+            Page<User> users = userRepository.findAllByOrderByLastLoginAtDesc(pageRequest);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", users.getContent());

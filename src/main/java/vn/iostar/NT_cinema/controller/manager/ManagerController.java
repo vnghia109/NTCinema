@@ -20,13 +20,14 @@ public class ManagerController {
 
     @Autowired
     JwtTokenProvider jwtTokenProvider;
-
     @Autowired
     ShowTimeService showTimeService;
-
+    @Autowired
+    TicketService ticketService;
     @Autowired
     RoomService roomService;
-
+    @Autowired
+    BookingService bookingService;
     @Autowired
     ManagerService managerService;
     @Autowired
@@ -108,5 +109,27 @@ public class ManagerController {
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
                                                       @RequestParam(defaultValue = "10") int size){
         return reviewService.getReviews(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/total-tickets")
+    public ResponseEntity<GenericResponse> getTotalTicketsByCinemaOfManager(@RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return ticketService.getTotalTicketsByCinemaOfManager(managerId);
+    }
+
+    @PostMapping("/tickets/dates")
+    public ResponseEntity<GenericResponse> getTicketsSoldBetweenDatesOfManager(@RequestBody TotalRevenueReq req,
+                                                                               @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return ticketService.getTicketsSoldBetweenDatesOfManager(req.getStartDate(), req.getEndDate(), managerId);
+    }
+
+    @GetMapping("/total-revenue")
+    public ResponseEntity<?> getTotalRevenueOfCinemaManager(@RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return bookingService.getTotalRevenueOfCinemaManager(managerId);
     }
 }
