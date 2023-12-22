@@ -27,7 +27,7 @@ public class CinemaController {
         return cinemaService.findById(Id);
     }
 
-    @GetMapping("/{Id}/movies")
+    @GetMapping("/{Id}/showtimes")
     public ResponseEntity<GenericResponse> getMovies(@PathVariable("Id") String Id) {
         return movieService.findNowPlayingMoviesByCinema(Id);
     }

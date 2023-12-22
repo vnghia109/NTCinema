@@ -115,7 +115,16 @@ public class TicketService {
 
     public ResponseEntity<GenericResponse> getTicketsSoldBetweenDatesOfManager(Date startDate, Date endDate, String managerId) {
         try {
-            List<Ticket> tickets = ticketRepository.findTicketsSoldBetweenDatesByManager(startDate, endDate, managerId);
+            Optional<Manager> manager = userRepository.findById(managerId);
+            if (manager.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Manager not have cinema")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+            List<Ticket> tickets = ticketRepository.findTicketsSoldBetweenDatesByManager(startDate, endDate, manager.get().getCinema().getCinemaName());
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
