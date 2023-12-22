@@ -261,6 +261,7 @@ public class BookingService {
             ticket.setRoomName(showTime.get().getRoom().getRoomName());
             ticket.setSeats(booking.get().getSeats());
             ticket.setFoods(booking.get().getFoods());
+            ticket.setPrice(booking.get().getTotal());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()

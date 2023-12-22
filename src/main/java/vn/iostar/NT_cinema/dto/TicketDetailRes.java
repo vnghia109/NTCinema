@@ -20,4 +20,5 @@ public class TicketDetailRes {
     private String roomName;
     private List<Seat> seats;
     private List<FoodWithCount> foods;
+    private int price;
 }
