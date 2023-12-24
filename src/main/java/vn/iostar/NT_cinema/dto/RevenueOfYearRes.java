@@ -12,6 +12,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RevenueOfYearRes {
-    private String cinemaName;
+    private String name;
     private List<Integer> data;
 }
