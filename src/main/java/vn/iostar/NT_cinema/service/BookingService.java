@@ -473,21 +473,21 @@ public class BookingService {
     public ResponseEntity<GenericResponse> getTotalRevenueByCinemas() {
         try {
             List<Cinema> cinemas = cinemaRepository.findAll();
-            Map<String, Object> map = new HashMap<>();
+            List<RevenueOfCinemasRes> revenue = new ArrayList<>();
             for (Cinema item : cinemas) {
                 List<Room> rooms = roomRepository.findAllByCinema_CinemaId(item.getCinemaId());
                 List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
                 List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
                 List<Booking> bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds);
                 int temp = calculateTotalRevenue(bookings);
-                map.put(item.getCinemaName(), temp);
+                revenue.add(new RevenueOfCinemasRes(item.getCinemaName(), temp));
             }
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Get total Revenue success")
-                            .result(map)
+                            .result(revenue)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
