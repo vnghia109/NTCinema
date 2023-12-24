@@ -469,4 +469,35 @@ public class BookingService {
                             .build());
         }
     }
+
+    public ResponseEntity<GenericResponse> getTotalRevenueByCinemas() {
+        try {
+            List<Cinema> cinemas = cinemaRepository.findAll();
+            Map<String, Object> map = new HashMap<>();
+            for (Cinema item : cinemas) {
+                List<Room> rooms = roomRepository.findAllByCinema_CinemaId(item.getCinemaId());
+                List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
+                List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
+                List<Booking> bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds);
+                int temp = calculateTotalRevenue(bookings);
+                map.put(item.getCinemaName(), temp);
+            }
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get total Revenue success")
+                            .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

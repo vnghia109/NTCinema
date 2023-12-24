@@ -280,7 +280,7 @@ public class AdminController {
         return ticketService.getTotalTickets();
     }
 
-    @GetMapping("/cinema/total-tickets")
+    @GetMapping("/cinemas/total-tickets")
     public ResponseEntity<GenericResponse> getTotalTicketsByCinema(@RequestParam("cinemaId") String id) {
         return ticketService.getTotalTicketsByCinema(id);
     }
@@ -293,5 +293,10 @@ public class AdminController {
     @GetMapping("/year/total-revenue")
     public ResponseEntity<GenericResponse> getTotalRevenueOfYear(@RequestParam("year") int year){
         return bookingService.getTotalRevenueOfYear(year);
+    }
+
+    @GetMapping("/cinemas/total-revenue")
+    public ResponseEntity<GenericResponse> getTotalRevenueByCinemas() {
+        return bookingService.getTotalRevenueByCinemas();
     }
 }
