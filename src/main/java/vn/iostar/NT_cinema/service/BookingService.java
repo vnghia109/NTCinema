@@ -295,12 +295,8 @@ public class BookingService {
 
     public ResponseEntity<?> getBookingsInDateRange(Date startDate, Date endDate) {
         try {
-            int total = 0;
-            if (startDate == null || endDate == null){
-                total = calculateTotalRevenue(bookingRepository.findAllByIsPaymentIsTrue());
-            }else {
-                total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInDateRange(startDate, endDate));
-            }
+            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInDateRange(startDate, endDate));
+
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -439,6 +435,28 @@ public class BookingService {
                             .success(true)
                             .message("Get total revenue of year by cinema success")
                             .result(list)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> getTotalRevenue() {
+        try {
+            int total = calculateTotalRevenue(bookingRepository.findAllByIsPaymentIsTrue());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get total Revenue success")
+                            .result(total)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
