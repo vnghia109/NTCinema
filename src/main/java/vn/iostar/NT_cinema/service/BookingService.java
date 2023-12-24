@@ -50,6 +50,8 @@ public class BookingService {
     ManagerRepository managerRepository;
     @Autowired
     RoomRepository roomRepository;
+    @Autowired
+    CinemaRepository cinemaRepository;
 
     public ResponseEntity<GenericResponse> bookTicket(String userId, BookReq bookReq) {
         try {
@@ -293,8 +295,12 @@ public class BookingService {
 
     public ResponseEntity<?> getBookingsInDateRange(Date startDate, Date endDate) {
         try {
-            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInDateRange(startDate, endDate));
-
+            int total = 0;
+            if (startDate == null || endDate == null){
+                total = calculateTotalRevenue(bookingRepository.findAllByIsPaymentIsTrue());
+            }else {
+                total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInDateRange(startDate, endDate));
+            }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -368,6 +374,71 @@ public class BookingService {
                             .success(true)
                             .message("Get total Revenue by cinema of manager success")
                             .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    // Tổng doanh thu theo năm
+    public List<Integer> getTotalRevenueByYear(int year, List<String> showTimeIds) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, Calendar.JANUARY);
+        calendar.set(Calendar.DAY_OF_MONTH, 1);
+        Date startDate = calendar.getTime();
+
+        calendar.set(Calendar.MONTH, Calendar.DECEMBER);
+        calendar.set(Calendar.DAY_OF_MONTH, 31);
+        Date endDate = calendar.getTime();
+
+        List<Booking> bookings = bookingRepository.findByYearAndShowtimeIds(startDate, endDate, showTimeIds);
+        return calculateRevenueByMonths(bookings);
+    }
+
+    // Hàm tính doanh thu từng tháng
+    private List<Integer> calculateRevenueByMonths(List<Booking> bookings) {
+        List<Integer> revenueByMonths = new ArrayList<>(12);
+
+        for (int i = 0; i < 12; i++) {
+            revenueByMonths.add(0);
+        }
+
+        for (Booking booking : bookings) {
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(booking.getCreateAt());
+            int month = calendar.get(Calendar.MONTH);
+            int total = booking.getTotal();
+            revenueByMonths.set(month, revenueByMonths.get(month) + total);
+        }
+
+        return revenueByMonths;
+    }
+
+    public ResponseEntity<GenericResponse> getTotalRevenueOfYear(int year) {
+        try {
+            List<Cinema> cinemas = cinemaRepository.findAll();
+            List<Object> list = new ArrayList<>();
+            for (Cinema item : cinemas) {
+                List<Room> rooms = roomRepository.findAllByCinema_CinemaId(item.getCinemaId());
+                List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
+                List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
+                List<Integer> total = getTotalRevenueByYear(year, showtimeIds);
+                RevenueOfYearRes res = new RevenueOfYearRes(item.getCinemaName(), total);
+                list.add(res);
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get total revenue of year by cinema success")
+                            .result(list)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){

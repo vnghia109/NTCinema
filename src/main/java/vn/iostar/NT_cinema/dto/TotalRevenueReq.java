@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.dto;
 
 import lombok.*;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.util.Date;
 
@@ -8,7 +9,6 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class TotalRevenueReq {
     private Date startDate;
     private Date endDate;

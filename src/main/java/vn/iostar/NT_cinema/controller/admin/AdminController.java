@@ -258,7 +258,6 @@ public class AdminController {
         return bookingService.getBookingsInDateRange(req.getStartDate(), req.getEndDate());
     }
 
-
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
                                                     @RequestParam(defaultValue = "10") int size){
@@ -284,5 +283,10 @@ public class AdminController {
     @PostMapping("/tickets/dates")
     public ResponseEntity<GenericResponse> getTicketsSoldBetweenDates(@RequestBody TotalRevenueReq req) {
         return ticketService.getTicketsSoldBetweenDates(req.getStartDate(), req.getEndDate());
+    }
+
+    @GetMapping("/year/total-revenue")
+    public ResponseEntity<GenericResponse> getTotalRevenueOfYear(@RequestParam("year") int year){
+        return bookingService.getTotalRevenueOfYear(year);
     }
 }

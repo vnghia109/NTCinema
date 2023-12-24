@@ -11,8 +11,11 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends MongoRepository<Booking, String> {
     List<Booking> findAllByIsPaymentIsFalse();
+    List<Booking> findAllByIsPaymentIsTrue();
     List<Booking> findAllByUserIdAndIsPaymentIsTrue(String userId);
     @Query("{'createAt': {'$gte': ?0, '$lt': ?1}, 'isPayment': true}")
     List<Booking> findAllPaidBookingsInDateRange(Date startDate, Date endDate);
     List<Booking> findAllByShowtimeIdIn(List<String> showtimeIds);
+    @Query("{ 'createAt': { $gte: ?0, $lt: ?1 }, 'showtimeId': { $in: ?2 } }")
+    List<Booking> findByYearAndShowtimeIds(Date startDate, Date endDate, List<String> showtimeIds);
 }
