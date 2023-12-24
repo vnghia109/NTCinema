@@ -281,8 +281,8 @@ public class AdminController {
     }
 
     @GetMapping("/cinema/total-tickets")
-    public ResponseEntity<GenericResponse> getTotalTicketsByCinema(@RequestParam("cinemaName") String cinemaName) {
-        return ticketService.getTotalTicketsByCinema(cinemaName);
+    public ResponseEntity<GenericResponse> getTotalTicketsByCinema(@RequestParam("cinemaId") String id) {
+        return ticketService.getTotalTicketsByCinema(id);
     }
 
     @PostMapping("/tickets/dates")

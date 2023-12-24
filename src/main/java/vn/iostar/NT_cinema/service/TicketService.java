@@ -5,9 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Manager;
 import vn.iostar.NT_cinema.entity.Ticket;
 import vn.iostar.NT_cinema.entity.User;
+import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.ManagerRepository;
 import vn.iostar.NT_cinema.repository.TicketRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
@@ -22,6 +24,8 @@ public class TicketService {
     TicketRepository ticketRepository;
     @Autowired
     ManagerRepository userRepository;
+    @Autowired
+    CinemaRepository cinemaRepository;
 
     public ResponseEntity<GenericResponse> getTotalTickets() {
         try {
@@ -43,9 +47,18 @@ public class TicketService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getTotalTicketsByCinema(String cinemaName) {
+    public ResponseEntity<GenericResponse> getTotalTicketsByCinema(String id) {
         try {
-            Long count = ticketRepository.countByCinemaName(cinemaName);
+            Optional<Cinema> cinema = cinemaRepository.findById(id);
+            if (cinema.isEmpty()){
+                return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Cinema not found")
+                        .result(null)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+            }
+            Long count = ticketRepository.countByCinemaName(cinema.get().getCinemaName());
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
