@@ -344,7 +344,7 @@ public class BookingService {
         }
     }
 
-    public ResponseEntity<?> getTotalRevenueOfCinemaManager(String managerId) {
+    public ResponseEntity<?> getTotalRevenueOfCinemaManager(String managerId, int year) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
             if (manager.isEmpty()){
@@ -355,17 +355,19 @@ public class BookingService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
+
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
             List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
             List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
-            List<Booking> bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds);
-            int total = calculateTotalRevenue(bookings);
+            List<Integer> temp = getTotalRevenueByYear(year, showtimeIds);
+            RevenueOfYearRes res = new RevenueOfYearRes(manager.get().getCinema().getCinemaName(), temp);
+
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Get total Revenue by cinema of manager success")
-                            .result(total)
+                            .result(res)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
