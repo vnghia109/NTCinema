@@ -344,7 +344,42 @@ public class BookingService {
         }
     }
 
-    public ResponseEntity<?> getTotalRevenueOfCinemaManager(String managerId, int year) {
+    public ResponseEntity<?> getTotalRevenueOfCinemaManager(String managerId) {
+        try {
+            Optional<Manager> manager = managerRepository.findById(managerId);
+            if (manager.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Manager not have cinema")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
+            List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
+            List<Booking> bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds);
+            int total = calculateTotalRevenue(bookings);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get total Revenue by cinema of manager success")
+                            .result(total)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> getTotalRevenueYearOfCinemaManager(String managerId, int year) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
             if (manager.isEmpty()){

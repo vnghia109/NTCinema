@@ -127,10 +127,17 @@ public class ManagerController {
     }
 
     @GetMapping("/total-revenue")
+    public ResponseEntity<?> getTotalRevenueOfCinemaManager(@RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return bookingService.getTotalRevenueOfCinemaManager(managerId);
+    }
+
+    @GetMapping("/year/total-revenue")
     public ResponseEntity<?> getTotalRevenueOfCinemaManager(@RequestHeader("Authorization") String authorizationHeader,
                                                             @RequestParam("year") int year) {
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return bookingService.getTotalRevenueOfCinemaManager(managerId, year);
+        return bookingService.getTotalRevenueYearOfCinemaManager(managerId, year);
     }
 }
