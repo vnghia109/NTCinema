@@ -361,15 +361,11 @@ public class BookingService {
             List<Booking> bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds);
             int total = calculateTotalRevenue(bookings);
 
-            Map<String, Object> map = new HashMap<>();
-            map.put("listBooking", bookings);
-            map.put("total", total);
-
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Get total Revenue by cinema of manager success")
-                            .result(map)
+                            .result(total)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){

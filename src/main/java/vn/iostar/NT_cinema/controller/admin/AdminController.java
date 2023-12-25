@@ -295,6 +295,11 @@ public class AdminController {
         return bookingService.getTotalRevenueOfYear(year);
     }
 
+    @GetMapping("/year/total-ticket")
+    public ResponseEntity<GenericResponse> getTotalTicketsByYear(@RequestParam("year") int year){
+        return ticketService.getTotalTicketsByYear(year);
+    }
+
     @GetMapping("/cinemas/total-revenue")
     public ResponseEntity<GenericResponse> getTotalRevenueByCinemas() {
         return bookingService.getTotalRevenueByCinemas();

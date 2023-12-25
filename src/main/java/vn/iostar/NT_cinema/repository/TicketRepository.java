@@ -17,4 +17,7 @@ public interface TicketRepository extends MongoRepository<Ticket, String> {
 
     @Query("{'createAt': {'$gte': ?0, '$lt': ?1}, 'cinemaName': {$eq: ?2}}")
     List<Ticket> findTicketsSoldBetweenDatesByManager(Date startDate, Date endDate, String cinemaName);
+
+    @Query("{ 'createAt': { $gte: ?0, $lt: ?1 }, 'cinemaName': ?2 }")
+    List<Ticket> findTicketsByDateAndCinemaName(Date startDate, Date endDate, String cinemaName);
 }
