@@ -173,11 +173,14 @@ public class TicketService {
                         .build());
             }
             List<Ticket> tickets = ticketRepository.findTicketsSoldBetweenDatesByManager(startDate, endDate, manager.get().getCinema().getCinemaName());
+            Map<String, Object> map = new HashMap<>();
+            map.put("name", manager.get().getCinema().getCinemaName());
+            map.put("totalTicket", tickets.size());
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
                             .message("Get total tickets of time success")
-                            .result(tickets.size())
+                            .result(map)
                             .statusCode(200)
                             .build());
         }catch (Exception e){
