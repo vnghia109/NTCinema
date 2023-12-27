@@ -111,6 +111,13 @@ public class ManagerController {
         return reviewService.getReviews(PageRequest.of(index-1, size));
     }
 
+    @GetMapping("/tickets")
+    public ResponseEntity<GenericResponse> getTickets(@RequestParam(defaultValue = "1") int index,
+                                                      @RequestParam(defaultValue = "10") int size){
+        return ticketService.getTickets(PageRequest.of(index-1, size));
+    }
+
+
     @GetMapping("/total-tickets")
     public ResponseEntity<GenericResponse> getTotalTicketsByCinemaOfManager(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);

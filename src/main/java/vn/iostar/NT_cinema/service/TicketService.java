@@ -1,6 +1,8 @@
 package vn.iostar.NT_cinema.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -184,6 +186,34 @@ public class TicketService {
                             .statusCode(200)
                             .build());
         }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getTickets(Pageable pageable){
+        try {
+            Page<Ticket> tickets = ticketRepository.findAll(pageable);
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", tickets.getContent());
+            map.put("pageNumber", tickets.getPageable().getPageNumber() + 1);
+            map.put("pageSize", tickets.getSize());
+            map.put("totalPages", tickets.getTotalPages());
+            map.put("totalElements", tickets.getTotalElements());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get all ticket success")
+                            .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
                     .success(false)
                     .message(e.getMessage())

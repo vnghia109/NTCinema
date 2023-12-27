@@ -275,6 +275,12 @@ public class AdminController {
         return bookingService.getBookings(PageRequest.of(index-1, size));
     }
 
+    @GetMapping("/tickets")
+    public ResponseEntity<GenericResponse> getTickets(@RequestParam(defaultValue = "1") int index, 
+                                                      @RequestParam(defaultValue = "10") int size){
+        return ticketService.getTickets(PageRequest.of(index-1, size));
+    }
+
     @GetMapping("/total-tickets")
     public ResponseEntity<GenericResponse> getTotalTickets() {
         return ticketService.getTotalTickets();
