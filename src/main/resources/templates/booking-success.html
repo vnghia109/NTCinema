@@ -15,7 +15,7 @@
         .container {
             max-width: 600px;
             margin: 20px auto;
-            background-color: #3a6b35;
+            background-color: #498442;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(185, 69, 69, 0.1);
@@ -31,6 +31,14 @@
         }
 
         strong {
+            color: #e3b448;
+        }
+
+        span {
+            color: #e3b448;
+        }
+
+        li {
             color: #e3b448;
         }
     </style>
@@ -49,7 +57,7 @@
     <ul>
         <li th:each="seat : ${seats}">
             <strong>Hàng/cột: </strong>
-            <span th:text="${seat.getRow()} / ${seat.getColumn()}"></span>
+            <span th:text="${seat.convertToUnicode()} + ${seat.getColumn()}"></span>
         </li>
     </ul>
     <p><strong>Bắp nước: </strong></p>

@@ -171,7 +171,7 @@ public class BookingService {
             Context context = new Context();
             context.setVariable("bookingCode", booking.getBookingId());
             context.setVariable("movieName", showTime.getMovie().getTitle());
-            context.setVariable("showtime", booking.getSeats().get(0).getTimeShow());
+            context.setVariable("showtime", booking.getSeats().get(0).getTimeShow().toString());
             context.setVariable("ticketCount", booking.getSeats().size());
             context.setVariable("foods", booking.getFoods());
             context.setVariable("seats", booking.getSeats());
