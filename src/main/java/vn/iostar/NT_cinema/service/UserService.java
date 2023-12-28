@@ -327,10 +327,10 @@ public class UserService {
             if (optionalViewer.isPresent()){
                 User user = optionalViewer.get();
 
-                if (request.getPhone() != null) {
+                if (request.getPhone() != null && !request.getUserName().equals("")) {
                     user.setPhone(request.getPhone());
                 }
-                if (request.getFullName() != null) {
+                if (request.getFullName() != null && !request.getUserName().equals("")) {
                     user.setFullName(request.getFullName());
                 }
                 if (request.getAddress() != null){
@@ -338,13 +338,13 @@ public class UserService {
                     Address address1 = addressRepository.save(address);
                     user.setAddress(address1);
                 }
-                if (request.getEmail() != null) {
+                if (request.getEmail() != null && !request.getUserName().equals("")) {
                     user.setEmail(request.getEmail());
                 }
                 if (request.getDob() != null){
                     user.setDob(request.getDob());
                 }
-                if (request.getUserName() != null){
+                if (request.getUserName() != null && !request.getUserName().equals("")){
                     user.setUserName(request.getUserName());
                 }
 

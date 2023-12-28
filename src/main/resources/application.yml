@@ -3,6 +3,8 @@ spring:
     mongodb:
       uri: mongodb+srv://vnghiahi:vnghiahi@clustercinema.17xm64g.mongodb.net/?retryWrites=true&w=majority
       database: NTCinemaDB
+  jackson:
+    time-zone: Asia/Ho_Chi_Minh
 #
 #  mail:
 #    host: smtp.gmail.com
