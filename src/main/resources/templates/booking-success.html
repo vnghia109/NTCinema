@@ -35,11 +35,11 @@
         }
 
         span {
-            color: #e3b448;
+            color: #76ffe6;
         }
 
         li {
-            color: #e3b448;
+            color: #88e8e5;
         }
     </style>
 </head>
@@ -57,7 +57,7 @@
     <ul>
         <li th:each="seat : ${seats}">
             <strong>Hàng/cột: </strong>
-            <span th:text="${seat.convertToUnicode()} + ${seat.getColumn()}"></span>
+            <span th:text="${seat.convertToUnicode()} + ${seat.getColumn()}">A</span>
         </li>
     </ul>
     <p><strong>Bắp nước: </strong></p>
