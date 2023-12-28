@@ -469,6 +469,7 @@ public class MovieService {
                     }
                 }
             }
+            Collections.reverse(historyMovieRes);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -509,6 +510,7 @@ public class MovieService {
                     }
                 }
             }
+            Collections.reverse(historyMovieRes);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
