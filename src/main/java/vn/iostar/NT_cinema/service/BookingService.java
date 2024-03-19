@@ -65,7 +65,7 @@ public class BookingService {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
                                 .body(GenericResponse.builder()
                                         .success(false)
-                                        .message("Seat already book")
+                                        .message("Ghế đã được đặt trước rồi!")
                                         .result(seat.get())
                                         .statusCode(HttpStatus.CONFLICT.value())
                                         .build());
@@ -93,7 +93,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Confirmed information successfully")
+                            .message("Xác nhận thông tin thành công")
                             .result(bookingRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -120,7 +120,7 @@ public class BookingService {
                         return ResponseEntity.status(HttpStatus.CONFLICT)
                                 .body(GenericResponse.builder()
                                         .success(false)
-                                        .message("Seat already book")
+                                        .message("Ghế đã được đặt trước rồi!")
                                         .result(seat.get())
                                         .statusCode(HttpStatus.CONFLICT.value())
                                         .build());
@@ -142,7 +142,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get booking info success")
+                            .message("Lấy thông tin đặt lịch thành công!")
                             .result(booking)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -179,7 +179,7 @@ public class BookingService {
             String mailContent = templateEngine.process("booking-success", context);
 
             helper.setText(mailContent, true);
-            helper.setSubject("Booking ticket success TNCinemas");
+            helper.setSubject("Đặt vé xem phim thành công TNCinemas");
             helper.setFrom(Objects.requireNonNull(env.getProperty("spring.mail.username")),"TNCinemas Admin");
             mailSender.send(message);
 
@@ -248,7 +248,7 @@ public class BookingService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Booking not found")
+                                .message("Không tìm thấy vé đã đặt.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -268,7 +268,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get ticket detail success")
+                            .message("Lấy chi tiết vé thành công!")
                             .result(ticket)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -300,7 +300,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get total Revenue success")
+                            .message("Lấy tổng doanh thu thành công!")
                             .result(total)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -329,7 +329,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get all booking success")
+                            .message("Lấy tất cả vé đã đặt thành công.")
                             .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -350,7 +350,7 @@ public class BookingService {
             if (manager.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Manager not have cinema")
+                        .message("Quản lý chưa được thêm cinema.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
@@ -364,7 +364,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get total Revenue by cinema of manager success")
+                            .message("Lấy tổng doanh thu theo rạp của quản lý thành công.")
                             .result(total)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -385,7 +385,7 @@ public class BookingService {
             if (manager.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Manager not have cinema")
+                        .message("Quản lý chưa được thêm cinema.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
@@ -401,7 +401,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get total Revenue by cinema of manager success")
+                            .message("Lấy tổng doanh thu theo rạp của quản lý thành công.")
                             .result(res)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -466,7 +466,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get total revenue of year by cinema success")
+                            .message("Lấy tổng doanh thu theo năm của rạp phim thành công.")
                             .result(list)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -488,7 +488,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get total Revenue success")
+                            .message("Lấy tổng doanh thu thành công!")
                             .result(total)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -519,7 +519,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get total Revenue success")
+                            .message("Lấy tổng doanh thu thành công!")
                             .result(revenue)
                             .statusCode(HttpStatus.OK.value())
                             .build());

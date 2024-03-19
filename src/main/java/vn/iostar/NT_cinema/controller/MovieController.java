@@ -68,7 +68,7 @@ public class MovieController {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Upload file success")
+                                .message("Tải tệp lên thành công")
                                 .result(url)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -76,14 +76,14 @@ public class MovieController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(GenericResponse.builder()
                     .success(false)
-                    .message("Upload file fail")
+                    .message("Tải tệp lên thất bại")
                     .result(null)
                     .statusCode(HttpStatus.NOT_FOUND.value())
                     .build());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(GenericResponse.builder()
                     .success(false)
-                    .message("Internal Server Error")
+                    .message("Lỗi máy chủ")
                     .result(e.getMessage())
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .build());

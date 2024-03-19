@@ -49,12 +49,12 @@ public class AuthController {
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
         Optional<User> optionalUser = userService.findByUserName(loginDTO.getCredentialId());
         if (optionalUser.isEmpty()){
-            throw new UserNotFoundException("Account does not exist");
+            throw new UserNotFoundException("Tài khoản không tồn tại");
         }
         if (!optionalUser.get().isActive()) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
                     .success(false)
-                    .message("Your account is not verified!")
+                    .message("Tài khoản của bạn chưa được xác minh!")
                     .result(null)
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .build());
@@ -82,7 +82,7 @@ public class AuthController {
 
         return ResponseEntity.ok().body(GenericResponse.builder()
                 .success(true)
-                .message("Login successfully!")
+                .message("Đăng nhập thành công!")
                 .result(tokenMap)
                 .statusCode(HttpStatus.OK.value())
                 .build());
@@ -136,7 +136,7 @@ public class AuthController {
             SecurityContextHolder.clearContext();
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
-                    .message("Logout successfully!")
+                    .message("Đăng xuất thành công!")
                     .result("")
                     .statusCode(HttpStatus.OK.value())
                     .build());
@@ -172,7 +172,7 @@ public class AuthController {
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("OTP sent successfully!")
+                            .message("Mã OTP đã được gửi thành công!")
                             .result(null)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -181,7 +181,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("An error occurred while sending OTP.")
+                            .message("Đã xảy ra lỗi khi gửi mã OTP.")
                             .result(null)
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
@@ -196,7 +196,7 @@ public class AuthController {
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("OTP verified successfully!!! You can proceed to login.")
+                            .message("Xác thực mã OTP thành công!!! Bạn có thể tiếp tục đăng nhập.")
                             .result(null)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -204,7 +204,7 @@ public class AuthController {
             return ResponseEntity.badRequest()
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("Invalid OTP or expired.")
+                            .message("Mã OTP không hợp lệ hoặc đã hết hạn.")
                             .result(null)
                             .statusCode(HttpStatus.BAD_REQUEST.value())
                             .build());

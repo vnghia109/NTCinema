@@ -65,7 +65,7 @@ public class WebSecurityConfig {
                                 .requestMatchers("api/v1/movies/**").permitAll()
                                 .requestMatchers("/api/v1/user/**").permitAll()
                                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                                .requestMatchers("/api/v1/manager/**").hasRole("MANAGER")
+                                .requestMatchers("/api/v1/manager/**").hasAnyRole("ADMIN", "MANAGER")
 //                                .requestMatchers("/api/v1/viewer/**").hasRole("VIEWER")
                                 .anyRequest().permitAll()
                 )

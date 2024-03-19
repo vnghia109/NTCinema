@@ -34,6 +34,4 @@ public class ShowTime {
 
     private List<TimeShow> listTimeShow;
 
-    @DBRef
-    private List<Seat> seats;
 }

@@ -65,7 +65,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("User don't exist")
+                .message("Người dùng không tồn tại!")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
@@ -76,7 +76,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleUserNotFoundException(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Incorrect username")
+                .message("Sai tên người dùng!")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
@@ -87,7 +87,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleNotFoundException(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Not Found")
+                .message("Không tìm thấy")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
@@ -98,7 +98,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleAlreadyExistException(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Existed")
+                .message("Đã tồn tại!")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.CONFLICT.value())
                 .build();
@@ -109,7 +109,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleDisabledException(DisabledException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Your account has not been activated or deleted")
+                .message("Tài khoản của bạn chưa xác minh hoặc đã bị xóa!")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.FORBIDDEN.value())
                 .build();
@@ -120,7 +120,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleBadCredentialsException(BadCredentialsException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Account doesn't exits or incorrect password")
+                .message("Tài Khoản không tồn tại hoặc sai mật khẩu!")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.UNAUTHORIZED.value())
                 .build();
@@ -131,7 +131,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleAccessDeniedException(AccessDeniedException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Invalid token. Please login again!")
+                .message("Invalid token. Làm ơn đăng nhập lại!")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.UNAUTHORIZED.value())
                 .build();
@@ -153,8 +153,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleIOException(IOException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message(ex.getMessage())
-                .result(null)
+                .message("Lỗi máy chủ")
+                .result(ex.getMessage())
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .build();
         return new ResponseEntity<>(genericResponse,HttpStatus.INTERNAL_SERVER_ERROR);
@@ -189,7 +189,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                 GenericResponse.builder()
                         .success(false)
                         .message(ex.getMessage())
-                        .result("Please login again!")
+                        .result("làm ơn đăng nhập lại!")
                         .statusCode(HttpStatus.UNAUTHORIZED.value()).build()
         );
     }
@@ -200,7 +200,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                 GenericResponse.builder()
                         .success(false)
                         .message(ex.getMessage())
-                        .result("Format is not correct!")
+                        .result("Không đúng định dạng!")
                         .statusCode(HttpStatus.BAD_REQUEST.value()).build()
         );
     }

@@ -54,7 +54,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     GenericResponse.builder()
                             .success(false)
-                            .message("Access Denied")
+                            .message("Từ chối truy cập")
                             .result(null)
                             .statusCode(401)
                             .build()

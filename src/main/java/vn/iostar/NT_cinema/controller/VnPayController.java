@@ -40,7 +40,7 @@ public class VnPayController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("The bill has been paid")
+                            .message("Hóa đơn đã được thanh toán.")
                             .result(booking.get())
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
@@ -109,35 +109,46 @@ public class VnPayController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GenericResponse.builder()
                         .success(true)
-                        .message("Payment success")
+                        .message("Thanh toán thành công!")
                         .result(paymentUrl)
                         .statusCode(HttpStatus.OK.value())
                         .build());
     }
 
     @GetMapping("/callback")
-    public void updateBookingPayment(@RequestParam() String bookingId, HttpServletResponse response) throws IOException {
+    public void updateBookingPayment(@RequestParam() String bookingId, @RequestParam() String vnp_TransactionStatus, HttpServletResponse response) throws IOException {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
-        if (booking.isPresent()) {
-            booking.get().setPayment(true);
-            bookingRepository.save(booking.get());
-            bookingService.sendEmailBookingSuccess(booking.get());
-            for (Seat item: booking.get().getSeats()) {
-                Ticket ticket = new Ticket();
-                ticket.setUserId(booking.get().getUserId());
-                Optional<ShowTime> showTime = showTimeRepository.findById(item.getShowTimeId());
-                Cinema cinema = showTime.get().getRoom().getCinema();
-                ticket.setCinemaName(cinema.getCinemaName());
-                ticket.setCinemaAddress(cinema.getLocation());
-                ticket.setCreateAt(new Date());
-                ticket.setMovieName(showTime.get().getMovie().getTitle());
-                ticket.setShowtime(item.getTimeShow());
-                ticket.setDuration(showTime.get().getMovie().getDuration());
-                ticket.setSeat(item.getPrice().getType().toString()+"Class: row "+item.getRow()+"/column "+item.getColumn());
-                ticket.setTicketPrice(item.getPrice().getPrice());
-                ticketRepository.save(ticket);
+        if (Objects.equals(vnp_TransactionStatus, "00")){
+            if (booking.isPresent()) {
+                booking.get().setPayment(true);
+                bookingRepository.save(booking.get());
+                bookingService.sendEmailBookingSuccess(booking.get());
+                for (Seat item: booking.get().getSeats()) {
+                    Ticket ticket = new Ticket();
+                    ticket.setUserId(booking.get().getUserId());
+                    Optional<ShowTime> showTime = showTimeRepository.findById(item.getShowTimeId());
+                    Cinema cinema = showTime.get().getRoom().getCinema();
+                    ticket.setCinemaName(cinema.getCinemaName());
+                    ticket.setCinemaAddress(cinema.getLocation());
+                    ticket.setCreateAt(new Date());
+                    ticket.setMovieName(showTime.get().getMovie().getTitle());
+                    ticket.setShowtime(item.getTimeShow());
+                    ticket.setDuration(showTime.get().getMovie().getDuration());
+                    ticket.setSeat(item.getPrice().getType().toString()+"Class: row "+item.getRow()+"/column "+item.getColumn());
+                    ticket.setTicketPrice(item.getPrice().getPrice());
+                    ticketRepository.save(ticket);
+                }
+                response.sendRedirect("http://localhost:5173/user/payment-success");
             }
-            response.sendRedirect("http://localhost:5173/user/payment-success");
+        }else {
+            if (booking.isPresent()){
+                List<Seat> seats = booking.get().getSeats();
+                for (Seat item : seats){
+                    item.setStatus(true);
+                }
+                bookingRepository.delete(booking.get());
+            }
+            response.sendRedirect("http://localhost:5173/user/payment-false");
         }
     }
 }
