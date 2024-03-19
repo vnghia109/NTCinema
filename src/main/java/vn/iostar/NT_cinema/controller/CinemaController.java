@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.service.CinemaService;
 import vn.iostar.NT_cinema.service.MovieService;
+import vn.iostar.NT_cinema.service.RoomService;
 
 @RestController
 @RequestMapping("/api/v1/cinemas")
@@ -16,6 +17,9 @@ public class CinemaController {
 
     @Autowired
     MovieService movieService;
+
+    @Autowired
+    RoomService roomService;
     @GetMapping
     public ResponseEntity<GenericResponse> getAllCinema(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size) {
@@ -30,5 +34,10 @@ public class CinemaController {
     @GetMapping("/{Id}/showtimes")
     public ResponseEntity<GenericResponse> getMovies(@PathVariable("Id") String Id) {
         return movieService.findNowPlayingMoviesByCinema(Id);
+    }
+
+    @GetMapping("/{Id}/rooms")
+    public ResponseEntity<GenericResponse> getRooms(@PathVariable("Id") String Id) {
+        return roomService.findRoomsByCinema(Id);
     }
 }

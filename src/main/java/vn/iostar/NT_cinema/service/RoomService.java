@@ -214,4 +214,26 @@ public class RoomService {
                             .build());
         }
     }
+
+    public ResponseEntity<GenericResponse> findRoomsByCinema(String id) {
+        try {
+            Optional<Cinema> cinema = cinemaRepository.findById(id);
+            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy danh sách phòng thành công!")
+                            .result(rooms)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }
