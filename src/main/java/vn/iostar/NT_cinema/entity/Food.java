@@ -17,6 +17,10 @@ public class Food {
 
     private String name;
 
+    private String image;
+
+    private int quantity;
+
     private int price;
 
     private FoodType foodType;

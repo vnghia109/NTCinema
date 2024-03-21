@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.repository;
 
+import lombok.Data;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,7 @@ import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.Room;
 import vn.iostar.NT_cinema.entity.ShowTime;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +26,10 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     List<ShowTime> findAllByRoomIn(List<Room> rooms);
     Page<ShowTime> findAllByStatusIsTrue(Pageable pageable);
     List<ShowTime> findAllByRoom_RoomIdAndStatusIsTrue(String roomId);
+    List<ShowTime> findAllByRoom_RoomId(String roomId);
     @Override
     @NotNull
     Page<ShowTime> findAll(@NotNull Pageable pageable);
+
+    List<ShowTime> findAllByRoom_RoomIdAndAndTimeStart(String id, Date timeStart);
 }

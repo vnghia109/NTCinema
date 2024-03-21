@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.TimeShow;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.ShowByRoomAndDateReq;
 import vn.iostar.NT_cinema.dto.ShowTimeReq;
 import vn.iostar.NT_cinema.dto.ShowTimeResp;
 import vn.iostar.NT_cinema.entity.Manager;
@@ -404,5 +405,33 @@ public class ShowTimeService {
             }
         }
         return listOfDateTimes;
+    }
+
+    public ResponseEntity<GenericResponse> findShowtimesByRoom(String id, ShowByRoomAndDateReq date) {
+        try {
+            if (date.getDate() == null){
+                List<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(id);
+                return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                        .success(true)
+                        .message("Lấy danh sách lịch chiếu thành công!")
+                        .result(showTimes)
+                        .statusCode(HttpStatus.OK.value())
+                        .build());
+            }
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomIdAndAndTimeStart(id, date.getDate());
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Lấy danh sách lịch chiếu thành công!")
+                    .result(showTimes)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
     }
 }

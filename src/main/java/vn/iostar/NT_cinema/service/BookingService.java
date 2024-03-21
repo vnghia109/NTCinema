@@ -350,7 +350,7 @@ public class BookingService {
             if (manager.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Quản lý chưa được thêm cinema.")
+                        .message("Quản lý chưa được thêm rạp phim.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
@@ -385,7 +385,7 @@ public class BookingService {
             if (manager.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Quản lý chưa được thêm cinema.")
+                        .message("Quản lý chưa được thêm rạp phim.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());

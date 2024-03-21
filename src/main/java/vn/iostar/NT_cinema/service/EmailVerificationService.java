@@ -52,7 +52,7 @@ public class EmailVerificationService {
             String mailContent = templateEngine.process("send-otp", context);
 
             helper.setText(mailContent, true);
-            helper.setSubject("The verification token for TNCinemas");
+            helper.setSubject("Mã xác thực cho TNCinemas");
             helper.setFrom(Objects.requireNonNull(env.getProperty("spring.mail.username")),"TNCinemas Admin");
             mailSender.send(message);
 

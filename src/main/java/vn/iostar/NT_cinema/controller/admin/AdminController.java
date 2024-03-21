@@ -16,6 +16,7 @@ import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.repository.UserRepository;
 import vn.iostar.NT_cinema.service.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -137,6 +138,22 @@ public class AdminController {
         return cinemaService.getCinema(id);
     }
 
+    @GetMapping("/cinemas/{Id}/showtimes")
+    public ResponseEntity<GenericResponse> getShowtimesOfCinema(@PathVariable("Id") String Id) {
+        return movieService.findShowtimesByCinema(Id);
+    }
+
+    @GetMapping("/cinemas/{Id}/rooms")
+    public ResponseEntity<GenericResponse> getRooms(@PathVariable("Id") String Id) {
+        return roomService.findRoomsByCinema(Id);
+    }
+
+    @GetMapping("/rooms/{Id}/showtimes")
+    public ResponseEntity<GenericResponse> getShowtimesOfRoom(@PathVariable("Id") String Id,
+                                                              @RequestBody ShowByRoomAndDateReq date) {
+        return showTimeService.findShowtimesByRoom(Id, date);
+    }
+
     @PostMapping("/movies/movie")
     public ResponseEntity<GenericResponse> addMovie(@Valid @ModelAttribute MovieReq movie,
                                                     BindingResult bindingResult) {
@@ -181,7 +198,7 @@ public class AdminController {
     }
 
     @PostMapping("/foods/food")
-    public ResponseEntity<GenericResponse> addFood(@RequestBody FoodReq foodReq){
+    public ResponseEntity<GenericResponse> addFood(@Valid @ModelAttribute FoodReq foodReq){
         return foodService.addFood(foodReq);
     }
 

@@ -19,7 +19,7 @@ public class CloudinaryService {
 
     public String uploadImage(List<MultipartFile> imageFile) throws IOException {
         if (imageFile == null) {
-            throw new IllegalArgumentException("File is null. Please upload a valid file.");
+            throw new IllegalArgumentException("Không có tệp được tải lên. Vui lòng tải lên tệp hợp lệ.");
         }
         StringBuilder urls = new StringBuilder();
         for (MultipartFile item : imageFile) {

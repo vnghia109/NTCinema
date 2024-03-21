@@ -47,9 +47,9 @@ public class MovieService {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GenericResponse.builder()
                         .success(true)
-                        .message("Get all movie")
+                        .message("Lấy tất cả phim thành công!")
                         .result(map)
-                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .statusCode(HttpStatus.OK.value())
                         .build());
     }
 
@@ -83,9 +83,9 @@ public class MovieService {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GenericResponse.builder()
                         .success(true)
-                        .message("Get all movie")
+                        .message("Lấy tất cả phim thành công!")
                         .result(map)
-                        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .statusCode(HttpStatus.OK.value())
                         .build());
     }
 
@@ -95,13 +95,13 @@ public class MovieService {
             return movie.map(value -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get movie success")
+                            .message("Lấy thông tin phim thành công!")
                             .result(value)
                             .statusCode(HttpStatus.OK.value())
                             .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("Movie not found")
+                            .message("Phim không tìm thấy.")
                             .result(null)
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));
@@ -111,7 +111,7 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -132,7 +132,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Add movie success")
+                                .message("Thêm phim thành công!")
                                 .result(movieRes)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -140,7 +140,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Movie already exist")
+                                .message("Phim đã tồn tại.")
                                 .result(null)
                                 .statusCode(HttpStatus.CONFLICT.value())
                                 .build());
@@ -150,7 +150,7 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -177,7 +177,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Update movie success")
+                                .message("Cập nhật phim thành công!")
                                 .result(updateMovie)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -185,7 +185,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Movie not found")
+                                .message("Phim không tìm thấy.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -209,7 +209,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Delete movie success")
+                                .message("Xóa phim thành công!")
                                 .result(null)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -217,7 +217,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Delete failed! movie not found")
+                                .message("Xóa phim thất bai! Không tìm thấy phim.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -242,7 +242,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Update status movie success")
+                                .message("Cập nhật trạng thái phim thành công!")
                                 .result(optionalMovie.get())
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -250,7 +250,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Update failed! movie not found")
+                                .message("Cập nhật trạng thái phim thất bai! Không tìm thấy phim.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -297,7 +297,7 @@ public class MovieService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get now playing movie success")
+                            .message("Lấy phim đang chạy thành công!")
                             .result(movies)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -306,7 +306,7 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -334,7 +334,7 @@ public class MovieService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get coming soon movie success")
+                            .message("Lấy phim sắp chiếu thành công!")
                             .result(movies)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -343,7 +343,7 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -364,7 +364,7 @@ public class MovieService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get special movie success")
+                            .message("Lấy xuất chiếu đặc biệt thành công!")
                             .result(movies)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -373,7 +373,7 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -402,7 +402,7 @@ public class MovieService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get all` showtime by cinema success")
+                            .message("Lấy tất cả lịch chiếu của rạp thành công!")
                             .result(showTimes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -411,7 +411,7 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -425,7 +425,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Movie not found")
+                                .message("Phim không tìm thấy.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -433,7 +433,7 @@ public class MovieService {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Search movie success")
+                                .message("Tìm kiếm phim thành công!")
                                 .result(foundMovies)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -443,7 +443,7 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -473,7 +473,7 @@ public class MovieService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get list movie upcoming success")
+                            .message("Lấy danh sách phim sắp chiếu thành công!")
                             .result(historyMovieRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -482,7 +482,7 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -514,7 +514,7 @@ public class MovieService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get list movie viewed success")
+                            .message("Lấy danh sách phim đã xem thành công!")
                             .result(historyMovieRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -523,7 +523,32 @@ public class MovieService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> findShowtimesByCinema(String id) {
+        try {
+            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
+            List<ShowTime> showTimes = rooms.stream()
+                    .map(room -> showTimeRepository.findAllByRoom_RoomId(room.getRoomId()))
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok()
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy danh sách lịch chiếu thành công!")
+                            .result(showTimes)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }

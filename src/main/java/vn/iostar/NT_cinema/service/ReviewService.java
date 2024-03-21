@@ -38,7 +38,7 @@ public class ReviewService {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(GenericResponse.builder()
                                     .success(false)
-                                    .message("Movie not found")
+                                    .message("Phim không tìm thấy.")
                                     .result(null)
                                     .statusCode(HttpStatus.NOT_FOUND.value())
                                     .build());
@@ -59,7 +59,7 @@ public class ReviewService {
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Review movie success")
+                                .message("Đánh giá phim thành công!")
                                 .result(reviewRes1)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -87,7 +87,7 @@ public class ReviewService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get all review success")
+                            .message("Lấy tất cả đánh giá thành công!")
                             .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());

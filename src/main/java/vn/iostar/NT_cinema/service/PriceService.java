@@ -24,7 +24,7 @@ public class PriceService {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GenericResponse.builder()
                         .success(true)
-                        .message("Success")
+                        .message("Thành công!")
                         .result(prices)
                         .statusCode(HttpStatus.OK.value())
                         .build());
@@ -41,7 +41,7 @@ public class PriceService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Success")
+                            .message("Thành công!")
                             .result(price1)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -50,7 +50,7 @@ public class PriceService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -63,7 +63,7 @@ public class PriceService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Price not found")
+                                .message("Giá không tồn tại.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -76,7 +76,7 @@ public class PriceService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Success")
+                            .message("Thành công!")
                             .result(price1)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -85,7 +85,7 @@ public class PriceService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi  máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -97,13 +97,13 @@ public class PriceService {
             return price.map(value -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get seat price success")
+                            .message("Lấy giá vé thành công!")
                             .result(value)
                             .statusCode(HttpStatus.OK.value())
                             .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("seat price not found")
+                            .message("Giá vé không tồn tại!")
                             .result(null)
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));
@@ -112,7 +112,7 @@ public class PriceService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }

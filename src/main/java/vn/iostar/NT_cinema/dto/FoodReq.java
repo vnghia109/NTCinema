@@ -6,7 +6,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 import vn.iostar.NT_cinema.constant.FoodType;
+
+import java.util.List;
 
 @Setter
 @Getter
@@ -24,4 +27,8 @@ public class FoodReq {
     @NotBlank
     @NotEmpty
     private String foodType;
+
+    @NotBlank
+    @NotEmpty
+    private List<MultipartFile> image;
 }

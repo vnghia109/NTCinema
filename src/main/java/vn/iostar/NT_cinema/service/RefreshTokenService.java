@@ -71,7 +71,7 @@ public class RefreshTokenService {
                     return ResponseEntity.status(HttpStatus.OK)
                             .body(GenericResponse.builder()
                                     .success(true)
-                                    .message("Logout successfully!")
+                                    .message("Đăng xuất thành công!")
                                     .result("")
                                     .statusCode(HttpStatus.OK.value())
                                     .build());
@@ -79,7 +79,7 @@ public class RefreshTokenService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Logout failed!")
+                                .message("Đăng xuất thất bại!")
                                 .result("")
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -87,7 +87,7 @@ public class RefreshTokenService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("Logout failed!")
+                            .message("Đăng xuất thất bại!")
                             .result("")
                             .statusCode(HttpStatus.UNAUTHORIZED.value())
                             .build());
@@ -115,7 +115,7 @@ public class RefreshTokenService {
                         return ResponseEntity.status(404)
                                 .body(GenericResponse.builder()
                                         .success(false)
-                                        .message("RefreshToken is not present. Please login again!")
+                                        .message("RefreshToken is not present. Làm ơn đăng nhập lại!")
                                         .result("")
                                         .statusCode(HttpStatus.NOT_FOUND.value())
                                         .build());
@@ -137,7 +137,7 @@ public class RefreshTokenService {
             return ResponseEntity.status(401)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("Unauthorized. Please login again!")
+                            .message("Không có quyền. Làm ơn đăng nhập lại!")
                             .result("")
                             .statusCode(HttpStatus.UNAUTHORIZED.value())
                             .build());

@@ -37,7 +37,7 @@ public class CinemaService {
             map.put("totalElements", cinemas.getTotalElements());
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
-                    .message("Get all cinema success")
+                    .message("Lấy tất cả rạp phim thành công!")
                     .result(map)
                     .statusCode(200)
                     .build());
@@ -64,7 +64,7 @@ public class CinemaService {
             map.put("totalElements", cinemas.getTotalElements());
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
-                    .message("Get all cinema success")
+                    .message("Lấy tất cả rạp phim thành công!")
                     .result(map)
                     .statusCode(200)
                     .build());
@@ -85,7 +85,7 @@ public class CinemaService {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Cinema name already in use")
+                                .message("Tên rạp phim đã được sử dụng.")
                                 .result(null)
                                 .statusCode(HttpStatus.CONTINUE.value())
                                 .build());
@@ -101,7 +101,7 @@ public class CinemaService {
 
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
-                    .message("Add cinema success")
+                    .message("Thêm rạp phim thành công.")
                     .result(nCinema)
                     .statusCode(200)
                     .build());
@@ -130,7 +130,7 @@ public class CinemaService {
 
                 return ResponseEntity.ok().body(GenericResponse.builder()
                         .success(true)
-                        .message("Update cinema success")
+                        .message("Cập nhật rạp phim thành công.")
                         .result(updateCinema)
                         .statusCode(200)
                         .build());
@@ -138,7 +138,7 @@ public class CinemaService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Update fail")
+                                .message("Cập nhật rạp phim thất bại.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -161,13 +161,13 @@ public class CinemaService {
             return cinema.map(value -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get Cinema success")
+                            .message("Lấy rạp phim thành công!")
                             .result(value)
                             .statusCode(HttpStatus.OK.value())
                             .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("Cinema not found")
+                            .message("Không tìm thấy rạp phim.")
                             .result(null)
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));
@@ -177,7 +177,7 @@ public class CinemaService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi hệ thống.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -190,7 +190,7 @@ public class CinemaService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Cinema notfound")
+                                .message("Không tìm thấy rạp phim.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -200,7 +200,7 @@ public class CinemaService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Delete cinema success")
+                            .message("Xóa rạp phim thành công!")
                             .result(null)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -222,7 +222,7 @@ public class CinemaService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Cinema notfound")
+                                .message("Không tìm thấy rạp phim.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -234,7 +234,7 @@ public class CinemaService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Update status cinema success")
+                            .message("Cập nhật trạng thái rạp phim thành công!")
                             .result(cinema.get())
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -255,13 +255,13 @@ public class CinemaService {
             return cinema.map(value -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get cinema success")
+                            .message("Lấy thông tin rạp phim thành công!")
                             .result(value)
                             .statusCode(HttpStatus.OK.value())
                             .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("Get cinema success")
+                            .message("Lấy thông tin rạp phim thất bại.")
                             .result(null)
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));
@@ -290,7 +290,7 @@ public class CinemaService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get cinema unmanaged success")
+                            .message("Lấy các rapj phim chưa có quản lý thành công!")
                             .result(cinemaList)
                             .statusCode(HttpStatus.OK.value())
                             .build());

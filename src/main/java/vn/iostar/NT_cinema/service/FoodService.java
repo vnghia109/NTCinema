@@ -19,6 +19,9 @@ public class FoodService {
     @Autowired
     FoodRepository foodRepository;
 
+    @Autowired
+    CloudinaryService cloudinaryService;
+
     public ResponseEntity<GenericResponse> addFood(FoodReq foodReq) {
         try {
             Food food = new Food();
@@ -26,12 +29,16 @@ public class FoodService {
             food.setPrice(foodReq.getPrice());
             food.setFoodType(FoodType.valueOf(foodReq.getFoodType()));
 
+            String image = cloudinaryService.uploadImage(foodReq.getImage());
+            food.setImage(image);
+            food.setQuantity(0);
+
             Food foodRes = foodRepository.save(food);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Add food success")
+                            .message("Thêm thức ăn thành công!")
                             .result(foodRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -40,7 +47,7 @@ public class FoodService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -53,7 +60,7 @@ public class FoodService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Food notfound")
+                                .message("Không tìm thấy đồ ăn.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -63,7 +70,7 @@ public class FoodService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Delete food success")
+                            .message("Xóa đồ ăn thành công!")
                             .result(null)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -72,7 +79,7 @@ public class FoodService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -85,7 +92,7 @@ public class FoodService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Food notfound")
+                                .message("Không tìm thấy đồ ăn.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -97,7 +104,7 @@ public class FoodService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Update status food success")
+                            .message("Cập nhật trạng thái đồ ăn thành công!")
                             .result(foodRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -106,7 +113,7 @@ public class FoodService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -119,7 +126,7 @@ public class FoodService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Food notfound")
+                                .message("Không tìm thấy đồ ăn.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -133,7 +140,7 @@ public class FoodService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Update food success")
+                            .message("Cập nhật đồ ăn thành công!")
                             .result(foodRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -142,7 +149,7 @@ public class FoodService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -160,7 +167,7 @@ public class FoodService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get food success")
+                            .message("Lấy thông tin đồ ăn thành công!")
                             .result(foods)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -169,7 +176,7 @@ public class FoodService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
@@ -181,13 +188,13 @@ public class FoodService {
             return foodOptional.map(food -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get food success")
+                            .message("Lấy thông tin đồ ăn thành công!")
                             .result(food)
                             .statusCode(HttpStatus.OK.value())
                             .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Food not found")
+                            .message("Không tìm thấy đồ ăn.")
                             .result(null)
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));
@@ -196,7 +203,7 @@ public class FoodService {
                     .body(GenericResponse.builder()
                             .success(false)
                             .message(e.getMessage())
-                            .result("Internal Server Error")
+                            .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }

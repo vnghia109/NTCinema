@@ -42,7 +42,7 @@ public class ManagerService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get all manager success")
+                            .message("Lấy tất cả quản lý thành công!")
                             .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -69,7 +69,7 @@ public class ManagerService {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(GenericResponse.builder()
                                     .success(false)
-                                    .message("Cinema not found")
+                                    .message("Rạp phim không tìm thấy.")
                                     .result(null)
                                     .statusCode(HttpStatus.NOT_FOUND.value())
                                     .build());
@@ -78,7 +78,7 @@ public class ManagerService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Manager not found")
+                                .message("Quản lý không tồn tại.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -86,7 +86,7 @@ public class ManagerService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Add cinema to manager success")
+                            .message("Thêm rạp phim cho quản lý thành công!")
                             .result(manager.get())
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -107,13 +107,13 @@ public class ManagerService {
             return managerOptional.map(manager -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get manager success")
+                            .message("Thêm quản lý thành công!")
                             .result(manager)
                             .statusCode(HttpStatus.OK.value())
                             .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(GenericResponse.builder()
                             .success(false)
-                            .message("Manager not found")
+                            .message("Quản lý không tồn tại.")
                             .result(null)
                             .statusCode(HttpStatus.NOT_FOUND.value())
                             .build()));
