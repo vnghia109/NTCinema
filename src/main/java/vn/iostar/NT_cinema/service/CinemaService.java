@@ -9,11 +9,11 @@ import org.springframework.security.config.annotation.web.oauth2.resourceserver.
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.CinemaReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.entity.Cinema;
-import vn.iostar.NT_cinema.entity.Manager;
-import vn.iostar.NT_cinema.entity.Movie;
+import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.ManagerRepository;
+import vn.iostar.NT_cinema.repository.RoomRepository;
+import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
 import java.util.*;
 
@@ -24,6 +24,12 @@ public class CinemaService {
 
     @Autowired
     ManagerRepository managerRepository;
+
+    @Autowired
+    ShowTimeRepository showTimeRepository;
+
+    @Autowired
+    RoomRepository roomRepository;
 
     public ResponseEntity<GenericResponse> getAllCinema(Pageable pageable){
         try {
@@ -223,6 +229,17 @@ public class CinemaService {
                         .body(GenericResponse.builder()
                                 .success(false)
                                 .message("Không tìm thấy rạp phim.")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            List<Room> rooms = roomRepository.findAllByCinema(cinema.get());
+            List<ShowTime> showTimeList = showTimeRepository.findAllByRoomIn(rooms);
+            if (!showTimeList.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Phim đang được công chiếu, không thể xóa.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());

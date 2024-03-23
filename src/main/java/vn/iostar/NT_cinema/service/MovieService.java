@@ -532,10 +532,7 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findShowtimesByCinema(String id) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            List<ShowTime> showTimes = rooms.stream()
-                    .map(room -> showTimeRepository.findAllByRoom_RoomId(room.getRoomId()))
-                    .flatMap(List::stream)
-                    .collect(Collectors.toList());
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
                             .success(true)

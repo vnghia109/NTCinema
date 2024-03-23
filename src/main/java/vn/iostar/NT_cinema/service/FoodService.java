@@ -27,7 +27,17 @@ public class FoodService {
             Food food = new Food();
             food.setName(foodReq.getName());
             food.setPrice(foodReq.getPrice());
-            food.setFoodType(FoodType.valueOf(foodReq.getFoodType()));
+            try {
+                food.setFoodType(FoodType.valueOf(foodReq.getFoodType()));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Thể loại đồ ăn không tồn tại.!")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
 
             String image = cloudinaryService.uploadImage(foodReq.getImage());
             food.setImage(image);

@@ -20,15 +20,12 @@ public class FoodReq {
     @NotEmpty
     private String name;
 
-    @NotBlank
-    @NotEmpty
     private int price;
 
     @NotBlank
     @NotEmpty
     private String foodType;
 
-    @NotBlank
     @NotEmpty
     private List<MultipartFile> image;
 }
