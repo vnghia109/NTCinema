@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.RoomReq;
+import vn.iostar.NT_cinema.dto.UpdateRoomReq;
 import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Manager;
 import vn.iostar.NT_cinema.entity.Room;
@@ -28,30 +29,34 @@ public class RoomService {
     ManagerRepository managerRepository;
 
 
-    public ResponseEntity<GenericResponse> addRoom(String roomName, String managerId) {
+    public ResponseEntity<GenericResponse> addRoomByManager(RoomReq roomReq, String managerId) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
             Optional<Cinema> optionalCinema = cinemaRepository.findById(manager.get().getCinema().getCinemaId());
             if (optionalCinema.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Cinema not found")
+                        .message("Rạp phim không tồn tại.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
-            Optional<Room> roomOptional = roomRepository.findByRoomNameAndCinema(roomName, optionalCinema.get());
+            Optional<Room> roomOptional = roomRepository.findByRoomNameAndCinema(roomReq.getRoomName(), optionalCinema.get());
             if (roomOptional.isPresent()){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)
-                        .message("Room is available")
+                        .message("Phòng chiếu đã tồn tại.")
                         .result(null)
                         .statusCode(HttpStatus.CONFLICT.value())
                         .build());
             }
             Room nRoom = new Room();
-            nRoom.setRoomName(roomName);
+            nRoom.setRoomName(roomReq.getRoomName());
             nRoom.setCinema(optionalCinema.get());
+            nRoom.setRowSeat(roomReq.getRowSeat());
+            nRoom.setColSeat(roomReq.getColSeat());
+            nRoom.setCreateAt(new Date());
+            nRoom.setUpdateAt(new Date());
 
             Room room = roomRepository.save(nRoom);
 
@@ -72,25 +77,32 @@ public class RoomService {
         }
     }
 
-    public ResponseEntity<GenericResponse> deleteRoom(String roomId) {
+    public ResponseEntity<GenericResponse> updateRoom(String roomId, UpdateRoomReq updateRoomReq) {
         try {
             Optional<Room> roomOptional = roomRepository.findById(roomId);
-            if (roomOptional.isPresent()){
-                roomRepository.deleteById(roomId);
-                return ResponseEntity.ok().body(GenericResponse.builder()
-                        .success(true)
-                        .message("Delete room success!")
-                        .result(null)
-                        .statusCode(HttpStatus.OK.value())
-                        .build());
-            }else {
+            if (roomOptional.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Room not found")
+                        .message("Phòng không tồn tại.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
+
+            Room room = roomOptional.get();
+            room.setRoomName(updateRoomReq.getRoomName());
+            room.setRowSeat(updateRoomReq.getRowSeat());
+            room.setColSeat(updateRoomReq.getColSeat());
+            room.setUpdateAt(new Date());
+            roomRepository.save(room);
+
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Cập nhật thông tin phòng chiếu thành công!")
+                    .result(null)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+
         } catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
@@ -107,6 +119,7 @@ public class RoomService {
             Optional<Room> roomOptional = roomRepository.findById(roomId);
             if (roomOptional.isPresent()){
                 roomOptional.get().setDelete(!roomOptional.get().isDelete());
+                roomOptional.get().setUpdateAt(new Date());
                 Room room = roomRepository.save(roomOptional.get());
                 return ResponseEntity.ok().body(GenericResponse.builder()
                         .success(true)
@@ -227,6 +240,53 @@ public class RoomService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> addRoomByAdmin(RoomReq roomReq) {
+        try {
+            Optional<Cinema> optionalCinema = cinemaRepository.findById(roomReq.getCinemaId());
+            if (optionalCinema.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Rạp phim không tồn tại.")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+            Optional<Room> roomOptional = roomRepository.findByRoomNameAndCinema(roomReq.getRoomName(), optionalCinema.get());
+            if (roomOptional.isPresent()){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Phòng "+ roomReq.getRoomName() +" đã tồn tại")
+                        .result(null)
+                        .statusCode(HttpStatus.CONFLICT.value())
+                        .build());
+            }
+            Room nroom = new Room();
+            nroom.setRoomName(roomReq.getRoomName());
+            nroom.setCinema(optionalCinema.get());
+            nroom.setRowSeat(roomReq.getRowSeat());
+            nroom.setColSeat(roomReq.getColSeat());
+            nroom.setCreateAt(new Date());
+            nroom.setUpdateAt(new Date());
+
+            Room room = roomRepository.save(nroom);
+
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Thêm phòng chiếu thành công!")
+                    .result(room)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        } catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)

@@ -9,9 +9,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomReq {
-    private String cinemaId;
-
+public class UpdateRoomReq {
     private String roomName;
 
     private int rowSeat;

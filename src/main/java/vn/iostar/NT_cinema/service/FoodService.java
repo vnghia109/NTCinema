@@ -1,6 +1,8 @@
 package vn.iostar.NT_cinema.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -145,6 +147,10 @@ public class FoodService {
             food.get().setPrice(foodReq.getPrice());
             food.get().setFoodType(FoodType.valueOf(foodReq.getFoodType()));
 
+            cloudinaryService.deleteImage(food.get().getImage());
+            String image = cloudinaryService.uploadImage(foodReq.getImage());
+            food.get().setImage(image);
+
             Food foodRes = foodRepository.save(food.get());
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -165,14 +171,14 @@ public class FoodService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getFoods(String type) {
+    public ResponseEntity<GenericResponse> getFoods(String type, Pageable pageable) {
         try {
-            List<Food> foods;
+            Page<Food> foods;
             if (type.isEmpty()){
-                foods = foodRepository.findAll();
+                foods = foodRepository.findAll(pageable);
             }else {
                 FoodType foodType = FoodType.valueOf(type);
-                foods = foodRepository.findAllByFoodType(foodType);
+                foods = foodRepository.findAllByFoodType(foodType, pageable);
             }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()

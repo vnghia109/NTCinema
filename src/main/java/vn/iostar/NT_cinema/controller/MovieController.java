@@ -33,7 +33,7 @@ public class MovieController {
 
     @GetMapping("/{movieId}")
     public ResponseEntity<GenericResponse> getMovie(@PathVariable("movieId") String movieId) {
-        return movieService.findById(movieId);
+        return movieService.findMovieById(movieId);
     }
 
     @GetMapping("/now-playing")

@@ -32,18 +32,21 @@ public class ManagerController {
     ManagerService managerService;
     @Autowired
     ReviewService reviewService;
+    @Autowired
+    ScheduleService scheduleService;
 
     @PostMapping("/rooms")
     public ResponseEntity<GenericResponse> addRoom(@RequestHeader("Authorization") String authorizationHeader,
-                                                   @RequestParam String roomName){
+                                                   @RequestBody RoomReq roomReq){
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return roomService.addRoom(roomName, managerId);
+        return roomService.addRoomByManager(roomReq, managerId);
     }
 
-    @DeleteMapping("/rooms/{roomId}")
-    public ResponseEntity<GenericResponse> deleteRoom(@PathVariable("roomId") String roomId){
-        return roomService.deleteRoom(roomId);
+    @PutMapping("/rooms/{roomId}")
+    public ResponseEntity<GenericResponse> updateRoom(@PathVariable("roomId") String roomId,
+                                                      @RequestBody UpdateRoomReq updateRoomReq){
+        return roomService.updateRoom(roomId, updateRoomReq);
     }
 
     @PatchMapping("/rooms/{roomId}")
@@ -82,8 +85,19 @@ public class ManagerController {
 
     @PutMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> updateShowTime(@PathVariable("id") String id,
-                                                          @RequestBody ShowTimeReq showTimeReq){
+                                                          @RequestBody UpdateShowTimeReq showTimeReq){
         return showTimeService.updateShowTime(id, showTimeReq);
+    }
+
+    @PutMapping("/schedule/{id}")
+    public ResponseEntity<GenericResponse> updateSchedule(@PathVariable("id") String id,
+                                                          @RequestBody UpdateScheduleReq scheduleReq){
+        return scheduleService.updateSchedule(id, scheduleReq);
+    }
+
+    @DeleteMapping("/schedule/{id}")
+    public ResponseEntity<GenericResponse> deleteSchedule(@PathVariable("id") String id){
+        return scheduleService.deleteSchedule(id);
     }
 
     @GetMapping("/showtimes")
@@ -100,10 +114,10 @@ public class ManagerController {
         return showTimeService.getShowtime(id);
     }
 
-    @GetMapping("/rooms/{roomId}/timeShow")
-    public ResponseEntity<GenericResponse> getTimeShowOfRoom(@PathVariable String roomId){
-        return showTimeService.getTimeShowOfRoom(roomId);
-    }
+//    @GetMapping("/rooms/{roomId}/timeShow")
+//    public ResponseEntity<GenericResponse> getTimeShowOfRoom(@PathVariable String roomId){
+//        return showTimeService.getTimeShowOfRoom(roomId);
+//    }
 
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,

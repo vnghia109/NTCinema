@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,9 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.Movie;
+import vn.iostar.NT_cinema.repository.ScheduleRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 import vn.iostar.NT_cinema.service.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -46,6 +50,8 @@ public class AdminController {
     ReviewService reviewService;
     @Autowired
     TicketService ticketService;
+    @Autowired
+    ScheduleService scheduleService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -139,8 +145,10 @@ public class AdminController {
     }
 
     @GetMapping("/cinemas/{Id}/showtimes")
-    public ResponseEntity<GenericResponse> getShowtimesOfCinema(@PathVariable("Id") String Id) {
-        return movieService.findShowtimesByCinema(Id);
+    public ResponseEntity<GenericResponse> getShowtimesOfCinema(@PathVariable("Id") String Id,
+                                                                @RequestParam(defaultValue = "1") int index,
+                                                                @RequestParam(defaultValue = "10") int size) {
+        return movieService.findShowtimesByCinema(Id, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/cinemas/{Id}/rooms")
@@ -150,7 +158,7 @@ public class AdminController {
 
     @GetMapping("/rooms/{Id}/showtimes")
     public ResponseEntity<GenericResponse> getShowtimesOfRoom(@PathVariable("Id") String Id,
-                                                              @RequestBody ShowByRoomAndDateReq date) {
+                                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return showTimeService.findShowtimesByRoom(Id, date);
     }
 
@@ -214,7 +222,7 @@ public class AdminController {
 
     @PutMapping("/foods/{id}")
     public ResponseEntity<GenericResponse> updateFood(@PathVariable("id") String id,
-                                                      @RequestBody FoodReq foodReq){
+                                                      @Valid @ModelAttribute FoodReq foodReq){
         return foodService.updateFood(id, foodReq);
     }
 
@@ -243,6 +251,33 @@ public class AdminController {
         return showTimeService.adminGetShowTimes(PageRequest.of(index-1, size));
     }
 
+    @PostMapping("/showtimes/showtime")
+    public ResponseEntity<GenericResponse> addShowTime(@RequestBody ShowTimeReq showTimeReq){
+        return showTimeService.addShowTime(showTimeReq);
+    }
+
+    @PutMapping("/showtimes/{id}")
+    public ResponseEntity<GenericResponse> updateShowTime(@PathVariable("id") String id,
+                                                          @RequestBody UpdateShowTimeReq showTimeReq){
+        return showTimeService.updateShowTime(id, showTimeReq);
+    }
+
+    @PatchMapping("/showtimes/{id}")
+    public ResponseEntity<GenericResponse> updateIsDeleteShowTime(@PathVariable("id") String id){
+        return showTimeService.updateIsDeleteShowTime(id);
+    }
+
+    @PutMapping("/schedule/{id}")
+    public ResponseEntity<GenericResponse> updateSchedule(@PathVariable("id") String id,
+                                                          @RequestBody UpdateScheduleReq scheduleReq){
+        return scheduleService.updateSchedule(id, scheduleReq);
+    }
+
+    @DeleteMapping("/schedule/{id}")
+    public ResponseEntity<GenericResponse> deleteSchedule(@PathVariable("id") String id){
+        return scheduleService.deleteSchedule(id);
+    }
+
     @GetMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> getShowTime(@PathVariable("id") String id){
         return showTimeService.getShowtime(id);
@@ -252,6 +287,22 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getAllRoom(@RequestParam(defaultValue = "1") int index,
                                                       @RequestParam(defaultValue = "10") int size){
         return roomService.getRooms(PageRequest.of(index-1, size));
+    }
+
+    @PostMapping("/rooms/room")
+    public ResponseEntity<GenericResponse> addRoom(@RequestBody RoomReq roomReq){
+        return roomService.addRoomByAdmin(roomReq);
+    }
+
+    @PutMapping("/rooms/{roomId}")
+    public ResponseEntity<GenericResponse> updateRoom(@PathVariable("roomId") String roomId,
+                                                      @RequestBody UpdateRoomReq updateRoomReq){
+        return roomService.updateRoom(roomId, updateRoomReq);
+    }
+
+    @PatchMapping("/rooms/{roomId}")
+    public ResponseEntity<GenericResponse> updateIsDeleteRoom(@PathVariable("roomId") String roomId){
+        return roomService.updateIsDeleteRoom(roomId);
     }
 
     @GetMapping("/rooms/{id}")

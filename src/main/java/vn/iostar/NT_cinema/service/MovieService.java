@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import vn.iostar.NT_cinema.constant.ShowStatus;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.BookingRepository;
@@ -89,7 +90,7 @@ public class MovieService {
                         .build());
     }
 
-    public ResponseEntity<GenericResponse> findById(String id) {
+    public ResponseEntity<GenericResponse> findMovieById(String id) {
         try {
             Optional<Movie> movie = movieRepository.findById(id);
             return movie.map(value -> ResponseEntity.status(HttpStatus.OK)
@@ -167,6 +168,7 @@ public class MovieService {
                 movie.setActor(movieRequest.getActor());
                 movie.setDesc(movieRequest.getDesc());
                 movie.setReleaseDate(movieRequest.getReleaseDate());
+                cloudinaryService.deleteImage(movie.getPoster());
                 String url = cloudinaryService.uploadImage(movieRequest.getPoster());
                 movie.setPoster(url);
                 movie.setTrailerLink(movieRequest.getTrailerLink());
@@ -266,39 +268,18 @@ public class MovieService {
         }
     }
 
-    public List<Movie> checkPlayingMovies(List<Movie> movieList){
-        Date now = new Date();
-        List<Movie> movies = new ArrayList<>();
-        for (Movie item : movieList) {
-            List<ShowTime> showTimes = showTimeRepository.findAllByMovieAndIsSpecialIsFalseAndStatusIsTrue(item);
-            if (showTimes.isEmpty())
-                continue;
-            Date max = showTimes.get(0).getTimeEnd();
-            Date min = showTimes.get(0).getTimeStart();
-            for (ShowTime showTime : showTimes) {
-                if (showTime.getTimeStart().before(min)){
-                    min = showTime.getTimeStart();
-                }
-                if (showTime.getTimeEnd().after(max)){
-                    max = showTime.getTimeEnd();
-                }
-            }
-            if (min.before(now) && max.after(now)){
-                movies.add(item);
-            }
-        }
-        return movies;
-    }
-
     public ResponseEntity<GenericResponse> findNowPlayingMovies() {
         try {
-            List<Movie> movieList = movieRepository.findAll();
-            List<Movie> movies = checkPlayingMovies(movieList);
+            List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.SHOWING);
+            Set<Movie> movieSet = new HashSet<>();
+            for (ShowTime showTime : showTimes) {
+                movieSet.add(showTime.getMovie());
+            }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Lấy phim đang chạy thành công!")
-                            .result(movies)
+                            .message("Lấy phim đang chiếu thành công!")
+                            .result(movieSet)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -314,28 +295,16 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> findComingSoonMovies() {
         try {
-            List<Movie> movieList = movieRepository.findAll();
-            List<Movie> movies = new ArrayList<>();
-            Date now = new Date();
-            for (Movie item : movieList) {
-                List<ShowTime> showTimes = showTimeRepository.findAllByMovieAndIsSpecialIsFalseAndStatusIsTrue(item);
-                if (showTimes.isEmpty())
-                    continue;
-                Date min = showTimes.get(0).getTimeStart();
-                for (ShowTime showTime : showTimes) {
-                    if (showTime.getTimeStart().before(min)){
-                        min = showTime.getTimeStart();
-                    }
-                }
-                if (min.after(now)){
-                    movies.add(item);
-                }
+            List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.COMING_SOON);
+            Set<Movie> movieSet = new HashSet<>();
+            for (ShowTime showTime : showTimes) {
+                movieSet.add(showTime.getMovie());
             }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Lấy phim sắp chiếu thành công!")
-                            .result(movies)
+                            .result(movieSet)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -351,21 +320,16 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> findSpecialMovies() {
         try {
-            List<Movie> movieList = movieRepository.findAll();
-            List<Movie> movies = new ArrayList<>();
-            for (Movie item : movieList) {
-                List<ShowTime> showTime = showTimeRepository.findAllByMovieAndIsSpecialIsTrueAndStatusIsTrue(item);
-                if (showTime.isEmpty())
-                    continue;
-
-                movies.add(item);
-
+            List<ShowTime> showTimes = showTimeRepository.findAllByIsSpecialIsTrueAndIsDeleteIsFalse();
+            Set<Movie> movieSet = new HashSet<>();
+            for (ShowTime showTime : showTimes) {
+                movieSet.add(showTime.getMovie());
             }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Lấy xuất chiếu đặc biệt thành công!")
-                            .result(movies)
+                            .result(movieSet)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -381,24 +345,12 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> findNowPlayingMoviesByCinema(String id) {
         try {
-            List<Movie> movieList = new ArrayList<>();
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoomInAndStatusIsTrue(rooms);
-//            for (ShowTime item: showTimes) {
-//                Movie currentMovie = item.getMovie();
-//                boolean isDuplicate = false;
-//                for (Movie existingMovie : movieList) {
-//                    if (currentMovie.getMovieId().equals(existingMovie.getMovieId())) {
-//                        isDuplicate = true;
-//                        break;
-//                    }
-//                }
-//
-//                if (!isDuplicate) {
-//                    movieList.add(currentMovie);
-//                }
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoomInAndStatusAndIsDeleteIsFalseAndIsSpecialIsFalse(rooms, ShowStatus.SHOWING);
+//            Set<Movie> movieSet = new HashSet<>();
+//            for (ShowTime showTime : showTimes) {
+//                movieSet.add(showTime.getMovie());
 //            }
-//            List<Movie> movies = checkPlayingMovies(movieList);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -529,15 +481,21 @@ public class MovieService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findShowtimesByCinema(String id) {
+    public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, Pageable pageable) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms, pageable);
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", showTimes.getContent());
+            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
+            map.put("pageSize", showTimes.getSize());
+            map.put("totalPages", showTimes.getTotalPages());
+            map.put("totalElements", showTimes.getTotalElements());
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Lấy danh sách lịch chiếu thành công!")
-                            .result(showTimes)
+                            .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e){

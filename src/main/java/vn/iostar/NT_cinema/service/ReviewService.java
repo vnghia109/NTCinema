@@ -2,7 +2,6 @@ package vn.iostar.NT_cinema.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,6 @@ import vn.iostar.NT_cinema.dto.ReviewReq;
 import vn.iostar.NT_cinema.dto.ReviewRes;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.Review;
-import vn.iostar.NT_cinema.entity.User;
 import vn.iostar.NT_cinema.repository.MovieRepository;
 import vn.iostar.NT_cinema.repository.ReviewRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;

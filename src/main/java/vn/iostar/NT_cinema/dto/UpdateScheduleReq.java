@@ -5,16 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Setter
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomReq {
-    private String cinemaId;
-
-    private String roomName;
-
-    private int rowSeat;
-
-    private int colSeat;
+public class UpdateScheduleReq {
+    private LocalDate date;
+    private LocalTime startTime;
+    private LocalTime endTime;
 }
