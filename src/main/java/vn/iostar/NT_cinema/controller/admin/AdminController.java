@@ -158,7 +158,7 @@ public class AdminController {
 
     @GetMapping("/rooms/{Id}/showtimes")
     public ResponseEntity<GenericResponse> getShowtimesOfRoom(@PathVariable("Id") String Id,
-                                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+                                                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         return showTimeService.findShowtimesByRoom(Id, date);
     }
 

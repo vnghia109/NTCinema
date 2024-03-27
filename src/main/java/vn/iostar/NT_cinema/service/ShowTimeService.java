@@ -17,6 +17,7 @@ import vn.iostar.NT_cinema.repository.*;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ShowTimeService {
@@ -372,7 +373,8 @@ public class ShowTimeService {
             Page<ShowTime> showTimes = showTimeRepository.findAll(pageable);
             List<ShowScheduleResp> responses = new ArrayList<>();
             for (ShowTime showTime : showTimes.getContent()) {
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
+                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
+                        .stream().sorted(Comparator.comparing(Schedule::getDate)).collect(Collectors.toList());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
                         showTime.getRoom().getRoomId(),
@@ -495,50 +497,27 @@ public class ShowTimeService {
                     .build());
         }
     }
-//
-//    public ResponseEntity<GenericResponse> getTimeShowOfRoom(String roomId) {
-//        try {
-//            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomIdAndStatusIsTrue(roomId);
-//            List<Date> dates = new ArrayList<>();
-//            for (ShowTime item : showTimes) {
-//                List<Date> dates1 = getListOfDateTimes(item.getListTimeShow());
-//                dates.addAll(dates1);
-//            }
-//            Collections.sort(dates);
-//
-//            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
-//                    .success(true)
-//                    .message("Lấy danh sách lịch chiếu theo phòng thành công!")
-//                    .result(dates)
-//                    .statusCode(HttpStatus.OK.value())
-//                    .build());
-//        }catch (Exception e){
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-//                    .success(false)
-//                    .message(e.getMessage())
-//                    .result(null)
-//                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-//                    .build());
-//        }
-//    }
-//
-//    public List<Date> getListOfDateTimes(List<TimeShow> listTimeShow) {
-//        List<Date> listOfDateTimes = new ArrayList<>();
-//
-//        for (TimeShow timeShow : listTimeShow) {
-//            LocalDate date = timeShow.getDate();
-//            List<String> times = timeShow.getTime();
-//
-//            for (String time : times) {
-//                LocalDateTime localDateTime = LocalDateTime.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth(),
-//                        Integer.parseInt(time.split(":")[0]), Integer.parseInt(time.split(":")[1]));
-//
-//                Date dateTime = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-//                listOfDateTimes.add(dateTime);
-//            }
-//        }
-//        return listOfDateTimes;
-//    }
+
+    public ResponseEntity<GenericResponse> getTimeShowOfRoom(String roomId) {
+        try {
+            List<Schedule> schedules = scheduleRepository.findAllByRoomId(roomId)
+                    .stream().sorted(Comparator.comparing(Schedule::getDate)).toList();
+
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Lấy danh sách lịch chiếu theo phòng thành công!")
+                    .result(schedules)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
 
     public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date) {
         try {

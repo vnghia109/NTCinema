@@ -73,11 +73,6 @@ public class ManagerController {
         return showTimeService.addShowTime(showTimeReq);
     }
 
-    @DeleteMapping("/showtimes/{id}")
-    public ResponseEntity<GenericResponse> deleteShowTime(@PathVariable("id") String id){
-        return showTimeService.deleteShowTime(id);
-    }
-
     @PatchMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> updateIsDeleteShowTime(@PathVariable("id") String id){
         return showTimeService.updateIsDeleteShowTime(id);
@@ -114,10 +109,10 @@ public class ManagerController {
         return showTimeService.getShowtime(id);
     }
 
-//    @GetMapping("/rooms/{roomId}/timeShow")
-//    public ResponseEntity<GenericResponse> getTimeShowOfRoom(@PathVariable String roomId){
-//        return showTimeService.getTimeShowOfRoom(roomId);
-//    }
+    @GetMapping("/rooms/{roomId}/timeShow")
+    public ResponseEntity<GenericResponse> getTimeShowOfRoom(@PathVariable String roomId){
+        return showTimeService.getTimeShowOfRoom(roomId);
+    }
 
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
