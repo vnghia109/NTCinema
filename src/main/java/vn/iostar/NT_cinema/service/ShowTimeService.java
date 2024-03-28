@@ -301,8 +301,8 @@ public class ShowTimeService {
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
-                        showTime.getRoom().getRoomId(),
-                        showTime.getMovie().getMovieId(),
+                        showTime.getRoom(),
+                        showTime.getMovie(),
                         showTime.getTimeStart(),
                         showTime.getTimeEnd(),
                         showTime.isSpecial(),
@@ -335,8 +335,8 @@ public class ShowTimeService {
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
-                        showTime.getRoom().getRoomId(),
-                        showTime.getMovie().getMovieId(),
+                        showTime.getRoom(),
+                        showTime.getMovie(),
                         showTime.getTimeStart(),
                         showTime.getTimeEnd(),
                         showTime.isSpecial(),
@@ -377,8 +377,8 @@ public class ShowTimeService {
                         .stream().sorted(Comparator.comparing(Schedule::getDate)).collect(Collectors.toList());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
-                        showTime.getRoom().getRoomId(),
-                        showTime.getMovie().getMovieId(),
+                        showTime.getRoom(),
+                        showTime.getMovie(),
                         showTime.getTimeStart(),
                         showTime.getTimeEnd(),
                         showTime.isSpecial(),
@@ -427,8 +427,8 @@ public class ShowTimeService {
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
-                        showTime.getRoom().getRoomId(),
-                        showTime.getMovie().getMovieId(),
+                        showTime.getRoom(),
+                        showTime.getMovie(),
                         showTime.getTimeStart(),
                         showTime.getTimeEnd(),
                         showTime.isSpecial(),
@@ -474,8 +474,8 @@ public class ShowTimeService {
             List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
             ShowScheduleResp response = new ShowScheduleResp(
                     showTime.getShowTimeId(),
-                    showTime.getRoom().getRoomId(),
-                    showTime.getMovie().getMovieId(),
+                    showTime.getRoom(),
+                    showTime.getMovie(),
                     showTime.getTimeStart(),
                     showTime.getTimeEnd(),
                     showTime.isSpecial(),
@@ -529,8 +529,8 @@ public class ShowTimeService {
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
-                        showTime.getRoom().getRoomId(),
-                        showTime.getMovie().getMovieId(),
+                        showTime.getRoom(),
+                        showTime.getMovie(),
                         showTime.getTimeStart(),
                         showTime.getTimeEnd(),
                         showTime.isSpecial(),
@@ -581,8 +581,8 @@ public class ShowTimeService {
                 List<Schedule> scheduled = findScheduledByDate(schedules, date);
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
-                        showTime.getRoom().getRoomId(),
-                        showTime.getMovie().getMovieId(),
+                        showTime.getRoom(),
+                        showTime.getMovie(),
                         showTime.getTimeStart(),
                         showTime.getTimeEnd(),
                         showTime.isSpecial(),

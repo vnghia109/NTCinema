@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.iostar.NT_cinema.constant.ShowStatus;
+import vn.iostar.NT_cinema.entity.Movie;
+import vn.iostar.NT_cinema.entity.Room;
 import vn.iostar.NT_cinema.entity.Schedule;
 
 import java.util.Date;
@@ -17,9 +19,9 @@ import java.util.List;
 public class ShowScheduleResp {
     private String showTimeId;
 
-    private String roomId;
+    private Room roomId;
 
-    private String movieId;
+    private Movie movieId;
 
     private Date timeStart;
 
