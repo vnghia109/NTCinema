@@ -12,9 +12,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Food;
 import vn.iostar.NT_cinema.repository.FoodRepository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class FoodService {
@@ -180,11 +178,17 @@ public class FoodService {
                 FoodType foodType = FoodType.valueOf(type);
                 foods = foodRepository.findAllByFoodType(foodType, pageable);
             }
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", foods.getContent());
+            map.put("pageNumber", foods.getPageable().getPageNumber() + 1);
+            map.put("pageSize", foods.getSize());
+            map.put("totalPages", foods.getTotalPages());
+            map.put("totalElements", foods.getTotalElements());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Lấy thông tin đồ ăn thành công!")
-                            .result(foods)
+                            .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e){
