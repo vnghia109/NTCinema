@@ -481,31 +481,4 @@ public class MovieService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, Pageable pageable) {
-        try {
-            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms, pageable);
-            Map<String, Object> map = new HashMap<>();
-            map.put("content", showTimes.getContent());
-            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
-            map.put("pageSize", showTimes.getSize());
-            map.put("totalPages", showTimes.getTotalPages());
-            map.put("totalElements", showTimes.getTotalElements());
-            return ResponseEntity.ok()
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Lấy danh sách lịch chiếu thành công!")
-                            .result(map)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result("Lỗi máy chủ.")
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
 }

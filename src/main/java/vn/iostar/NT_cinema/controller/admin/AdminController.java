@@ -148,7 +148,7 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getShowtimesOfCinema(@PathVariable("Id") String Id,
                                                                 @RequestParam(defaultValue = "1") int index,
                                                                 @RequestParam(defaultValue = "10") int size) {
-        return movieService.findShowtimesByCinema(Id, PageRequest.of(index-1, size));
+        return showTimeService.findShowtimesByCinema(Id, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/cinemas/{Id}/rooms")
