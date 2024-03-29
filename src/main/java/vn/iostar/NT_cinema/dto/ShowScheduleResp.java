@@ -19,9 +19,9 @@ import java.util.List;
 public class ShowScheduleResp {
     private String showTimeId;
 
-    private Room roomId;
+    private Room room;
 
-    private Movie movieId;
+    private Movie movie;
 
     private Date timeStart;
 
