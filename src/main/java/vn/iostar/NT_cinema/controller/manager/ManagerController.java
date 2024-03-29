@@ -80,9 +80,8 @@ public class ManagerController {
         return showTimeService.updateShowTime(id, showTimeReq);
     }
 
-    @PutMapping("/schedule/{id}")
-    public ResponseEntity<GenericResponse> updateSchedule(@PathVariable("id") String id,
-                                                          @RequestBody AddScheduleReq scheduleReq){
+    @PostMapping("/schedule")
+    public ResponseEntity<GenericResponse> addSchedule(@RequestBody AddScheduleReq scheduleReq){
         return scheduleService.addSchedule(scheduleReq);
     }
 
