@@ -1,27 +1,18 @@
 package vn.iostar.NT_cinema.controller.admin;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.config.annotation.web.oauth2.resourceserver.OAuth2ResourceServerSecurityMarker;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import vn.iostar.NT_cinema.dto.*;
-import vn.iostar.NT_cinema.entity.Movie;
-import vn.iostar.NT_cinema.repository.ScheduleRepository;
-import vn.iostar.NT_cinema.repository.UserRepository;
 import vn.iostar.NT_cinema.service.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -267,10 +258,9 @@ public class AdminController {
         return showTimeService.updateIsDeleteShowTime(id);
     }
 
-    @PutMapping("/schedule/{id}")
-    public ResponseEntity<GenericResponse> updateSchedule(@PathVariable("id") String id,
-                                                          @RequestBody UpdateScheduleReq scheduleReq){
-        return scheduleService.updateSchedule(id, scheduleReq);
+    @PostMapping("/schedule")
+    public ResponseEntity<GenericResponse> addSchedule(@RequestBody AddScheduleReq scheduleReq){
+        return scheduleService.addSchedule(scheduleReq);
     }
 
     @DeleteMapping("/schedule/{id}")

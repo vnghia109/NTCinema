@@ -15,6 +15,7 @@ import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -100,6 +101,7 @@ public class ShowTimeService {
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(showTime.getRoom().getRoomId());
 
             for (TimeShow item : showTimeReq.getSchedules()) {
+                LocalTime endTime = item.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
                 if (item.getDate().isBefore(showTime.getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
@@ -108,7 +110,7 @@ public class ShowTimeService {
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
                 }
-                if (item.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration())).isAfter(item.getEndTime())){
+                if (item.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration())).isAfter(endTime)){
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
                             .message("Thời gian chiếu phải dài hơn thời lượng phim")
@@ -117,7 +119,7 @@ public class ShowTimeService {
                             .build());
                 }
                 for (Schedule schedule : schedules) {
-                    if (!(item.getStartTime().isAfter(schedule.getEndTime().plusMinutes(15)) || item.getEndTime().plusMinutes(15).isBefore(schedule.getStartTime()))) {
+                    if (!(item.getStartTime().isAfter(schedule.getEndTime().plusMinutes(15)) || endTime.plusMinutes(15).isBefore(schedule.getStartTime()))) {
                         return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                                 .success(false)
                                 .message("Lịch chiếu bắt đầu lúc "+item.getStartTime()+" ngày "+item.getDate()+" bị trùng với lịch chiếu khác.")
@@ -131,7 +133,8 @@ public class ShowTimeService {
             ShowTime nShowTime = showTimeRepository.save(showTime);
 
             for (TimeShow item : showTimeReq.getSchedules()) {
-                Schedule schedule1 = new Schedule(nShowTime.getShowTimeId(), item.getDate(), item.getStartTime(), item.getEndTime(), nShowTime.getRoom().getRoomId());
+                LocalTime endTime = item.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
+                Schedule schedule1 = new Schedule(nShowTime.getShowTimeId(), item.getDate(), item.getStartTime(), endTime, nShowTime.getRoom().getRoomId());
                 scheduleRepository.save(schedule1);
                 schedules.add(schedule1);
             }
@@ -257,6 +260,7 @@ public class ShowTimeService {
             showTimed.setSpecial(showTimeReq.isSpecial());
             showTimed.setUpdatedAt(new Date());
 
+            showTimed.setStatus(getShowStatus(showTimed));
             ShowTime updateShowTime = showTimeRepository.save(showTimed);
 
             ShowTimeResp showTimeResp = new ShowTimeResp(

@@ -17,6 +17,4 @@ public class TimeShow {
     private LocalDate date;
 
     private LocalTime startTime;
-
-    private LocalTime endTime;
 }

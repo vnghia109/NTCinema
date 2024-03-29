@@ -12,8 +12,8 @@ import java.time.LocalTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UpdateScheduleReq {
+public class AddScheduleReq {
+    private String showTimeId;
     private LocalDate date;
     private LocalTime startTime;
-    private LocalTime endTime;
 }

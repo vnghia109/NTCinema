@@ -1,15 +1,11 @@
 package vn.iostar.NT_cinema.controller.manager;
 
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
-import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.*;
 
@@ -86,8 +82,8 @@ public class ManagerController {
 
     @PutMapping("/schedule/{id}")
     public ResponseEntity<GenericResponse> updateSchedule(@PathVariable("id") String id,
-                                                          @RequestBody UpdateScheduleReq scheduleReq){
-        return scheduleService.updateSchedule(id, scheduleReq);
+                                                          @RequestBody AddScheduleReq scheduleReq){
+        return scheduleService.addSchedule(scheduleReq);
     }
 
     @DeleteMapping("/schedule/{id}")
