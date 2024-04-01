@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Date;
 import java.util.List;
 
 @AllArgsConstructor
@@ -27,7 +28,7 @@ public class MovieReq {
     private String actor;
 
     @NotBlank
-    private String releaseDate;
+    private Date releaseDate;
 
     private String desc;
 

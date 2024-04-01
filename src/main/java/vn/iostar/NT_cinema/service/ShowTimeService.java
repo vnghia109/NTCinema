@@ -25,9 +25,9 @@ public class ShowTimeService {
     @Autowired
     ShowTimeRepository showTimeRepository;
     @Autowired
-    private RoomRepository roomRepository;
+    RoomRepository roomRepository;
     @Autowired
-    private MovieRepository movieRepository;
+    MovieRepository movieRepository;
     @Autowired
     ManagerRepository managerRepository;
     @Autowired
@@ -79,14 +79,26 @@ public class ShowTimeService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
-            Optional<ShowTime> showTimeFind = showTimeRepository.findByMovieAndRoomAndIsDeleteIsFalse(optionalMovie.get(), optionalRoom.get());
-            if (showTimeFind.isPresent()){
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Lịch chiếu cho phim "+optionalMovie.get().getTitle()+" ở phòng "+optionalRoom.get().getRoomName()+" đã sẵn sàng. Bạn có thể chỉnh sửa lại lịch chiếu.")
-                        .result(null)
-                        .statusCode(HttpStatus.CONFLICT.value())
-                        .build());
+            if (showTimeReq.isSpecial()){
+                Optional<ShowTime> showTimeFind = showTimeRepository.findByMovieAndRoomAndIsDeleteIsFalseAndIsSpecialIsTrue(optionalMovie.get(), optionalRoom.get());
+                if (showTimeFind.isPresent()){
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lịch chiếu đặc biệt cho phim "+optionalMovie.get().getTitle()+" ở phòng "+optionalRoom.get().getRoomName()+" đã sẵn sàng. Bạn có thể chỉnh sửa lại lịch chiếu.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+            }else {
+                Optional<ShowTime> showTimeFind1 = showTimeRepository.findByMovieAndRoomAndIsDeleteIsFalseAndIsSpecialIsFalse(optionalMovie.get(), optionalRoom.get());
+                if (showTimeFind1.isPresent()){
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lịch chiếu cho phim "+optionalMovie.get().getTitle()+" ở phòng "+optionalRoom.get().getRoomName()+" đã sẵn sàng. Bạn có thể chỉnh sửa lại lịch chiếu.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
             }
             ShowTime showTime = new ShowTime();
             showTime.setRoom(optionalRoom.get());

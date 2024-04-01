@@ -18,7 +18,8 @@ import java.util.Optional;
 
 @Repository
 public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
-    Optional<ShowTime> findByMovieAndRoomAndIsDeleteIsFalse (Movie movie, Room room);
+    Optional<ShowTime> findByMovieAndRoomAndIsDeleteIsFalseAndIsSpecialIsFalse (Movie movie, Room room);
+    Optional<ShowTime> findByMovieAndRoomAndIsDeleteIsFalseAndIsSpecialIsTrue (Movie movie, Room room);
     List<ShowTime> findByMovieAndIsDeleteIsFalse (Movie movie);
     List<ShowTime> findAllByRoomInAndStatusAndIsDeleteIsFalseAndIsSpecialIsFalse(List<Room> rooms, ShowStatus status);
     Page<ShowTime> findAllByRoomIn(List<Room> rooms, Pageable pageable);

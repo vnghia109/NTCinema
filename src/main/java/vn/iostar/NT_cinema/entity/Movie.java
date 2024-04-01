@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @AllArgsConstructor
@@ -34,7 +35,7 @@ public class Movie {
     private String actor;
 
     @NotBlank
-    private String releaseDate;
+    private Date releaseDate;
 
     private String desc;
 
@@ -54,7 +55,7 @@ public class Movie {
     private String rating;
 
 
-    public Movie(String title, String director, String genres, String actor, String releaseDate, String desc, String trailerLink, String duration) {
+    public Movie(String title, String director, String genres, String actor, Date releaseDate, String desc, String trailerLink, String duration) {
         this.title = title;
         this.director = director;
         this.genres = genres;

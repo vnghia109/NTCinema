@@ -8,6 +8,8 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
 
+import java.util.Date;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -28,7 +30,7 @@ public class MovieRes {
     private String actor;
 
     @NotBlank
-    private String releaseDate;
+    private Date releaseDate;
 
     private String desc;
 
