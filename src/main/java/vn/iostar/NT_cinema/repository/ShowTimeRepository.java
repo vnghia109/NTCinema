@@ -25,7 +25,7 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     Page<ShowTime> findAllByRoomIn(List<Room> rooms, Pageable pageable);
     List<ShowTime> findAllByRoomIn(List<Room> rooms);
     Page<ShowTime> findAllByIsDeleteIsFalse(Pageable pageable);
-    List<ShowTime> findAllByRoom_RoomId(String roomId);
+    Page<ShowTime> findAllByRoom_RoomId(String roomId, Pageable pageable);
     @Override
     @NotNull
     Page<ShowTime> findAll(@NotNull Pageable pageable);

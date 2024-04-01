@@ -579,20 +579,26 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date) {
+    public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date, Pageable pageable) {
         try {
             if (date == null) {
-                List<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(roomId);
+                Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(roomId, pageable);
+                Map<String, Object> map = new HashMap<>();
+                map.put("content", showTimes.getContent());
+                map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
+                map.put("pageSize", showTimes.getSize());
+                map.put("totalPages", showTimes.getTotalPages());
+                map.put("totalElements", showTimes.getTotalElements());
                 return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                         .success(true)
                         .message("Lấy danh sách lịch chiếu thành công!")
-                        .result(showTimes)
+                        .result(map)
                         .statusCode(HttpStatus.OK.value())
                         .build());
             }
             List<ShowScheduleResp> responses = new ArrayList<>();
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(roomId);
-            for (ShowTime showTime : showTimes){
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(roomId, pageable);
+            for (ShowTime showTime : showTimes.getContent()){
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
                 List<Schedule> scheduled = findScheduledByDate(schedules, date);
                 ShowScheduleResp response = new ShowScheduleResp(
@@ -607,10 +613,16 @@ public class ShowTimeService {
                         scheduled);
                 responses.add(response);
             }
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", responses);
+            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
+            map.put("pageSize", showTimes.getSize());
+            map.put("totalPages", showTimes.getTotalPages());
+            map.put("totalElements", showTimes.getTotalElements());
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Lấy danh sách lịch chiếu thành công!")
-                    .result(responses)
+                    .result(map)
                     .statusCode(HttpStatus.OK.value())
                     .build());
         }catch (Exception e){

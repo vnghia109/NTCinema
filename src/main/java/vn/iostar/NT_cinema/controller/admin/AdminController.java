@@ -149,8 +149,10 @@ public class AdminController {
 
     @GetMapping("/rooms/{Id}/showtimes")
     public ResponseEntity<GenericResponse> getShowtimesOfRoom(@PathVariable("Id") String Id,
-                                                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return showTimeService.findShowtimesByRoom(Id, date);
+                                                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                              @RequestParam(defaultValue = "1") int index,
+                                                              @RequestParam(defaultValue = "10") int size) {
+        return showTimeService.findShowtimesByRoom(Id, date, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/movies/movie")
