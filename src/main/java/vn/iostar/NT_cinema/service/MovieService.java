@@ -12,6 +12,10 @@ import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -444,7 +448,10 @@ public class MovieService {
             List<Booking> bookings = bookingRepository.findAllByUserIdAndIsPaymentIsTrue(userId);
             List<HistoryMovieRes> historyMovieRes = new ArrayList<>();
             for (Booking item : bookings) {
-                if (item.getSeats().get(0).getTimeShow().after(new Date())){
+                Schedule schedule = item.getSeats().get(0).getSchedule();
+                LocalDateTime localDateTime = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
+                Date start = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+                if (start.after(new Date())){
                     Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
                     if (showTime.isPresent()){
                         HistoryMovieRes upcoming = new HistoryMovieRes();
@@ -452,7 +459,8 @@ public class MovieService {
                         upcoming.setMovieId(showTime.get().getMovie().getMovieId());
                         upcoming.setMovieName(showTime.get().getMovie().getTitle());
                         upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
-                        upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
+                        upcoming.setDate(schedule.getDate());
+                        upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                         upcoming.setPrice(item.getTotal());
 
                         historyMovieRes.add(upcoming);
@@ -482,18 +490,19 @@ public class MovieService {
         try {
             List<Booking> bookings = bookingRepository.findAllByUserIdAndIsPaymentIsTrue(userId);
             List<HistoryMovieRes> historyMovieRes = new ArrayList<>();
-            Date now = new Date();
+            LocalTime now = LocalTime.now();
             for (Booking item : bookings) {
                 Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
                 if (showTime.isPresent()){
-                    long diffInMinutes = (now.getTime() - (item.getSeats().get(0).getTimeShow().getTime() + Integer.parseInt(showTime.get().getMovie().getDuration()))) / (60 * 1000);
-                    if (diffInMinutes > 0){
+                    Schedule schedule = item.getSeats().get(0).getSchedule();
+                    if (schedule.getEndTime().isBefore(now)){
                         HistoryMovieRes upcoming = new HistoryMovieRes();
                         upcoming.setBookingId(item.getBookingId());
                         upcoming.setMovieId(showTime.get().getMovie().getMovieId());
                         upcoming.setMovieName(showTime.get().getMovie().getTitle());
                         upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
-                        upcoming.setTimeShow(item.getSeats().get(0).getTimeShow());
+                        upcoming.setDate(schedule.getDate());
+                        upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                         upcoming.setPrice(item.getTotal());
 
                         historyMovieRes.add(upcoming);

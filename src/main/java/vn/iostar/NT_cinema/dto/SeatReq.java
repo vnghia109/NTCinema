@@ -15,5 +15,5 @@ public class SeatReq {
     private String priceType;
     private String row;
     private String column;
-    private Date timeShow;
+    private String scheduleId;
 }

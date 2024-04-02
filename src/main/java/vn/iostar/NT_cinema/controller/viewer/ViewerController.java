@@ -61,9 +61,10 @@ public class ViewerController {
         return bookingService.bookingInfo(bookReq);
     }
 
-    @PostMapping("/seats/booked")
-    public ResponseEntity<GenericResponse> getSeatBooked(@RequestBody BookedSeatReq req){
-        return seatService.getSeatBooked(req);
+    @GetMapping("/seats/booked")
+    public ResponseEntity<GenericResponse> getSeatBooked(@RequestParam("showtimeId") String showtimeId,
+                                                         @RequestParam("scheduleId") String scheduleId){
+        return seatService.getSeatBooked(showtimeId, scheduleId);
     }
 
     @GetMapping("/seat/price")

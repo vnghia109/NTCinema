@@ -5,13 +5,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.PriceType;
-import vn.iostar.NT_cinema.dto.BookedSeatReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.SeatBookedRes;
 import vn.iostar.NT_cinema.dto.SeatReq;
 import vn.iostar.NT_cinema.entity.Price;
+import vn.iostar.NT_cinema.entity.Schedule;
 import vn.iostar.NT_cinema.entity.Seat;
+import vn.iostar.NT_cinema.entity.ShowTime;
 import vn.iostar.NT_cinema.repository.PriceRepository;
+import vn.iostar.NT_cinema.repository.ScheduleRepository;
 import vn.iostar.NT_cinema.repository.SeatRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
@@ -29,6 +31,9 @@ public class SeatService {
     @Autowired
     ShowTimeRepository showTimeRepository;
 
+    @Autowired
+    ScheduleRepository scheduleRepository;
+
     public ResponseEntity<GenericResponse> checkSeat(String showtimeId, List<SeatReq> seatReq){
         try {
             if (showTimeRepository.findById(showtimeId).isEmpty()){
@@ -43,7 +48,8 @@ public class SeatService {
             List<Seat> seats = new ArrayList<>();
             List<String> seatIds = new ArrayList<>();
             for (SeatReq item : seatReq) {
-                Optional<Seat> optionalSeat = seatRepository.findByColumnAndRowAndShowTimeIdAndTimeShowAndStatusIsTrue(item.getColumn(), item.getRow(), showtimeId, item.getTimeShow());
+                Schedule schedule = scheduleRepository.findById(item.getScheduleId()).get();
+                Optional<Seat> optionalSeat = seatRepository.findByColumnAndRowAndShowTimeIdAndScheduleAndStatusIsTrue(item.getColumn(), item.getRow(), showtimeId, schedule);
                 if (optionalSeat.isPresent()){
                     seatIds.add(optionalSeat.get().getSeatId());
                     continue;
@@ -64,7 +70,7 @@ public class SeatService {
                 seat.setColumn(item.getColumn());
                 seat.setRow(item.getRow());
                 seat.setStatus(true);
-                seat.setTimeShow(item.getTimeShow());
+                seat.setSchedule(schedule);
 
                 seats.add(seat);
             }
@@ -94,9 +100,10 @@ public class SeatService {
 
     }
 
-    public ResponseEntity<GenericResponse> getSeatBooked(BookedSeatReq req) {
+    public ResponseEntity<GenericResponse> getSeatBooked(String showtimeId, String scheduleId){
         try {
-            List<Seat> seats = seatRepository.findAllByShowTimeIdAndTimeShowAndStatusIsFalse(req.getShowtimeId(), req.getTimeShow());
+            Schedule schedule = scheduleRepository.findById(scheduleId).get();
+            List<Seat> seats = seatRepository.findAllByShowTimeIdAndScheduleAndStatusIsFalse(showtimeId, schedule);
             List<SeatBookedRes> seatBookedRes = seats.stream()
                     .map(item -> new SeatBookedRes(item.getRow(), item.getColumn()))
                     .collect(Collectors.toList());
@@ -106,6 +113,35 @@ public class SeatService {
                             .success(true)
                             .message("Get all seat booked success")
                             .result(seatBookedRes)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> countSeatBooked(String showtimeId, String scheduleId){
+        try {
+            ShowTime showTime = showTimeRepository.findById(showtimeId).get();
+            Schedule schedule = scheduleRepository.findById(scheduleId).get();
+            List<Seat> seats = seatRepository.findAllByShowTimeIdAndScheduleAndStatusIsFalse(showtimeId, schedule);
+            int SeatAvailable = showTime.getRoom().getColSeat()*showTime.getRoom().getRowSeat() - seats.size();
+
+            Map<Object, Object> map = new HashMap<>();
+            map.put("SeatBooked", seats.size());
+            map.put("SeatAvailable", SeatAvailable);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Get all seat booked success")
+                            .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){

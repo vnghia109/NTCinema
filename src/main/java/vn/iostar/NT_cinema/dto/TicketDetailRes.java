@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.dto;
 import lombok.*;
 import vn.iostar.NT_cinema.entity.Seat;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +15,9 @@ import java.util.List;
 public class TicketDetailRes {
     private String movieId;
     private String movieName;
-    private Date timeShow;
+    private LocalDate date;
+    private String startTime;
+    private String endTime;
     private int duration;
     private String cinemaName;
     private String roomName;

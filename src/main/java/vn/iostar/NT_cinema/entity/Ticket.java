@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -25,7 +26,9 @@ public class Ticket {
 
     private String movieName;
 
-    private Date showtime;
+    private LocalDate date;
+
+    private String startTime;
 
     private String duration;
 

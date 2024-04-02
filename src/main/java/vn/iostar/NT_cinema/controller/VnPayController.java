@@ -19,6 +19,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @RestController
@@ -132,9 +133,10 @@ public class VnPayController {
                     ticket.setCinemaAddress(cinema.getLocation());
                     ticket.setCreateAt(new Date());
                     ticket.setMovieName(showTime.get().getMovie().getTitle());
-                    ticket.setShowtime(item.getTimeShow());
+                    ticket.setDate(item.getSchedule().getDate());
+                    ticket.setStartTime(item.getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                     ticket.setDuration(showTime.get().getMovie().getDuration());
-                    ticket.setSeat(item.getPrice().getType().toString()+"Class: row "+item.getRow()+"/column "+item.getColumn());
+                    ticket.setSeat(item.getPrice().getType().toString()+" Class: row "+item.getRow()+"/column "+item.getColumn());
                     ticket.setTicketPrice(item.getPrice().getPrice());
                     ticketRepository.save(ticket);
                 }

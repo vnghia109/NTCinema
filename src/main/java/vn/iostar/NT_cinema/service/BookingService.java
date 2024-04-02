@@ -22,6 +22,7 @@ import vn.iostar.NT_cinema.repository.*;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,6 +53,8 @@ public class BookingService {
     RoomRepository roomRepository;
     @Autowired
     CinemaRepository cinemaRepository;
+    @Autowired
+    ScheduleRepository scheduleRepository;
 
     public ResponseEntity<GenericResponse> bookTicket(String userId, BookReq bookReq) {
         try {
@@ -161,6 +164,7 @@ public class BookingService {
         try {
             Optional<User> user = userRepository.findById(booking.getUserId());
             ShowTime showTime = showTimeRepository.findById(booking.getSeats().get(0).getShowTimeId()).get();
+            Schedule schedule = booking.getSeats().get(0).getSchedule();
 
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
@@ -171,7 +175,8 @@ public class BookingService {
             Context context = new Context();
             context.setVariable("bookingCode", booking.getBookingId());
             context.setVariable("movieName", showTime.getMovie().getTitle());
-            context.setVariable("showtime", booking.getSeats().get(0).getTimeShow().toString());
+            context.setVariable("date", schedule.getDate());
+            context.setVariable("startTime", schedule.getStartTime());
             context.setVariable("ticketCount", booking.getSeats().size());
             context.setVariable("foods", booking.getFoods());
             context.setVariable("seats", booking.getSeats());
@@ -254,10 +259,13 @@ public class BookingService {
                                 .build());
             }
             Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTimeId());
+            Schedule schedule = booking.get().getSeats().get(0).getSchedule();
             TicketDetailRes ticket = new TicketDetailRes();
             ticket.setMovieId(showTime.get().getMovie().getMovieId());
             ticket.setMovieName(showTime.get().getMovie().getTitle());
-            ticket.setTimeShow(booking.get().getSeats().get(0).getTimeShow());
+            ticket.setDate(schedule.getDate());
+            ticket.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+            ticket.setEndTime(schedule.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")));
             ticket.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
             ticket.setDuration(Integer.parseInt(showTime.get().getMovie().getDuration()));
             ticket.setRoomName(showTime.get().getRoom().getRoomName());

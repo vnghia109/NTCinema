@@ -19,12 +19,14 @@ public class Seat {
     private String showTimeId;
 
     @DBRef
+    private Schedule schedule;
+
+    @DBRef
     private Price price;
 
     private String row;
     private String column;
     private boolean status;
-    private Date timeShow;
 
     @DBRef
     private Booking booking;

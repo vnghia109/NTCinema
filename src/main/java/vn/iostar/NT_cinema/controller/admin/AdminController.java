@@ -43,6 +43,8 @@ public class AdminController {
     TicketService ticketService;
     @Autowired
     ScheduleService scheduleService;
+    @Autowired
+    SeatService seatService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -287,6 +289,12 @@ public class AdminController {
     @GetMapping("/showtimes/{id}")
     public ResponseEntity<GenericResponse> getShowTime(@PathVariable("id") String id){
         return showTimeService.getShowtime(id);
+    }
+
+    @GetMapping("/seats-booked/count")
+    public ResponseEntity<GenericResponse> countSeatBooked(@RequestParam("showtimeId") String showtimeId,
+                                                           @RequestParam("scheduleId") String scheduleId){
+        return seatService.countSeatBooked(showtimeId, scheduleId);
     }
 
     @GetMapping("/rooms")

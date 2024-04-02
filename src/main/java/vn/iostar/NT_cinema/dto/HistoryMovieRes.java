@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.dto;
 import lombok.*;
 import org.springframework.scheduling.support.SimpleTriggerContext;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter
@@ -15,6 +16,7 @@ public class HistoryMovieRes {
     private String movieId;
     private String movieName;
     private String cinemaName;
-    private Date timeShow;
+    private LocalDate date;
+    private String startTime;
     private int price;
 }

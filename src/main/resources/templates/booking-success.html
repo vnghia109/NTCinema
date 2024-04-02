@@ -51,13 +51,14 @@
 
     <p><strong>Mã đặt vé: </strong> <span th:text="${bookingCode}"></span></p>
     <p><strong>Tên phim: </strong> <span th:text="${movieName}"></span></p>
-    <p><strong>Ngày và giờ chiếu: </strong> <span th:text="${showtime}"></span></p>
+    <p><strong>Ngày chiếu: </strong> <span th:text="${date}"></span></p>
+    <p><strong>Bắt đầu chiếu: </strong> <span th:text="${startTime}"></span></p>
     <p><strong>Số lượng vé: </strong> <span th:text="${ticketCount}"></span></p>
     <p><strong>Ghế: </strong></p>
     <ul>
         <li th:each="seat : ${seats}">
             <strong>Hàng/cột: </strong>
-            <span th:text="${seat.convertToUnicode()} + ${seat.getColumn()}">A</span>
+            <span th:text="${seat.convertToUnicode()} + ${seat.getColumn()}"></span>
         </li>
     </ul>
     <p><strong>Bắp nước: </strong></p>
