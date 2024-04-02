@@ -324,7 +324,8 @@ public class ShowTimeService {
             List<ShowScheduleResp> responses = new ArrayList<>();
             List<ShowTime> showTimes = showTimeRepository.findByMovieAndIsDeleteIsFalse(optionalMovie.get());
             for (ShowTime showTime : showTimes) {
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
+                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
+                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
                         showTime.getRoom(),
@@ -358,7 +359,8 @@ public class ShowTimeService {
             Page<ShowTime> showTimes = showTimeRepository.findAllByIsDeleteIsFalse(pageable);
             List<ShowScheduleResp> responses = new ArrayList<>();
             for (ShowTime showTime : showTimes.getContent()) {
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
+                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
+                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
                         showTime.getRoom(),
@@ -400,7 +402,7 @@ public class ShowTimeService {
             List<ShowScheduleResp> responses = new ArrayList<>();
             for (ShowTime showTime : showTimes.getContent()) {
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
-                        .stream().sorted(Comparator.comparing(Schedule::getDate)).collect(Collectors.toList());
+                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
                         showTime.getRoom(),
@@ -450,7 +452,8 @@ public class ShowTimeService {
             Page<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms, pageable);
             List<ShowScheduleResp> responses = new ArrayList<>();
             for (ShowTime showTime : showTimes.getContent()) {
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
+                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
+                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
                         showTime.getRoom(),
@@ -497,7 +500,8 @@ public class ShowTimeService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
-            List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
+            List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
+                    .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
             ShowScheduleResp response = new ShowScheduleResp(
                     showTime.getShowTimeId(),
                     showTime.getRoom(),
