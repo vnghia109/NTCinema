@@ -134,7 +134,7 @@ public class ShowTimeService {
                     if (!(item.getStartTime().isAfter(schedule.getEndTime().plusMinutes(15)) || endTime.plusMinutes(15).isBefore(schedule.getStartTime())) && item.getDate().equals(schedule.getDate())) {
                         return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                                 .success(false)
-                                .message("Lịch chiếu bắt đầu lúc "+item.getStartTime()+" ngày "+item.getDate()+" bị trùng với lịch chiếu khác.")
+                                .message("Lịch chiếu bắt đầu lúc "+item.getStartTime()+" ngày "+item.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime())
                                 .result(schedule.getScheduleId())
                                 .statusCode(HttpStatus.CONFLICT.value())
                                 .build());
