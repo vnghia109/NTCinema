@@ -55,10 +55,10 @@ public class ScheduleService {
                         .build());
             }
             for (Schedule schedule : schedules) {
-                if (!(scheduleReq.getStartTime().isAfter(schedule.getEndTime().plusMinutes(15)) || endTime.plusMinutes(15).isBefore(schedule.getStartTime()))) {
+                if (!(scheduleReq.getStartTime().isAfter(schedule.getEndTime().plusMinutes(15)) || endTime.plusMinutes(15).isBefore(schedule.getStartTime())) && scheduleReq.getDate().equals(schedule.getDate())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
-                            .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" bị trùng với lịch chiếu khác.")
+                            .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime())
                             .result(null)
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
