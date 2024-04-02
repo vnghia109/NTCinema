@@ -597,8 +597,24 @@ public class ShowTimeService {
         try {
             if (date == null) {
                 Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(roomId, pageable);
+                List<ShowScheduleResp> responses = new ArrayList<>();
+                for (ShowTime showTime : showTimes.getContent()){
+                    List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
+                    List<Schedule> scheduled = findScheduledByDate(schedules, date);
+                    ShowScheduleResp response = new ShowScheduleResp(
+                            showTime.getShowTimeId(),
+                            showTime.getRoom(),
+                            showTime.getMovie(),
+                            showTime.getTimeStart(),
+                            showTime.getTimeEnd(),
+                            showTime.isSpecial(),
+                            showTime.getStatus(),
+                            showTime.isDelete(),
+                            scheduled);
+                    responses.add(response);
+                }
                 Map<String, Object> map = new HashMap<>();
-                map.put("content", showTimes.getContent());
+                map.put("content", responses);
                 map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
                 map.put("pageSize", showTimes.getSize());
                 map.put("totalPages", showTimes.getTotalPages());
