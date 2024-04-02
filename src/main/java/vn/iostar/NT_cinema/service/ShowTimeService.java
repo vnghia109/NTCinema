@@ -265,17 +265,7 @@ public class ShowTimeService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
-            Optional<Room> optionalRoom = roomRepository.findById(showTimeReq.getRoomId());
-            if (optionalRoom.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Room not found")
-                        .result(null)
-                        .statusCode(HttpStatus.NOT_FOUND.value())
-                        .build());
-            }
             ShowTime showTimed = optionalShowTime.get();
-            showTimed.setRoom(optionalRoom.get());
             showTimed.setMovie(optionalMovie.get());
             showTimed.setTimeStart(showTimeReq.getTimeStart());
             showTimed.setTimeEnd(showTimeReq.getTimeEnd());
@@ -354,32 +344,12 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getShowTimes(Pageable pageable) {
+    public ResponseEntity<GenericResponse> getShowTimes(LocalDate date, Pageable pageable) {
         try {
             Page<ShowTime> showTimes = showTimeRepository.findAllByIsDeleteIsFalse(pageable);
-            List<ShowScheduleResp> responses = new ArrayList<>();
-            for (ShowTime showTime : showTimes.getContent()) {
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
-                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
-                ShowScheduleResp response = new ShowScheduleResp(
-                        showTime.getShowTimeId(),
-                        showTime.getRoom(),
-                        showTime.getMovie(),
-                        showTime.getTimeStart(),
-                        showTime.getTimeEnd(),
-                        showTime.isSpecial(),
-                        showTime.getStatus(),
-                        showTime.isDelete(),
-                        schedules);
-                responses.add(response);
-            }
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
 
-            Map<String, Object> map = new HashMap<>();
-            map.put("content", responses);
-            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
-            map.put("pageSize", showTimes.getSize());
-            map.put("totalPages", showTimes.getTotalPages());
-            map.put("totalElements", showTimes.getTotalElements());
+            Map<String, Object> map = createResponseMap(responses, showTimes);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get all show time success")
@@ -396,31 +366,11 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> adminGetShowTimes(Pageable pageable) {
+    public ResponseEntity<GenericResponse> adminGetShowTimes(LocalDate date, Pageable pageable) {
         try {
             Page<ShowTime> showTimes = showTimeRepository.findAll(pageable);
-            List<ShowScheduleResp> responses = new ArrayList<>();
-            for (ShowTime showTime : showTimes.getContent()) {
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
-                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
-                ShowScheduleResp response = new ShowScheduleResp(
-                        showTime.getShowTimeId(),
-                        showTime.getRoom(),
-                        showTime.getMovie(),
-                        showTime.getTimeStart(),
-                        showTime.getTimeEnd(),
-                        showTime.isSpecial(),
-                        showTime.getStatus(),
-                        showTime.isDelete(),
-                        schedules);
-                responses.add(response);
-            }
-            Map<String, Object> map = new HashMap<>();
-            map.put("content", responses);
-            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
-            map.put("pageSize", showTimes.getSize());
-            map.put("totalPages", showTimes.getTotalPages());
-            map.put("totalElements", showTimes.getTotalElements());
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
+            Map<String, Object> map = createResponseMap(responses, showTimes);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get all show time success")
@@ -437,7 +387,7 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getShowTimesOfManager(String id, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getShowTimesOfManager(LocalDate date, String id, Pageable pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(id);
             if (manager.isEmpty()){
@@ -450,28 +400,8 @@ public class ShowTimeService {
             }
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
             Page<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms, pageable);
-            List<ShowScheduleResp> responses = new ArrayList<>();
-            for (ShowTime showTime : showTimes.getContent()) {
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
-                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
-                ShowScheduleResp response = new ShowScheduleResp(
-                        showTime.getShowTimeId(),
-                        showTime.getRoom(),
-                        showTime.getMovie(),
-                        showTime.getTimeStart(),
-                        showTime.getTimeEnd(),
-                        showTime.isSpecial(),
-                        showTime.getStatus(),
-                        showTime.isDelete(),
-                        schedules);
-                responses.add(response);
-            }
-            Map<String, Object> map = new HashMap<>();
-            map.put("content", responses);
-            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
-            map.put("pageSize", showTimes.getSize());
-            map.put("totalPages", showTimes.getTotalPages());
-            map.put("totalElements", showTimes.getTotalElements());
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
+            Map<String, Object> map = createResponseMap(responses, showTimes);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get all show time success")
@@ -531,7 +461,7 @@ public class ShowTimeService {
     public ResponseEntity<GenericResponse> getTimeShowOfRoom(String roomId) {
         try {
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(roomId)
-                    .stream().sorted(Comparator.comparing(Schedule::getDate)).toList();
+                    .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).toList();
 
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
@@ -549,32 +479,12 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, Pageable pageable) {
+    public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, LocalDate date, Pageable pageable) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
             Page<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms, pageable);
-            List<ShowScheduleResp> responses = new ArrayList<>();
-            List<ShowTime> showTimeList = showTimes.getContent();
-            for (ShowTime showTime : showTimeList){
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
-                ShowScheduleResp response = new ShowScheduleResp(
-                        showTime.getShowTimeId(),
-                        showTime.getRoom(),
-                        showTime.getMovie(),
-                        showTime.getTimeStart(),
-                        showTime.getTimeEnd(),
-                        showTime.isSpecial(),
-                        showTime.getStatus(),
-                        showTime.isDelete(),
-                        schedules);
-                responses.add(response);
-            }
-            Map<String, Object> map = new HashMap<>();
-            map.put("content", responses);
-            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
-            map.put("pageSize", showTimes.getSize());
-            map.put("totalPages", showTimes.getTotalPages());
-            map.put("totalElements", showTimes.getTotalElements());
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
+            Map<String, Object> map = createResponseMap(responses, showTimes);
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
                             .success(true)
@@ -595,60 +505,11 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date, Pageable pageable) {
         try {
-            if (date == null) {
-                Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(roomId, pageable);
-                List<ShowScheduleResp> responses = new ArrayList<>();
-                for (ShowTime showTime : showTimes.getContent()){
-                    List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
-                    List<Schedule> scheduled = findScheduledByDate(schedules, date);
-                    ShowScheduleResp response = new ShowScheduleResp(
-                            showTime.getShowTimeId(),
-                            showTime.getRoom(),
-                            showTime.getMovie(),
-                            showTime.getTimeStart(),
-                            showTime.getTimeEnd(),
-                            showTime.isSpecial(),
-                            showTime.getStatus(),
-                            showTime.isDelete(),
-                            scheduled);
-                    responses.add(response);
-                }
-                Map<String, Object> map = new HashMap<>();
-                map.put("content", responses);
-                map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
-                map.put("pageSize", showTimes.getSize());
-                map.put("totalPages", showTimes.getTotalPages());
-                map.put("totalElements", showTimes.getTotalElements());
-                return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
-                        .success(true)
-                        .message("Lấy danh sách lịch chiếu thành công!")
-                        .result(map)
-                        .statusCode(HttpStatus.OK.value())
-                        .build());
-            }
-            List<ShowScheduleResp> responses = new ArrayList<>();
             Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(roomId, pageable);
-            for (ShowTime showTime : showTimes.getContent()){
-                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
-                List<Schedule> scheduled = findScheduledByDate(schedules, date);
-                ShowScheduleResp response = new ShowScheduleResp(
-                        showTime.getShowTimeId(),
-                        showTime.getRoom(),
-                        showTime.getMovie(),
-                        showTime.getTimeStart(),
-                        showTime.getTimeEnd(),
-                        showTime.isSpecial(),
-                        showTime.getStatus(),
-                        showTime.isDelete(),
-                        scheduled);
-                responses.add(response);
-            }
-            Map<String, Object> map = new HashMap<>();
-            map.put("content", responses);
-            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
-            map.put("pageSize", showTimes.getSize());
-            map.put("totalPages", showTimes.getTotalPages());
-            map.put("totalElements", showTimes.getTotalElements());
+
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
+
+            Map<String, Object> map = createResponseMap(responses, showTimes);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Lấy danh sách lịch chiếu thành công!")
@@ -665,16 +526,38 @@ public class ShowTimeService {
         }
     }
 
-    public List<Schedule> findScheduledByDate(List<Schedule> schedules, LocalDate date) {
-        List<Schedule> result = new ArrayList<>();
-        for (Schedule schedule : schedules) {
-            if (schedule.getDate().equals(date)) {
-                result.add(schedule);
-            }
-        }
-        if (result.isEmpty()) {
-            return null;
-        }
-        return result;
+    private List<ShowScheduleResp> createShowScheduleResponses(Page<ShowTime> showTimes, LocalDate date) {
+        return showTimes.getContent().stream()
+                .map(showTime -> createShowScheduleResponse(showTime, date))
+                .collect(Collectors.toList());
     }
+    private ShowScheduleResp createShowScheduleResponse(ShowTime showTime, LocalDate date) {
+        List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
+        if (date != null) {
+            schedules = schedules.stream()
+                    .filter(schedule -> schedule.getDate().equals(date))
+                    .sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime))
+                    .toList();
+        }
+        return new ShowScheduleResp(
+                showTime.getShowTimeId(),
+                showTime.getRoom(),
+                showTime.getMovie(),
+                showTime.getTimeStart(),
+                showTime.getTimeEnd(),
+                showTime.isSpecial(),
+                showTime.getStatus(),
+                showTime.isDelete(),
+                schedules);
+    }
+    private Map<String, Object> createResponseMap(List<ShowScheduleResp> responses, Page<ShowTime> showTimes) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("content", responses);
+        map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
+        map.put("pageSize", showTimes.getSize());
+        map.put("totalPages", showTimes.getTotalPages());
+        map.put("totalElements", showTimes.getTotalElements());
+        return map;
+    }
+
 }

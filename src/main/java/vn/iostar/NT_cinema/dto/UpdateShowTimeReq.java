@@ -14,7 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateShowTimeReq {
-    private String roomId;
     private String movieId;
     private Date timeStart;
     private Date timeEnd;

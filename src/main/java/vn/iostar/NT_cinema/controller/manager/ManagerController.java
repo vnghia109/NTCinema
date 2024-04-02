@@ -2,12 +2,15 @@ package vn.iostar.NT_cinema.controller.manager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.*;
+
+import java.time.LocalDate;
 
 @RestController
 @PreAuthorize("hasRole('MANAGER')")
@@ -93,10 +96,11 @@ public class ManagerController {
     @GetMapping("/showtimes")
     public ResponseEntity<GenericResponse> getShowTimes(@RequestHeader("Authorization") String authorizationHeader,
                                                         @RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size){
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return showTimeService.getShowTimesOfManager(managerId, PageRequest.of(index-1, size));
+        return showTimeService.getShowTimesOfManager(date, managerId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/showtimes/{id}")

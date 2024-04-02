@@ -149,9 +149,10 @@ public class AdminController {
 
     @GetMapping("/cinemas/{Id}/showtimes")
     public ResponseEntity<GenericResponse> getShowtimesOfCinema(@PathVariable("Id") String Id,
+                                                                @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                                                 @RequestParam(defaultValue = "1") int index,
                                                                 @RequestParam(defaultValue = "10") int size) {
-        return showTimeService.findShowtimesByCinema(Id, PageRequest.of(index-1, size));
+        return showTimeService.findShowtimesByCinema(Id, date, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/cinemas/{Id}/rooms")
@@ -252,8 +253,9 @@ public class AdminController {
 
     @GetMapping("/showtimes")
     public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size){
-        return showTimeService.adminGetShowTimes(PageRequest.of(index-1, size));
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        return showTimeService.adminGetShowTimes(date, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/showtimes/showtime")
