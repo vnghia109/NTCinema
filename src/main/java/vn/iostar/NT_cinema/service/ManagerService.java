@@ -107,7 +107,7 @@ public class ManagerService {
             return managerOptional.map(manager -> ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Thêm quản lý thành công!")
+                            .message("Lấy thông tin quản lý thành công!")
                             .result(manager)
                             .statusCode(HttpStatus.OK.value())
                             .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)

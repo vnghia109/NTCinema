@@ -2,9 +2,11 @@ package vn.iostar.NT_cinema.repository;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
+import vn.iostar.NT_cinema.entity.Role;
 import vn.iostar.NT_cinema.entity.User;
 
 import java.util.Date;
@@ -28,4 +30,6 @@ public interface UserRepository extends MongoRepository<User, String> {
     List<User> findByIsActiveFalseAndCreatedAtBefore(Date twentyFourHoursAgo);
 
     Page<User> findAllByOrderByLastLoginAtDesc(@NotNull Pageable pageable);
+
+    Page<User> findAllByRoleIn(List<Role> roles, @NotNull Pageable pageable);
 }

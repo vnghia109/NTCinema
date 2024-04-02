@@ -25,6 +25,8 @@ public class User {
     @Id
     private String userId;
 
+    private String avatar;
+
     @DBRef
     private Address address;
 

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -713,6 +714,63 @@ public class UserService {
                     .success(false)
                     .message(e.getMessage())
                     .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getAllPersonnel(Pageable pageable) {
+        try {
+            List<Role> roles = new ArrayList<>();
+            roles.add(roleService.findByRoleName("ADMIN"));
+            roles.add(roleService.findByRoleName("MANAGER"));
+            roles.add(roleService.findByRoleName("STAFF"));
+
+            Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
+            Map<String, Object> result = new HashMap<>();
+            result.put("content", users.getContent());
+            result.put("pageNumber", users.getPageable().getPageNumber() + 1);
+            result.put("pageSize", users.getSize());
+            result.put("totalPages", users.getTotalPages());
+            result.put("totalElements", users.getTotalElements());
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get user success")
+                    .result(result)
+                    .statusCode(200)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result("Lỗi máy chủ.")
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getAllViewer(PageRequest of) {
+        try {
+            List<Role> roles = new ArrayList<>();
+            roles.add(roleService.findByRoleName("VIEWER"));
+            Page<User> users = userRepository.findAllByRoleIn(roles, of);
+            Map<String, Object> result = new HashMap<>();
+            result.put("content", users.getContent());
+            result.put("pageNumber", users.getPageable().getPageNumber() + 1);
+            result.put("pageSize", users.getSize());
+            result.put("totalPages", users.getTotalPages());
+            result.put("totalElements", users.getTotalElements());
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get user success")
+                    .result(result)
+                    .statusCode(200)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result("Lỗi máy chủ.")
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .build());
         }

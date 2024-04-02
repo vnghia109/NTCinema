@@ -68,6 +68,18 @@ public class AdminController {
         return managerService.getManager(id);
     }
 
+    @GetMapping("/personnel")
+    public ResponseEntity<GenericResponse> getPersonnel(@RequestParam(defaultValue = "1") int index,
+                                                        @RequestParam(defaultValue = "10") int size){
+        return userService.getAllPersonnel(PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/viewers")
+    public ResponseEntity<GenericResponse> getViewers(@RequestParam(defaultValue = "1") int index,
+                                                      @RequestParam(defaultValue = "10") int size){
+        return userService.getAllViewer(PageRequest.of(index-1, size));
+    }
+
     @GetMapping("/users")
     public ResponseEntity<GenericResponse> getUsers(@RequestParam(defaultValue = "1") int index,
                                                     @RequestParam(defaultValue = "10") int size){
