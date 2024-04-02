@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
@@ -27,7 +28,7 @@ public class MovieReq {
     @NotBlank
     private String actor;
 
-    @NotBlank
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private Date releaseDate;
 
     private String desc;

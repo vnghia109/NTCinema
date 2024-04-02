@@ -211,17 +211,27 @@ public class ShowTimeService {
             if (optionalShowTime.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Showtime not found")
+                        .message("Không tìm thấy lịch chiếu")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+            if (optionalShowTime.get().getStatus().equals(ShowStatus.SHOWING)){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Không thể ngừng lịch đang chiếu.")
+                        .result(null)
+                        .statusCode(HttpStatus.CONFLICT.value())
                         .build());
             }
             optionalShowTime.get().setDelete(!optionalShowTime.get().isDelete());
             optionalShowTime.get().setUpdatedAt(new Date());
             ShowTime showTime = showTimeRepository.save(optionalShowTime.get());
+            List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(id);
+            scheduleRepository.deleteAll(schedules);
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
-                    .message("Update status Showtime success")
+                    .message("Cập nhật lịch chiếu thành công!")
                     .result(showTime)
                     .statusCode(HttpStatus.OK.value())
                     .build());

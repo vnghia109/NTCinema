@@ -34,7 +34,6 @@ public class Movie {
     @NotBlank
     private String actor;
 
-    @NotBlank
     private Date releaseDate;
 
     private String desc;

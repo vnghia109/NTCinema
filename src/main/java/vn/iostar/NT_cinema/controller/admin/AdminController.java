@@ -161,8 +161,8 @@ public class AdminController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
                     false,
-                    "Invalid input data!",
-                    null,
+                    "Dữ liệu đầu vào không đúng định dạng!",
+                    Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage(),
                     HttpStatus.BAD_REQUEST.value()));
         }
         return movieService.save(movie);

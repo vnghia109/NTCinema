@@ -32,8 +32,10 @@ public class CinemaController {
     }
 
     @GetMapping("/{Id}/showtimes")
-    public ResponseEntity<GenericResponse> getMovies(@PathVariable("Id") String Id) {
-        return movieService.findNowPlayingMoviesByCinema(Id);
+    public ResponseEntity<GenericResponse> getMovies(@PathVariable("Id") String Id,
+                                                     @RequestParam(defaultValue = "1") int index,
+                                                     @RequestParam(defaultValue = "10") int size) {
+        return movieService.findNowPlayingMoviesByCinema(Id, PageRequest.of(index-1, size));
     }
 
 }

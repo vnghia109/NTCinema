@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.ShowStatus;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
-import vn.iostar.NT_cinema.repository.BookingRepository;
-import vn.iostar.NT_cinema.repository.MovieRepository;
-import vn.iostar.NT_cinema.repository.RoomRepository;
-import vn.iostar.NT_cinema.repository.ShowTimeRepository;
+import vn.iostar.NT_cinema.repository.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -31,6 +28,8 @@ public class MovieService {
     CloudinaryService cloudinaryService;
     @Autowired
     RoomRepository roomRepository;
+    @Autowired
+    ScheduleRepository scheduleRepository;
 
     public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
         Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalse(pageable);
@@ -364,19 +363,37 @@ public class MovieService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findNowPlayingMoviesByCinema(String id) {
+    public ResponseEntity<GenericResponse> findNowPlayingMoviesByCinema(String id, Pageable pageable) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoomInAndStatusAndIsDeleteIsFalseAndIsSpecialIsFalse(rooms, ShowStatus.SHOWING);
-//            Set<Movie> movieSet = new HashSet<>();
-//            for (ShowTime showTime : showTimes) {
-//                movieSet.add(showTime.getMovie());
-//            }
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomInAndStatusAndIsDeleteIsFalseAndIsSpecialIsFalse(rooms, ShowStatus.SHOWING, pageable);
+            List<ShowScheduleResp> responses = new ArrayList<>();
+            for (ShowTime showTime : showTimes.getContent()) {
+                List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
+                        .stream().sorted(Comparator.comparing(Schedule::getDate)).collect(Collectors.toList());
+                ShowScheduleResp response = new ShowScheduleResp(
+                        showTime.getShowTimeId(),
+                        showTime.getRoom(),
+                        showTime.getMovie(),
+                        showTime.getTimeStart(),
+                        showTime.getTimeEnd(),
+                        showTime.isSpecial(),
+                        showTime.getStatus(),
+                        showTime.isDelete(),
+                        schedules);
+                responses.add(response);
+            }
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", responses);
+            map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
+            map.put("pageSize", showTimes.getSize());
+            map.put("totalPages", showTimes.getTotalPages());
+            map.put("totalElements", showTimes.getTotalElements());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Lấy tất cả lịch chiếu của rạp thành công!")
-                            .result(showTimes)
+                            .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
