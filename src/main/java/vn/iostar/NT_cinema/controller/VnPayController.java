@@ -9,6 +9,7 @@ import vn.iostar.NT_cinema.config.VnPayConfig;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.BookingRepository;
+import vn.iostar.NT_cinema.repository.SeatRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 import vn.iostar.NT_cinema.repository.TicketRepository;
 import vn.iostar.NT_cinema.service.BookingService;
@@ -34,6 +35,8 @@ public class VnPayController {
     TicketRepository ticketRepository;
     @Autowired
     ShowTimeRepository showTimeRepository;
+    @Autowired
+    SeatRepository seatRepository;
     @GetMapping("/payment")
     public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId) throws UnsupportedEncodingException {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
@@ -147,6 +150,7 @@ public class VnPayController {
                 List<Seat> seats = booking.get().getSeats();
                 for (Seat item : seats){
                     item.setStatus(true);
+                    seatRepository.save(item);
                 }
                 bookingRepository.delete(booking.get());
             }
