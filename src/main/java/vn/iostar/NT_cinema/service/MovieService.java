@@ -12,6 +12,7 @@ import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -495,7 +496,7 @@ public class MovieService {
                 Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
                 if (showTime.isPresent()){
                     Schedule schedule = item.getSeats().get(0).getSchedule();
-                    if (schedule.getEndTime().isBefore(now)){
+                    if (schedule.getEndTime().isBefore(now) || schedule.getDate().isBefore(LocalDate.now())){
                         HistoryMovieRes upcoming = new HistoryMovieRes();
                         upcoming.setBookingId(item.getBookingId());
                         upcoming.setMovieId(showTime.get().getMovie().getMovieId());
