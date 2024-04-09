@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.config.VnPayConfig;
+import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.BookingRepository;
@@ -139,8 +140,9 @@ public class VnPayController {
                     ticket.setDate(item.getSchedule().getDate());
                     ticket.setStartTime(item.getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                     ticket.setDuration(showTime.get().getMovie().getDuration());
-                    ticket.setSeat(item.getPrice().getType().toString()+" Class: row "+item.getRow()+"/column "+item.getColumn());
+                    ticket.setSeat(item.getPrice().getType().toString()+" Class: "+item.convertToUnicode()+item.getColumn());
                     ticket.setTicketPrice(item.getPrice().getPrice());
+                    ticket.setTicketStatus(TicketStatus.UNCONFIRMED);
                     ticketRepository.save(ticket);
                 }
                 response.sendRedirect("http://localhost:5173/user/payment-success");

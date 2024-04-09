@@ -48,8 +48,9 @@ public class UserController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<GenericResponse> updateProfile(@RequestBody UserReq req,
-                                                         @RequestHeader("Authorization") String authorizationHeader){
+    public ResponseEntity<GenericResponse> updateProfile(@Valid @ModelAttribute UserReq req,
+                                                         @RequestHeader("Authorization") String authorizationHeader,
+                                                         BindingResult bindingResult) {
         if (authorizationHeader.isEmpty()){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
                     GenericResponse.builder()
@@ -59,6 +60,13 @@ public class UserController {
                             .statusCode(401)
                             .build()
             );
+        }
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new GenericResponse(
+                    false,
+                    "Dữ liệu đầu vào không đúng định dạng!",
+                    Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage(),
+                    HttpStatus.BAD_REQUEST.value()));
         }
         String token = authorizationHeader.substring(7);
         String userId = jwtTokenProvider.getUserIdFromJwt(token);

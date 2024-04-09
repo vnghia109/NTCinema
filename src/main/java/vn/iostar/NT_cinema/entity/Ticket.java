@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.entity;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import vn.iostar.NT_cinema.constant.TicketStatus;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -35,4 +36,6 @@ public class Ticket {
     private String seat;
 
     private int ticketPrice;
+
+    private TicketStatus ticketStatus;
 }

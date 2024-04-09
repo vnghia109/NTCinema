@@ -32,4 +32,10 @@ public interface UserRepository extends MongoRepository<User, String> {
     Page<User> findAllByOrderByLastLoginAtDesc(@NotNull Pageable pageable);
 
     Page<User> findAllByRoleIn(List<Role> roles, @NotNull Pageable pageable);
+
+    boolean existsUserByEmail(String email);
+
+    boolean existsUserByPhone(String phone);
+
+    boolean existsUserByUserName(String userName);
 }

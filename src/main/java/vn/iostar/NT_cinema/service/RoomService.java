@@ -228,15 +228,20 @@ public class RoomService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findRoomsByCinema(String id) {
+    public ResponseEntity<GenericResponse> findRoomsByCinema(String id, Pageable pageable) {
         try {
-            Optional<Cinema> cinema = cinemaRepository.findById(id);
-            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
+            Page<Room> rooms = roomRepository.findAllByCinema_CinemaId(id, pageable);
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", rooms.getContent());
+            map.put("pageNumber", rooms.getPageable().getPageNumber() + 1);
+            map.put("pageSize", rooms.getSize());
+            map.put("totalPages", rooms.getTotalPages());
+            map.put("totalElements", rooms.getTotalElements());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Lấy danh sách phòng thành công!")
-                            .result(rooms)
+                            .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){

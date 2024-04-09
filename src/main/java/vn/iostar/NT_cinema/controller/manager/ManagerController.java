@@ -3,8 +3,10 @@ package vn.iostar.NT_cinema.controller.manager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
@@ -16,7 +18,8 @@ import java.time.LocalDate;
 @PreAuthorize("hasRole('MANAGER')")
 @RequestMapping("/api/v1/manager")
 public class ManagerController {
-
+    @Autowired
+    UserService userService;
     @Autowired
     JwtTokenProvider jwtTokenProvider;
     @Autowired
@@ -154,5 +157,18 @@ public class ManagerController {
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
         return bookingService.getTotalRevenueYearOfCinemaManager(managerId, year);
+    }
+
+    @PostMapping("/staff")
+    public ResponseEntity<GenericResponse> addStaff(@RequestBody StaffReq request,
+                                                    BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new GenericResponse(
+                    false,
+                    "Invalid input data!",
+                    null,
+                    HttpStatus.BAD_REQUEST.value()));
+        }
+        return userService.addStaff(request);
     }
 }

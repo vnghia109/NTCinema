@@ -59,6 +59,19 @@ public class AdminController {
         return userService.addManager(request);
     }
 
+    @PostMapping("/staff")
+    public ResponseEntity<GenericResponse> addStaff(@RequestBody StaffReq request,
+                                                      BindingResult bindingResult){
+        if (bindingResult.hasErrors()) {
+            return ResponseEntity.badRequest().body(new GenericResponse(
+                    false,
+                    "Invalid input data!",
+                    null,
+                    HttpStatus.BAD_REQUEST.value()));
+        }
+        return userService.addStaff(request);
+    }
+
     @GetMapping("/managers")
     public ResponseEntity<GenericResponse> getManagers(@RequestParam(defaultValue = "1") int index,
                                                     @RequestParam(defaultValue = "10") int size){
@@ -158,8 +171,10 @@ public class AdminController {
     }
 
     @GetMapping("/cinemas/{Id}/rooms")
-    public ResponseEntity<GenericResponse> getRooms(@PathVariable("Id") String Id) {
-        return roomService.findRoomsByCinema(Id);
+    public ResponseEntity<GenericResponse> getRooms(@PathVariable("Id") String Id,
+                                                    @RequestParam(defaultValue = "1") int index,
+                                                    @RequestParam(defaultValue = "10") int size) {
+        return roomService.findRoomsByCinema(Id, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/rooms/{Id}/showtimes")

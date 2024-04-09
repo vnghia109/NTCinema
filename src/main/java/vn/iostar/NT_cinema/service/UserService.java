@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
@@ -24,6 +25,7 @@ import vn.iostar.NT_cinema.repository.PasswordResetOtpRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -47,8 +49,8 @@ public class UserService {
     private JavaMailSender javaMailSender;
     @Autowired
     AddressRepository addressRepository;
-//    @Autowired
-//    TemplateEngine templateEngine;
+    @Autowired
+    CloudinaryService cloudinaryService;
 
     public Optional<User> findByUserName(String userName) {
         Optional<User> user = userRepository.findByUserName(userName);
@@ -73,7 +75,7 @@ public class UserService {
                     .body(
                             GenericResponse.builder()
                                     .success(false)
-                                    .message("Email already in use")
+                                    .message("Email này đã được đăng ký rồi.")
                                     .result(null)
                                     .statusCode(HttpStatus.CONFLICT.value())
                                     .build()
@@ -85,7 +87,7 @@ public class UserService {
                     .body(
                             GenericResponse.builder()
                                     .success(false)
-                                    .message("Phone number already in use")
+                                    .message("Số điện thoại này đã được đăng ký rồi.")
                                     .result(null)
                                     .statusCode(HttpStatus.CONFLICT.value())
                                     .build()
@@ -97,21 +99,21 @@ public class UserService {
                     .body(
                             GenericResponse.builder()
                                     .success(false)
-                                    .message("User name already in use")
+                                    .message("Tên đăng nhập này đã được sự dụng.")
                                     .result(null)
                                     .statusCode(HttpStatus.CONFLICT.value())
                                     .build()
                     );
 
         if (registerRequest.getPassword().length() < 8 || registerRequest.getPassword().length() > 32)
-            throw new RuntimeException("Password must be between 8 and 32 characters long");
+            throw new RuntimeException("Mật khẩu cần dài từ 8 đến 32 ký tự.");
 
         if (!registerRequest.getPassword().equals(registerRequest.getConfirmPassword()))
             return ResponseEntity.status(409)
                     .body(
                             GenericResponse.builder()
                                     .success(false)
-                                    .message("Password and confirm password do not match")
+                                    .message("Mật khẩu và mật khẩu nhập lại không giống nhau.")
                                     .result(null)
                                     .statusCode(HttpStatus.CONFLICT.value())
                                     .build()
@@ -133,7 +135,7 @@ public class UserService {
         return ResponseEntity.ok(
                 GenericResponse.builder()
                         .success(true)
-                        .message("Registration initiated. Please verify OTP.")
+                        .message("Quá trình đăng ký hoàn tất. Hãy xác nhận mã OTP.")
                         .result(null)
                         .statusCode(200)
                         .build()
@@ -148,7 +150,7 @@ public class UserService {
                         .body(
                                 GenericResponse.builder()
                                         .success(false)
-                                        .message("User name already in use")
+                                        .message("Tên đăng nhập đã được sử dụng.")
                                         .result(null)
                                         .statusCode(HttpStatus.CONFLICT.value())
                                         .build()
@@ -159,7 +161,7 @@ public class UserService {
                         .body(
                                 GenericResponse.builder()
                                         .success(false)
-                                        .message("Phone already in use")
+                                        .message("Số điện thoại đã được sử dụng.")
                                         .result(null)
                                         .statusCode(HttpStatus.CONFLICT.value())
                                         .build()
@@ -170,7 +172,7 @@ public class UserService {
                         .body(
                                 GenericResponse.builder()
                                         .success(false)
-                                        .message("Email already in use")
+                                        .message("Email đã được sử dụng.")
                                         .result(null)
                                         .statusCode(HttpStatus.CONFLICT.value())
                                         .build()
@@ -181,7 +183,7 @@ public class UserService {
             if (cinema.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Cinema not found")
+                        .message("Rạp phim không tồn tại.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
@@ -192,6 +194,7 @@ public class UserService {
             user.setEmail(request.getEmail());
             user.setFullName(request.getFullName());
             user.setCreatedAt(new Date());
+            user.setUpdatedAt(new Date());
             user.setPhone(request.getPhone());
             user.setRole(roleService.findByRoleName("MANAGER"));
             user.setActive(true);
@@ -202,8 +205,149 @@ public class UserService {
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
-                            .message("SignUp to manager success")
+                            .message("Đăng ký tài khoản cho quản lý thành công!")
                             .result(manager)
+                            .statusCode(200)
+                            .build()
+            );
+
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message(e.getMessage())
+                                    .result(null)
+                                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                    .build()
+                    );
+        }
+    }
+
+    public ResponseEntity<GenericResponse> addStaff(StaffReq request) {
+        try {
+            User user = new User();
+            if (userRepository.findByUserName(request.getUserName()).isPresent()){
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Tên đăng nhập đã được sử dụng.")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
+            }
+            if (userRepository.findByPhone(request.getPhone()).isPresent()){
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Số điện thoại đã được sử dụng.")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
+            }
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Email đã được sử dụng.")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
+            }
+
+            user.setUserName(request.getUserName());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setEmail(request.getEmail());
+            user.setFullName(request.getFullName());
+            user.setCreatedAt(new Date());
+            user.setUpdatedAt(new Date());
+            user.setPhone(request.getPhone());
+            user.setRole(roleService.findByRoleName("STAFF"));
+            user.setActive(true);
+
+            User staff = save(user);
+
+            return ResponseEntity.ok(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Đăng ký tài khoản cho nhân viên thành công!")
+                            .result(staff)
+                            .statusCode(200)
+                            .build()
+            );
+
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(
+                            GenericResponse.builder()
+                                    .success(false)
+                                    .message(e.getMessage())
+                                    .result(null)
+                                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                                    .build()
+                    );
+        }
+    }
+
+
+    public ResponseEntity<GenericResponse> addViewer(ViewerReq request) {
+        try {
+            User user = new User();
+            if (userRepository.findByPhone(request.getPhone()).isPresent()){
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Số điện thoại đã được sử dụng.")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
+            }
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(
+                                GenericResponse.builder()
+                                        .success(false)
+                                        .message("Email đã được sử dụng.")
+                                        .result(null)
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build()
+                        );
+            }
+            if (!request.getEmail().isEmpty()){
+                user.setEmail(request.getEmail());
+                user.setUserName(request.getEmail());
+            }else {
+                user.setEmail(null);
+            }
+            if (!request.getPhone().isEmpty()){
+                user.setPhone(request.getPhone());
+                user.setUserName(request.getPhone());
+            }else {
+                user.setPhone(null);
+            }
+
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setFullName(request.getFullName());
+            user.setCreatedAt(new Date());
+            user.setUpdatedAt(new Date());
+            user.setRole(roleService.findByRoleName("VIEWER"));
+            user.setActive(true);
+
+            User viewer = save(user);
+
+            return ResponseEntity.ok(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Đăng ký tài khoản cho người dùng thành công!")
+                            .result(viewer)
                             .statusCode(200)
                             .build()
             );
@@ -327,25 +471,64 @@ public class UserService {
             Optional<User> optionalViewer = userRepository.findById(userId);
             if (optionalViewer.isPresent()){
                 User user = optionalViewer.get();
+                if (userRepository.existsUserByPhone(request.getPhone())){
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Số điện thoại bạn muốn thay đổi đã được đăng ký bởi tài khoản khác.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+                if (userRepository.existsUserByEmail(request.getEmail())){
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Email đã được đăng ký bởi tài khoản khác.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+                if(userRepository.existsUserByUserName(request.getUserName())){
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Tên đăng nhập đã được sử dụng bởi tài khoản khác.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
 
-                if (request.getPhone() != null && !request.getUserName().equals("")) {
+                if (request.getPhone() != null && !request.getPhone().isEmpty()) {
                     user.setPhone(request.getPhone());
                 }
-                if (request.getFullName() != null && !request.getUserName().equals("")) {
+                if (request.getFullName() != null && !request.getFullName().isEmpty()) {
                     user.setFullName(request.getFullName());
                 }
-                if (request.getAddress() != null){
-                    Address address = request.getAddress();
-                    Address address1 = addressRepository.save(address);
-                    user.setAddress(address1);
+                if (request.getImage() != null){
+                    if (optionalViewer.get().getAvatar() != null){
+                        cloudinaryService.deleteImage(optionalViewer.get().getAvatar());
+                    }
+                    String image = cloudinaryService.uploadImage(request.getImage());
+                    user.setAvatar(image);
                 }
-                if (request.getEmail() != null && !request.getUserName().equals("")) {
+                if (request.getAddress() != null){
+                    Optional<Address> optionalAddress = addressRepository.findByStreetAndProvinceAndDistrictAndCountry(
+                            request.getAddress().getStreet(),
+                            request.getAddress().getProvince(),
+                            request.getAddress().getDistrict(),
+                            request.getAddress().getCountry());
+                    if (optionalAddress.isPresent()){
+                        user.setAddress(optionalAddress.get());
+                    }else {
+                        Address address = addressRepository.save(request.getAddress());
+                        user.setAddress(address);
+                    }
+                }
+                if (request.getEmail() != null && !request.getEmail().isEmpty()) {
                     user.setEmail(request.getEmail());
                 }
                 if (request.getDob() != null){
                     user.setDob(request.getDob());
                 }
-                if (request.getUserName() != null && !request.getUserName().equals("")){
+                if (request.getUserName() != null && !request.getUserName().isEmpty()) {
                     user.setUserName(request.getUserName());
                 }
 
@@ -355,14 +538,14 @@ public class UserService {
 
                 return ResponseEntity.ok().body(GenericResponse.builder()
                         .success(true)
-                        .message("Update success")
+                        .message("Cập nhật trang cá nhân thành công!")
                         .result(user)
                         .statusCode(200)
                         .build());
             }else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
-                        .message("Update fail")
+                        .message("Cập nhật thất bại.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
@@ -595,24 +778,62 @@ public class UserService {
                             .statusCode(HttpStatus.UNAUTHORIZED.value())
                             .build());
                 }
-                user.setPhone(request.getPhone());
-                user.setFullName(request.getFullName());
-                user.setEmail(request.getEmail());
-                user.setDob(request.getDob());
-                user.setRole(roleService.findByRoleName(request.getRole()));
-                user.setUserName(request.getUserName());
-                user.setUpdatedAt(new Date());
-                Optional<Address> optionalAddress = addressRepository.findByStreetAndProvinceAndDistrictAndCountry(
-                        request.getAddress().getStreet(),
-                        request.getAddress().getProvince(),
-                        request.getAddress().getDistrict(),
-                        request.getAddress().getCountry());
-                if (optionalAddress.isPresent()){
-                    user.setAddress(optionalAddress.get());
-                }else {
-                    Address address = addressRepository.save(request.getAddress());
-                    user.setAddress(address);
+                if (userRepository.existsUserByPhone(request.getPhone())){
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Số điện thoại bạn muốn thay đổi đã được đăng ký bởi tài khoản khác.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
                 }
+                if (userRepository.existsUserByEmail(request.getEmail())){
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Email đã được đăng ký bởi tài khoản khác.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+                if(userRepository.existsUserByUserName(request.getUserName())){
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Tên đăng nhập đã được sử dụng bởi tài khoản khác.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+                if (request.getPhone() != null && !request.getPhone().isEmpty()) {
+                    user.setPhone(request.getPhone());
+                }
+                if (request.getFullName() != null && !request.getFullName().isEmpty()) {
+                    user.setFullName(request.getFullName());
+                }
+                if (request.getAddress() != null){
+                    Optional<Address> optionalAddress = addressRepository.findByStreetAndProvinceAndDistrictAndCountry(
+                            request.getAddress().getStreet(),
+                            request.getAddress().getProvince(),
+                            request.getAddress().getDistrict(),
+                            request.getAddress().getCountry());
+                    if (optionalAddress.isPresent()){
+                        user.setAddress(optionalAddress.get());
+                    }else {
+                        Address address = addressRepository.save(request.getAddress());
+                        user.setAddress(address);
+                    }
+                }
+                if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+                    user.setEmail(request.getEmail());
+                }
+                if (request.getDob() != null){
+                    user.setDob(request.getDob());
+                }
+                if (request.getUserName() != null && !request.getUserName().isEmpty()) {
+                    user.setUserName(request.getUserName());
+                }
+                if (request.getRole() != null && !request.getRole().isEmpty()){
+                    user.setRole(roleService.findByRoleName(request.getRole()));
+                }
+                user.setUpdatedAt(new Date());
 
                 userRepository.save(user);
 
@@ -728,7 +949,8 @@ public class UserService {
 
             Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent());
+            result.put("content", users.getContent().stream().sorted(Comparator.comparingInt(user -> getRolePriority(user.getRole())))
+                    .collect(Collectors.toList()));
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());
             result.put("totalPages", users.getTotalPages());
@@ -749,13 +971,26 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getAllViewer(PageRequest of) {
+    private int getRolePriority(Role role) {
+        // Xác định ưu tiên của vai trò
+        if (role.getRoleName().equals("ADMIN")) {
+            return 1;
+        } else if (role.getRoleName().equals("MANAGER")) {
+            return 2;
+        } else if (role.getRoleName().equals("STAFF")) {
+            return 3;
+        } else {
+            return Integer.MAX_VALUE; // Mặc định các vai trò không biết sắp xếp ở cuối danh sách
+        }
+        }
+
+    public ResponseEntity<GenericResponse> getAllViewer(Pageable pageable) {
         try {
             List<Role> roles = new ArrayList<>();
             roles.add(roleService.findByRoleName("VIEWER"));
-            Page<User> users = userRepository.findAllByRoleIn(roles, of);
+            Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent());
+            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getFullName)).collect(Collectors.toList()));
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());
             result.put("totalPages", users.getTotalPages());
