@@ -99,7 +99,7 @@ public class RoomService {
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
                     .message("Cập nhật thông tin phòng chiếu thành công!")
-                    .result(null)
+                    .result(room)
                     .statusCode(HttpStatus.OK.value())
                     .build());
 

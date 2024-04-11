@@ -253,15 +253,7 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getListPrice(){
         return priceService.getAllPrice();
     }
-
-    @PostMapping("/prices/price")
-    public ResponseEntity<GenericResponse> addPrice(@RequestBody @Valid PriceReq priceReq,
-                                                    BindingResult bindingResult){
-        if (bindingResult.hasErrors()) {
-            throw new RuntimeException(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
-        }
-        return priceService.addPrice(priceReq);
-    }
+    
 
     @PutMapping("/prices/price/{id}")
     public ResponseEntity<?> updatePrice(@PathVariable("id") String id, @RequestBody PriceReq priceReq){

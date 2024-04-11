@@ -30,31 +30,6 @@ public class PriceService {
                         .build());
     }
 
-    public ResponseEntity<GenericResponse> addPrice(PriceReq priceReq) {
-        try {
-            Price price = new Price();
-            price.setPrice(priceReq.getPrice());
-            price.setType(PriceType.valueOf(priceReq.getType()));
-
-            Price price1 = priceRepository.save(price);
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Thành công!")
-                            .result(price1)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result("Lỗi máy chủ.")
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
 
     public ResponseEntity<GenericResponse> updatePrice(String id, PriceReq priceReq) {
         try {
