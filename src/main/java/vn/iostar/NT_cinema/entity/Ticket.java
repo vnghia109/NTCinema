@@ -36,6 +36,4 @@ public class Ticket {
     private String seat;
 
     private int ticketPrice;
-
-    private TicketStatus ticketStatus;
 }

@@ -28,9 +28,6 @@ public class Seat {
     private String column;
     private boolean status;
 
-    @DBRef
-    private Booking booking;
-
     public String convertToUnicode() {
         int num = Integer.parseInt(getRow());
         if (num < 1 || num > 26) {

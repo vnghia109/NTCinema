@@ -14,10 +14,6 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ViewerReq {
-    @NotBlank(message = "Mật khẩu không được để trống.")
-    @NotEmpty(message = "Mật khẩu không được để trống.")
-    private String password;
-
     @Email(message = "Email không đúng định dạng.")
     private String email;
 
@@ -25,4 +21,9 @@ public class ViewerReq {
 
     @Size(max = 10, message = "SDT không đúng định dạng.")
     private String phone;
+
+    @Size(min = 8, max = 32, message = "Mật này từ 8-32 kí tự.")
+    @NotBlank(message = "Mật khẩu không được để trống.")
+    @NotEmpty(message = "Mật khẩu không được để trống.")
+    private String password;
 }

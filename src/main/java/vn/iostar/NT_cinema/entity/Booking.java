@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.entity;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.FoodWithCount;
 
 import java.util.Date;
@@ -30,4 +31,6 @@ public class Booking {
     private List<FoodWithCount> foods;
 
     private int total;
+
+    private TicketStatus ticketStatus;
 }

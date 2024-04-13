@@ -60,12 +60,12 @@ public class AdminController {
     }
 
     @PostMapping("/staff")
-    public ResponseEntity<GenericResponse> addStaff(@RequestBody StaffReq request,
+    public ResponseEntity<GenericResponse> addStaff(@Valid@RequestBody StaffReq request,
                                                       BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
                     false,
-                    "Invalid input data!",
+                    "Dữ liệu đầu vào không hợp lệ!!",
                     null,
                     HttpStatus.BAD_REQUEST.value()));
         }

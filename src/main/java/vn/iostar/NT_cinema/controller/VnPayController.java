@@ -142,7 +142,6 @@ public class VnPayController {
                     ticket.setDuration(showTime.get().getMovie().getDuration());
                     ticket.setSeat(item.getPrice().getType().toString()+" Class: "+item.convertToUnicode()+item.getColumn());
                     ticket.setTicketPrice(item.getPrice().getPrice());
-                    ticket.setTicketStatus(TicketStatus.UNCONFIRMED);
                     ticketRepository.save(ticket);
                 }
                 response.sendRedirect("http://localhost:5173/user/payment-success");

@@ -14,21 +14,21 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StaffReq {
-    @NotBlank
-    @NotEmpty
+    @NotBlank(message = "Tên đăng nhập không được để trống.")
+    @NotEmpty(message = "Tên đăng nhập không được để trống.")
     private String userName;
 
-    @NotBlank
-    @NotEmpty
+    @NotBlank(message = "Mật khẩu không được để trống.")
+    @NotEmpty(message = "Mật khẩu không được để trống.")
     private String password;
 
-    @NotBlank
-    @NotEmpty
-    @Email
+    @NotBlank(message = "Email không được để trống.")
+    @NotEmpty(message = "Email không được để trống.")
+    @Email(message = "Email không đúng định dạng.")
     private String email;
 
     private String fullName;
 
-    @Size(max = 10)
+    @Size(max = 10, message = "SDT không đúng định dạng.")
     private String phone;
 }

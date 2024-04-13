@@ -2,17 +2,16 @@ package vn.iostar.NT_cinema.controller.staff;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.StaffReq;
 import vn.iostar.NT_cinema.dto.ViewerReq;
+import vn.iostar.NT_cinema.service.BookingService;
 import vn.iostar.NT_cinema.service.UserService;
 
 @RestController
@@ -21,6 +20,8 @@ import vn.iostar.NT_cinema.service.UserService;
 public class StaffController {
     @Autowired
     UserService userService;
+    @Autowired
+    BookingService bookingService;
 
     @PostMapping("/viewer")
     public ResponseEntity<GenericResponse> addViewer(@Valid @RequestBody ViewerReq request){
@@ -36,5 +37,16 @@ public class StaffController {
                     );
         }
         return userService.addViewer(request);
+    }
+
+    @GetMapping("/bookings")
+    public ResponseEntity<GenericResponse> getBookings(@RequestParam(defaultValue = "1") int index,
+                                                      @RequestParam(defaultValue = "10") int size) {
+        return bookingService.getBookings(PageRequest.of(index-1, size));
+    }
+
+    @PutMapping("/bookings/{bookingId}/confirm")
+    public ResponseEntity<GenericResponse> confirmBooking(@PathVariable("bookingId") String bookingId){
+        return bookingService.confirmBooking(bookingId);
     }
 }

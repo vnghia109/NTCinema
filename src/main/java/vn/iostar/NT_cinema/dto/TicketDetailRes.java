@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.dto;
 
 import lombok.*;
+import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.entity.Seat;
 
 import java.time.LocalDate;
@@ -24,4 +25,5 @@ public class TicketDetailRes {
     private List<Seat> seats;
     private List<FoodWithCount> foods;
     private int price;
+    private TicketStatus status;
 }

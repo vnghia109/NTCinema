@@ -15,6 +15,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
@@ -90,6 +91,7 @@ public class BookingService {
             booking.setSeats(seats);
             booking.setFoods(convertToFoodWithCountList(foodIds));
             booking.setTotal(totalBooking(seats, foods));
+            booking.setTicketStatus(TicketStatus.UNCONFIRMED);
 
             Booking bookingRes = bookingRepository.save(booking);
 
@@ -272,6 +274,7 @@ public class BookingService {
             ticket.setSeats(booking.get().getSeats());
             ticket.setFoods(booking.get().getFoods());
             ticket.setPrice(booking.get().getTotal());
+            ticket.setStatus(booking.get().getTicketStatus());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -532,6 +535,38 @@ public class BookingService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> confirmBooking(String bookingId) {
+        try {
+            Optional<Booking> booking = bookingRepository.findById(bookingId);
+            if (booking.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Không tìm thấy vé đặt.")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            booking.get().setTicketStatus(TicketStatus.CONFIRMED);
+            bookingRepository.save(booking.get());
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Đã xác nhận vé.")
+                            .result(booking)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)

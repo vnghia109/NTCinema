@@ -227,8 +227,6 @@ public class ShowTimeService {
             optionalShowTime.get().setDelete(!optionalShowTime.get().isDelete());
             optionalShowTime.get().setUpdatedAt(new Date());
             ShowTime showTime = showTimeRepository.save(optionalShowTime.get());
-            List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(id);
-            scheduleRepository.deleteAll(schedules);
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
                     .message("Cập nhật lịch chiếu thành công!")
