@@ -9,13 +9,8 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.RoomReq;
 import vn.iostar.NT_cinema.dto.UpdateRoomReq;
-import vn.iostar.NT_cinema.entity.Cinema;
-import vn.iostar.NT_cinema.entity.Manager;
-import vn.iostar.NT_cinema.entity.Room;
-import vn.iostar.NT_cinema.repository.CinemaRepository;
-import vn.iostar.NT_cinema.repository.ManagerRepository;
-import vn.iostar.NT_cinema.repository.RoomRepository;
-import vn.iostar.NT_cinema.repository.UserRepository;
+import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.repository.*;
 
 import java.util.*;
 
@@ -27,6 +22,10 @@ public class RoomService {
     CinemaRepository cinemaRepository;
     @Autowired
     ManagerRepository managerRepository;
+    @Autowired
+    ShowTimeRepository showTimeRepository;
+    @Autowired
+    SeatRepository seatRepository;
 
 
     public ResponseEntity<GenericResponse> addRoomByManager(RoomReq roomReq, String managerId) {
@@ -89,6 +88,16 @@ public class RoomService {
                         .build());
             }
 
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(List.of(roomOptional.get()));
+            List<Seat> seats = seatRepository.findAllByShowTimeIn(showTimes);
+            if (!seats.isEmpty()){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Phòng đang được sử dụng. Không thể sửa.")
+                        .result(null)
+                        .statusCode(HttpStatus.BAD_REQUEST.value())
+                        .build());
+            }
             Room room = roomOptional.get();
             room.setRoomName(updateRoomReq.getRoomName());
             room.setRowSeat(updateRoomReq.getRowSeat());

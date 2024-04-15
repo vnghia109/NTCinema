@@ -36,7 +36,8 @@ public class SeatService {
 
     public ResponseEntity<GenericResponse> checkSeat(String showtimeId, List<SeatReq> seatReq){
         try {
-            if (showTimeRepository.findById(showtimeId).isEmpty()){
+            Optional<ShowTime> showTime = showTimeRepository.findById(showtimeId);
+            if (showTime.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
@@ -49,7 +50,7 @@ public class SeatService {
             List<String> seatIds = new ArrayList<>();
             for (SeatReq item : seatReq) {
                 Schedule schedule = scheduleRepository.findById(item.getScheduleId()).get();
-                Optional<Seat> optionalSeat = seatRepository.findByColumnAndRowAndShowTimeIdAndScheduleAndStatusIsTrue(item.getColumn(), item.getRow(), showtimeId, schedule);
+                Optional<Seat> optionalSeat = seatRepository.findByColumnAndRowAndShowTimeAndScheduleAndStatusIsTrue(item.getColumn(), item.getRow(), showTime.get(), schedule);
                 if (optionalSeat.isPresent()){
                     seatIds.add(optionalSeat.get().getSeatId());
                     continue;
@@ -65,7 +66,7 @@ public class SeatService {
                                     .build());
                 }
                 Seat seat = new Seat();
-                seat.setShowTimeId(showtimeId);
+                seat.setShowTime(showTime.get());
                 seat.setPrice(price.get());
                 seat.setColumn(item.getColumn());
                 seat.setRow(item.getRow());
@@ -102,8 +103,9 @@ public class SeatService {
 
     public ResponseEntity<GenericResponse> getSeatBooked(String showtimeId, String scheduleId){
         try {
+            ShowTime showTime = showTimeRepository.findById(showtimeId).get();
             Schedule schedule = scheduleRepository.findById(scheduleId).get();
-            List<Seat> seats = seatRepository.findAllByShowTimeIdAndScheduleAndStatusIsFalse(showtimeId, schedule);
+            List<Seat> seats = seatRepository.findAllByShowTimeAndScheduleAndStatusIsFalse(showTime, schedule);
             List<SeatBookedRes> seatBookedRes = seats.stream()
                     .map(item -> new SeatBookedRes(item.getRow(), item.getColumn()))
                     .collect(Collectors.toList());
@@ -130,7 +132,7 @@ public class SeatService {
         try {
             ShowTime showTime = showTimeRepository.findById(showtimeId).get();
             Schedule schedule = scheduleRepository.findById(scheduleId).get();
-            List<Seat> seats = seatRepository.findAllByShowTimeIdAndScheduleAndStatusIsFalse(showtimeId, schedule);
+            List<Seat> seats = seatRepository.findAllByShowTimeAndScheduleAndStatusIsFalse(showTime, schedule);
             int SeatAvailable = showTime.getRoom().getColSeat()*showTime.getRoom().getRowSeat() - seats.size();
 
             Map<Object, Object> map = new HashMap<>();

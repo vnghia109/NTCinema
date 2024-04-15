@@ -131,15 +131,15 @@ public class VnPayController {
                 for (Seat item: booking.get().getSeats()) {
                     Ticket ticket = new Ticket();
                     ticket.setUserId(booking.get().getUserId());
-                    Optional<ShowTime> showTime = showTimeRepository.findById(item.getShowTimeId());
-                    Cinema cinema = showTime.get().getRoom().getCinema();
+                    ShowTime showTime = item.getShowTime();
+                    Cinema cinema = showTime.getRoom().getCinema();
                     ticket.setCinemaName(cinema.getCinemaName());
                     ticket.setCinemaAddress(cinema.getLocation());
                     ticket.setCreateAt(new Date());
-                    ticket.setMovieName(showTime.get().getMovie().getTitle());
+                    ticket.setMovieName(showTime.getMovie().getTitle());
                     ticket.setDate(item.getSchedule().getDate());
                     ticket.setStartTime(item.getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-                    ticket.setDuration(showTime.get().getMovie().getDuration());
+                    ticket.setDuration(showTime.getMovie().getDuration());
                     ticket.setSeat(item.getPrice().getType().toString()+" Class: "+item.convertToUnicode()+item.getColumn());
                     ticket.setTicketPrice(item.getPrice().getPrice());
                     ticketRepository.save(ticket);

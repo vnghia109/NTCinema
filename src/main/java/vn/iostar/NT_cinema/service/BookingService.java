@@ -86,12 +86,11 @@ public class BookingService {
             }
             Booking booking = new Booking();
             booking.setUserId(userId);
-            booking.setShowtimeId(seats.get(0).getShowTimeId());
+            booking.setShowtimeId(seats.get(0).getShowTime().getShowTimeId());
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
             booking.setFoods(convertToFoodWithCountList(foodIds));
             booking.setTotal(totalBooking(seats, foods));
-            booking.setTicketStatus(TicketStatus.UNCONFIRMED);
 
             Booking bookingRes = bookingRepository.save(booking);
 
@@ -165,7 +164,7 @@ public class BookingService {
     public void sendEmailBookingSuccess(Booking booking) {
         try {
             Optional<User> user = userRepository.findById(booking.getUserId());
-            ShowTime showTime = showTimeRepository.findById(booking.getSeats().get(0).getShowTimeId()).get();
+            ShowTime showTime = showTimeRepository.findById(booking.getSeats().get(0).getShowTime().getShowTimeId()).get();
             Schedule schedule = booking.getSeats().get(0).getSchedule();
 
             MimeMessage message = mailSender.createMimeMessage();
@@ -260,7 +259,7 @@ public class BookingService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
             }
-            Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTimeId());
+            Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTime().getShowTimeId());
             Schedule schedule = booking.get().getSeats().get(0).getSchedule();
             TicketDetailRes ticket = new TicketDetailRes();
             ticket.setMovieId(showTime.get().getMovie().getMovieId());
@@ -274,7 +273,6 @@ public class BookingService {
             ticket.setSeats(booking.get().getSeats());
             ticket.setFoods(booking.get().getFoods());
             ticket.setPrice(booking.get().getTotal());
-            ticket.setStatus(booking.get().getTicketStatus());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -563,6 +561,38 @@ public class BookingService {
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Đã xác nhận vé.")
+                            .result(booking)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> cancelTicket(String bookingId, String userId) {
+        try {
+            Optional<Booking> booking = bookingRepository.findByBookingIdAndUserId(bookingId, userId);
+            if (booking.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Vé muốn xóa không tồn tại.")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            booking.get().setTicketStatus(TicketStatus.CANCELLED);
+            bookingRepository.save(booking.get());
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Đã hủy vé thành công!")
                             .result(booking)
                             .statusCode(HttpStatus.OK.value())
                             .build());

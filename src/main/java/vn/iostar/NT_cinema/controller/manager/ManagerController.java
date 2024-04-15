@@ -10,6 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
+import vn.iostar.NT_cinema.entity.StockEntry;
+import vn.iostar.NT_cinema.repository.StockEntryRepository;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.*;
 
@@ -37,6 +39,8 @@ public class ManagerController {
     ReviewService reviewService;
     @Autowired
     ScheduleService scheduleService;
+    @Autowired
+    StockEntryService stockEntryService;
 
     @PostMapping("/rooms")
     public ResponseEntity<GenericResponse> addRoom(@RequestHeader("Authorization") String authorizationHeader,
@@ -171,5 +175,13 @@ public class ManagerController {
                     HttpStatus.BAD_REQUEST.value()));
         }
         return userService.addStaff(request);
+    }
+
+    @GetMapping("/foods/import")
+    public ResponseEntity<GenericResponse> importFoods(@RequestHeader("Authorization") String authorizationHeader,
+                                                       @RequestBody StockEntryReq req) {
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return stockEntryService.importFoods(managerId, req);
     }
 }

@@ -453,7 +453,7 @@ public class MovieService {
                 LocalDateTime localDateTime = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
                 Date start = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
                 if (start.after(new Date())){
-                    Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
+                    Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTime().getShowTimeId());
                     if (showTime.isPresent()){
                         HistoryMovieRes upcoming = new HistoryMovieRes();
                         upcoming.setBookingId(item.getBookingId());
@@ -493,7 +493,7 @@ public class MovieService {
             List<HistoryMovieRes> historyMovieRes = new ArrayList<>();
             LocalTime now = LocalTime.now();
             for (Booking item : bookings) {
-                Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTimeId());
+                Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTime().getShowTimeId());
                 if (showTime.isPresent()){
                     Schedule schedule = item.getSeats().get(0).getSchedule();
                     if (schedule.getEndTime().isBefore(now) || schedule.getDate().isBefore(LocalDate.now())){

@@ -16,7 +16,8 @@ public class Seat {
     @Id
     private String seatId;
 
-    private String showTimeId;
+    @DBRef
+    private ShowTime showTime;
 
     @DBRef
     private Schedule schedule;

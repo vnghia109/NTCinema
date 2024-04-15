@@ -2,11 +2,13 @@ package vn.iostar.NT_cinema.repository;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import org.springframework.expression.spel.ast.OpAnd;
 import org.springframework.stereotype.Repository;
 import vn.iostar.NT_cinema.entity.Booking;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface BookingRepository extends MongoRepository<Booking, String> {
@@ -18,4 +20,5 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     List<Booking> findAllByShowtimeIdIn(List<String> showtimeIds);
     @Query("{ 'createAt': { $gte: ?0, $lt: ?1 }, 'showtimeId': { $in: ?2 } }")
     List<Booking> findByYearAndShowtimeIds(Date startDate, Date endDate, List<String> showtimeIds);
+    Optional<Booking> findByBookingIdAndUserId(String bookingId, String userId);
 }
