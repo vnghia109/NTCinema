@@ -23,6 +23,7 @@ import vn.iostar.NT_cinema.repository.*;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.*;
@@ -91,6 +92,7 @@ public class BookingService {
             booking.setSeats(seats);
             booking.setFoods(convertToFoodWithCountList(foodIds));
             booking.setTotal(totalBooking(seats, foods));
+            booking.setTicketStatus(TicketStatus.UNCONFIRMED);
 
             Booking bookingRes = bookingRepository.save(booking);
 
@@ -585,6 +587,18 @@ public class BookingService {
                                 .message("Vé muốn xóa không tồn tại.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            Schedule schedule = booking.get().getSeats().get(0).getSchedule();
+            LocalDateTime localDateTime = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
+            Date start = Date.from(localDateTime.minusHours(1).atZone(ZoneId.systemDefault()).toInstant());
+            if (start.before(new Date())){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Vé đã quá thời hạn để hủy.")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
                                 .build());
             }
             booking.get().setTicketStatus(TicketStatus.CANCELLED);

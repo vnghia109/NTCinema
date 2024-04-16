@@ -38,10 +38,10 @@ public class ScheduleService {
             Optional<Movie> optionalMovie = movieRepository.findById(showTime.get().getMovie().getMovieId());
             LocalTime endTime = scheduleReq.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
 
-            if (scheduleReq.getDate().isBefore(showTime.get().getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
+            if (scheduleReq.getDate().isBefore(showTime.get().getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) || scheduleReq.getDate().isAfter(showTime.get().getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)
-                        .message("Giờ chiếu không được trước thời gian bắt đầu.")
+                        .message("Giờ chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" nằm ngoài thời gian chiếu cho phép.")
                         .result(null)
                         .statusCode(HttpStatus.CONFLICT.value())
                         .build());

@@ -453,19 +453,17 @@ public class MovieService {
                 LocalDateTime localDateTime = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
                 Date start = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
                 if (start.after(new Date())){
-                    Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTime().getShowTimeId());
-                    if (showTime.isPresent()){
-                        HistoryMovieRes upcoming = new HistoryMovieRes();
-                        upcoming.setBookingId(item.getBookingId());
-                        upcoming.setMovieId(showTime.get().getMovie().getMovieId());
-                        upcoming.setMovieName(showTime.get().getMovie().getTitle());
-                        upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
-                        upcoming.setDate(schedule.getDate());
-                        upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-                        upcoming.setPrice(item.getTotal());
+                    ShowTime showTime = item.getSeats().get(0).getShowTime();
+                    HistoryMovieRes upcoming = new HistoryMovieRes();
+                    upcoming.setBookingId(item.getBookingId());
+                    upcoming.setMovieId(showTime.getMovie().getMovieId());
+                    upcoming.setMovieName(showTime.getMovie().getTitle());
+                    upcoming.setCinemaName(showTime.getRoom().getCinema().getCinemaName());
+                    upcoming.setDate(schedule.getDate());
+                    upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                    upcoming.setPrice(item.getTotal());
 
-                        historyMovieRes.add(upcoming);
-                    }
+                    historyMovieRes.add(upcoming);
                 }
             }
             Collections.reverse(historyMovieRes);
@@ -491,23 +489,22 @@ public class MovieService {
         try {
             List<Booking> bookings = bookingRepository.findAllByUserIdAndIsPaymentIsTrue(userId);
             List<HistoryMovieRes> historyMovieRes = new ArrayList<>();
-            LocalTime now = LocalTime.now();
             for (Booking item : bookings) {
-                Optional<ShowTime> showTime = showTimeRepository.findById(item.getSeats().get(0).getShowTime().getShowTimeId());
-                if (showTime.isPresent()){
-                    Schedule schedule = item.getSeats().get(0).getSchedule();
-                    if (schedule.getEndTime().isBefore(now) || schedule.getDate().isBefore(LocalDate.now())){
-                        HistoryMovieRes upcoming = new HistoryMovieRes();
-                        upcoming.setBookingId(item.getBookingId());
-                        upcoming.setMovieId(showTime.get().getMovie().getMovieId());
-                        upcoming.setMovieName(showTime.get().getMovie().getTitle());
-                        upcoming.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
-                        upcoming.setDate(schedule.getDate());
-                        upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-                        upcoming.setPrice(item.getTotal());
+                ShowTime showTime = item.getSeats().get(0).getShowTime();
+                Schedule schedule = item.getSeats().get(0).getSchedule();
+                LocalDateTime localDateTime = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
+                Date end = Date.from(localDateTime.plusMinutes(Integer.parseInt(showTime.getMovie().getDuration())).atZone(ZoneId.systemDefault()).toInstant());
+                if (end.before(new Date())){
+                    HistoryMovieRes upcoming = new HistoryMovieRes();
+                    upcoming.setBookingId(item.getBookingId());
+                    upcoming.setMovieId(showTime.getMovie().getMovieId());
+                    upcoming.setMovieName(showTime.getMovie().getTitle());
+                    upcoming.setCinemaName(showTime.getRoom().getCinema().getCinemaName());
+                    upcoming.setDate(schedule.getDate());
+                    upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                    upcoming.setPrice(item.getTotal());
 
-                        historyMovieRes.add(upcoming);
-                    }
+                    historyMovieRes.add(upcoming);
                 }
             }
             Collections.reverse(historyMovieRes);

@@ -114,10 +114,10 @@ public class ShowTimeService {
 
             for (TimeShow item : showTimeReq.getSchedules()) {
                 LocalTime endTime = item.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
-                if (item.getDate().isBefore(showTime.getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
+                if (item.getDate().isBefore(showTime.getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) || item.getDate().isAfter(showTime.getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
-                            .message("Lịch chiếu không được trước thời gian bắt đầu.")
+                            .message("Giờ chiếu bắt đầu lúc "+item.getStartTime()+" ngày "+item.getDate()+" nằm ngoài thời gian chiếu cho phép.")
                             .result(null)
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
