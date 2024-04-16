@@ -326,9 +326,15 @@ public class BookingService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getBookings(Pageable pageable) {
+    public ResponseEntity<GenericResponse> getBookings(Pageable pageable, String status) {
         try {
-            Page<Booking> bookings = bookingRepository.findAll(pageable);
+            Page<Booking> bookings;
+            if (status.isEmpty() || status.isBlank()){
+                bookings = bookingRepository.findAll(pageable);
+            }else {
+                TicketStatus ticketStatus = TicketStatus.valueOf(status);
+                bookings = bookingRepository.findAllByTicketStatus(ticketStatus, pageable);
+            }
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", bookings.getContent());

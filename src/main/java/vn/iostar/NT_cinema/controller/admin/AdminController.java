@@ -360,8 +360,9 @@ public class AdminController {
 
     @GetMapping("/bookings")
     public ResponseEntity<GenericResponse> getBookings(@RequestParam(defaultValue = "1") int index,
-                                                       @RequestParam(defaultValue = "10") int size){
-        return bookingService.getBookings(PageRequest.of(index-1, size));
+                                                       @RequestParam(defaultValue = "10") int size,
+                                                       @RequestParam(defaultValue = "") String status){
+        return bookingService.getBookings(PageRequest.of(index-1, size), status);
     }
 
     @GetMapping("/tickets")
