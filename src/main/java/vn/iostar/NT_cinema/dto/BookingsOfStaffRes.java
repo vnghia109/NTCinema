@@ -23,4 +23,5 @@ public class BookingsOfStaffRes {
     private LocalDate date;
     private String startTime;
     private int price;
+    private Date createAt;
 }

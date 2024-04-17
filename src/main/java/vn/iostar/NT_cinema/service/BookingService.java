@@ -377,6 +377,7 @@ public class BookingService {
                 bookingRes.setDate(item.getSeats().get(0).getSchedule().getDate());
                 bookingRes.setStartTime(item.getSeats().get(0).getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                 bookingRes.setPrice(item.getTotal());
+                bookingRes.setCreateAt(item.getCreateAt());
 
                 list.add(bookingRes);
             }
