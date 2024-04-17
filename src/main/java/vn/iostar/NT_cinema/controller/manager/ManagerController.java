@@ -177,7 +177,7 @@ public class ManagerController {
         return userService.addStaff(request);
     }
 
-    @GetMapping("/foods/import")
+    @PostMapping("/foods/import")
     public ResponseEntity<GenericResponse> importFoods(@RequestHeader("Authorization") String authorizationHeader,
                                                        @RequestBody StockEntryReq req) {
         String token = authorizationHeader.substring(7);
