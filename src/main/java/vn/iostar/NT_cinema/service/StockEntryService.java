@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.StockEntryReq;
+import vn.iostar.NT_cinema.dto.StockEntryRes;
 import vn.iostar.NT_cinema.entity.Food;
 import vn.iostar.NT_cinema.entity.FoodInventory;
 import vn.iostar.NT_cinema.entity.Manager;
@@ -88,11 +89,12 @@ public class StockEntryService {
             food.get().setQuantity(food.get().getQuantity() + saved.getQuantity());
             foodRepository.save(food.get());
 
+            StockEntryRes res = new StockEntryRes(saved.getStockEntryId(), saved.getFood(), saved.getManager().getUserId(), saved.getQuantity(), saved.getPurchasePrice(), saved.getEntryDate(), saved.getSupplier(), saved.getTotalPrice());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Nhập hàng thành công!")
-                            .result(saved)
+                            .result(res)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
