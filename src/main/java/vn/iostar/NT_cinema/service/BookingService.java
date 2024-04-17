@@ -657,11 +657,11 @@ public class BookingService {
 
             for (FoodWithCount item: booking.get().getFoods()) {
                 Food food = item.getFood();
-                food.setQuantity(food.getQuantity() - item.getCount());
+                food.setQuantity(food.getQuantity() + item.getCount());
                 foodRepository.save(food);
                 Cinema cinema = booking.get().getSeats().get(0).getShowTime().getRoom().getCinema();
                 FoodInventory foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema).get();
-                foodInventory.setQuantity(foodInventory.getQuantity() - item.getCount());
+                foodInventory.setQuantity(foodInventory.getQuantity() + item.getCount());
                 foodInventoryRepository.save(foodInventory);
             }
 
