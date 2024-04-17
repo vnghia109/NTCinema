@@ -233,9 +233,11 @@ public class AdminController {
         return foodService.addFood(foodReq);
     }
 
-    @DeleteMapping("/foods/{id}")
-    public ResponseEntity<GenericResponse> deleteFood(@PathVariable("id") String id){
-        return foodService.deleteFood(id);
+    @GetMapping("/foods")
+    public ResponseEntity<GenericResponse> getFoods(@RequestParam(defaultValue = "") String type,
+                                                    @RequestParam(defaultValue = "1") int index,
+                                                    @RequestParam(defaultValue = "10") int size) {
+        return foodService.adminGetFoods(type, PageRequest.of(index-1, size));
     }
 
     @PatchMapping("/foods/{id}")

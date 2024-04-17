@@ -24,8 +24,8 @@ public class TicketDetailRes {
     private int duration;
     private String cinemaName;
     private String roomName;
-    private List<Seat> seats;
-    private List<FoodWithCount> foods;
+    private List<SeatBookedRes> seats;
+    private List<String> foods;
     private int price;
     private TicketStatus status;
     private Date createAt;

@@ -286,8 +286,12 @@ public class BookingService {
             ticket.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
             ticket.setDuration(Integer.parseInt(showTime.get().getMovie().getDuration()));
             ticket.setRoomName(showTime.get().getRoom().getRoomName());
-            ticket.setSeats(booking.get().getSeats());
-            ticket.setFoods(booking.get().getFoods());
+            List<SeatBookedRes> seats = new ArrayList<>();
+            for (Seat seat : booking.get().getSeats()) {
+                seats.add(new SeatBookedRes(seat.getRow(), seat.getColumn()));
+            }
+            ticket.setSeats(seats);
+            ticket.setFoods(booking.get().getFoods().stream().map(FoodWithCount::getFood).map(Food::getName).collect(Collectors.toList()));
             ticket.setPrice(booking.get().getTotal());
             ticket.setStatus(booking.get().getTicketStatus());
             ticket.setCreateAt(booking.get().getCreateAt());

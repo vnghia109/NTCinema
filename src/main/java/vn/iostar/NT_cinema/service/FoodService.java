@@ -71,38 +71,6 @@ public class FoodService {
         }
     }
 
-    public ResponseEntity<GenericResponse> deleteFood(String id) {
-        try {
-            Optional<Food> food = foodRepository.findById(id);
-            if (food.isEmpty())
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Không tìm thấy đồ ăn.")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
-
-            foodRepository.delete(food.get());
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Xóa đồ ăn thành công!")
-                            .result(null)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result("Lỗi máy chủ.")
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
     public ResponseEntity<GenericResponse> updateIsDeleteFood(String id) {
         try {
             Optional<Food> food = foodRepository.findById(id);
@@ -215,6 +183,39 @@ public class FoodService {
             }
             Map<String, Object> map = new HashMap<>();
             map.put("content", foodByCinemas);
+            map.put("pageNumber", foods.getPageable().getPageNumber() + 1);
+            map.put("pageSize", foods.getSize());
+            map.put("totalPages", foods.getTotalPages());
+            map.put("totalElements", foods.getTotalElements());
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy thông tin đồ ăn thành công!")
+                            .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Lỗi máy chủ.")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> adminGetFoods(String type, Pageable pageable) {
+        try {
+            Page<Food> foods;
+            if (type.isEmpty()){
+                foods = foodRepository.findAll(pageable);
+            }else {
+                FoodType foodType = FoodType.valueOf(type);
+                foods = foodRepository.findAllByFoodType(foodType, pageable);
+            }
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", foods.getContent());
             map.put("pageNumber", foods.getPageable().getPageNumber() + 1);
             map.put("pageSize", foods.getSize());
             map.put("totalPages", foods.getTotalPages());
