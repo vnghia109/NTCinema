@@ -7,12 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.config.VnPayConfig;
 import vn.iostar.NT_cinema.constant.TicketStatus;
+import vn.iostar.NT_cinema.dto.FoodWithCount;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.*;
-import vn.iostar.NT_cinema.repository.BookingRepository;
-import vn.iostar.NT_cinema.repository.SeatRepository;
-import vn.iostar.NT_cinema.repository.ShowTimeRepository;
-import vn.iostar.NT_cinema.repository.TicketRepository;
+import vn.iostar.NT_cinema.repository.*;
 import vn.iostar.NT_cinema.service.BookingService;
 
 import java.io.IOException;
@@ -29,7 +27,6 @@ import java.util.*;
 public class VnPayController {
     @Autowired
     BookingService bookingService;
-
     @Autowired
     BookingRepository bookingRepository;
     @Autowired
@@ -38,6 +35,11 @@ public class VnPayController {
     ShowTimeRepository showTimeRepository;
     @Autowired
     SeatRepository seatRepository;
+    @Autowired
+    FoodInventoryRepository foodInventoryRepository;
+    @Autowired
+    FoodRepository foodRepository;
+
     @GetMapping("/payment")
     public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId) throws UnsupportedEncodingException {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
@@ -143,6 +145,16 @@ public class VnPayController {
                     ticket.setSeat(item.getPrice().getType().toString()+" Class: "+item.convertToUnicode()+item.getColumn());
                     ticket.setTicketPrice(item.getPrice().getPrice());
                     ticketRepository.save(ticket);
+                }
+
+                for (FoodWithCount item: booking.get().getFoods()) {
+                    Food food = item.getFood();
+                    food.setQuantity(food.getQuantity() - item.getCount());
+                    foodRepository.save(food);
+                    Cinema cinema = booking.get().getSeats().get(0).getShowTime().getRoom().getCinema();
+                    FoodInventory foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema).get();
+                    foodInventory.setQuantity(foodInventory.getQuantity() - item.getCount());
+                    foodInventoryRepository.save(foodInventory);
                 }
                 response.sendRedirect("http://localhost:5173/user/payment-success");
             }

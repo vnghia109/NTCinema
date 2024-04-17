@@ -361,8 +361,9 @@ public class AdminController {
     @GetMapping("/bookings")
     public ResponseEntity<GenericResponse> getBookings(@RequestParam(defaultValue = "1") int index,
                                                        @RequestParam(defaultValue = "10") int size,
-                                                       @RequestParam(defaultValue = "") String status){
-        return bookingService.getBookings(PageRequest.of(index-1, size), status);
+                                                       @RequestParam(defaultValue = "") String status,
+                                                       @RequestParam(required = false) String cinemaId){
+        return bookingService.getBookings(status, cinemaId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/tickets")

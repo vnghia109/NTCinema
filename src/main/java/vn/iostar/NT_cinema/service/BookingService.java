@@ -57,6 +57,8 @@ public class BookingService {
     CinemaRepository cinemaRepository;
     @Autowired
     ScheduleRepository scheduleRepository;
+    @Autowired
+    FoodInventoryRepository foodInventoryRepository;
 
     public ResponseEntity<GenericResponse> bookTicket(String userId, BookReq bookReq) {
         try {
@@ -261,11 +263,23 @@ public class BookingService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
             }
+            Optional<User> user = userRepository.findById(booking.get().getUserId());
+            if (user.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Người dùng không tông tại.")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
             Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTime().getShowTimeId());
             Schedule schedule = booking.get().getSeats().get(0).getSchedule();
             TicketDetailRes ticket = new TicketDetailRes();
             ticket.setMovieId(showTime.get().getMovie().getMovieId());
             ticket.setMovieName(showTime.get().getMovie().getTitle());
+            ticket.setUserName(user.get().getUserName());
+            ticket.setFullName(user.get().getFullName());
             ticket.setDate(schedule.getDate());
             ticket.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
             ticket.setEndTime(schedule.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -275,6 +289,8 @@ public class BookingService {
             ticket.setSeats(booking.get().getSeats());
             ticket.setFoods(booking.get().getFoods());
             ticket.setPrice(booking.get().getTotal());
+            ticket.setStatus(booking.get().getTicketStatus());
+            ticket.setCreateAt(booking.get().getCreateAt());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -326,18 +342,47 @@ public class BookingService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getBookings(Pageable pageable, String status) {
+    public ResponseEntity<GenericResponse> getBookings(String status, String cinemaId, Pageable pageable) {
         try {
             Page<Booking> bookings;
-            if (status.isEmpty() || status.isBlank()){
-                bookings = bookingRepository.findAll(pageable);
-            }else {
-                TicketStatus ticketStatus = TicketStatus.valueOf(status);
-                bookings = bookingRepository.findAllByTicketStatus(ticketStatus, pageable);
+            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(cinemaId);
+            if (cinemaId == null) {
+                if (status.isEmpty() || status.isBlank()) {
+                    bookings = bookingRepository.findAll(pageable);
+                } else {
+                    TicketStatus ticketStatus = TicketStatus.valueOf(status);
+                    bookings = bookingRepository.findAllByTicketStatus(ticketStatus, pageable);
+                }
+            } else {
+                List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
+                List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
+                if (status.isEmpty() || status.isBlank()) {
+                    bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds, pageable);
+                } else {
+                    TicketStatus ticketStatus = TicketStatus.valueOf(status);
+                    bookings = bookingRepository.findAllByShowtimeIdInAndTicketStatus(showtimeIds, ticketStatus, pageable);
+                }
+            }
+
+            List<BookingsOfStaffRes> list = new ArrayList<>();
+            for (Booking item : bookings.getContent()) {
+                Optional<User> user = userRepository.findById(item.getUserId());
+                BookingsOfStaffRes bookingRes = new BookingsOfStaffRes();
+                bookingRes.setBookingId(item.getBookingId());
+                bookingRes.setUserName(user.get().getUserName());
+                bookingRes.setFullName(user.get().getFullName());
+                bookingRes.setCinemaName(item.getSeats().get(0).getShowTime().getRoom().getCinema().getCinemaName());
+                bookingRes.setMovieName(item.getSeats().get(0).getShowTime().getMovie().getTitle());
+                bookingRes.setMovieId(item.getSeats().get(0).getShowTime().getMovie().getMovieId());
+                bookingRes.setDate(item.getSeats().get(0).getSchedule().getDate());
+                bookingRes.setStartTime(item.getSeats().get(0).getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                bookingRes.setPrice(item.getTotal());
+
+                list.add(bookingRes);
             }
 
             Map<String, Object> map = new HashMap<>();
-            map.put("content", bookings.getContent());
+            map.put("content", list);
             map.put("pageNumber", bookings.getPageable().getPageNumber() + 1);
             map.put("pageSize", bookings.getSize());
             map.put("totalPages", bookings.getTotalPages());
@@ -609,6 +654,17 @@ public class BookingService {
             }
             booking.get().setTicketStatus(TicketStatus.CANCELLED);
             bookingRepository.save(booking.get());
+
+            for (FoodWithCount item: booking.get().getFoods()) {
+                Food food = item.getFood();
+                food.setQuantity(food.getQuantity() - item.getCount());
+                foodRepository.save(food);
+                Cinema cinema = booking.get().getSeats().get(0).getShowTime().getRoom().getCinema();
+                FoodInventory foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema).get();
+                foodInventory.setQuantity(foodInventory.getQuantity() - item.getCount());
+                foodInventoryRepository.save(foodInventory);
+            }
+
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)

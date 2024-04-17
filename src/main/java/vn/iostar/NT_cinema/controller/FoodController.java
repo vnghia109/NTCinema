@@ -15,8 +15,9 @@ public class FoodController {
     @GetMapping("")
     public ResponseEntity<GenericResponse> getFoods(@RequestParam(defaultValue = "") String type,
                                                     @RequestParam(defaultValue = "1") int index,
-                                                    @RequestParam(defaultValue = "10") int size){
-        return foodService.getFoods(type, PageRequest.of(index-1, size));
+                                                    @RequestParam(defaultValue = "10") int size,
+                                                    @RequestParam String cinemaId) {
+        return foodService.getFoods(type, cinemaId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/{id}")

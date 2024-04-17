@@ -7,9 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.FoodType;
+import vn.iostar.NT_cinema.dto.FoodByCinema;
 import vn.iostar.NT_cinema.dto.FoodReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Food;
+import vn.iostar.NT_cinema.entity.FoodInventory;
+import vn.iostar.NT_cinema.repository.CinemaRepository;
+import vn.iostar.NT_cinema.repository.FoodInventoryRepository;
 import vn.iostar.NT_cinema.repository.FoodRepository;
 
 import java.util.*;
@@ -18,9 +23,12 @@ import java.util.*;
 public class FoodService {
     @Autowired
     FoodRepository foodRepository;
-
     @Autowired
     CloudinaryService cloudinaryService;
+    @Autowired
+    CinemaRepository cinemaRepository;
+    @Autowired
+    FoodInventoryRepository foodInventoryRepository;
 
     public ResponseEntity<GenericResponse> addFood(FoodReq foodReq) {
         try {
@@ -169,8 +177,18 @@ public class FoodService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getFoods(String type, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getFoods(String type, String cinemaId, Pageable pageable) {
         try {
+            Optional<Cinema> cinema = cinemaRepository.findById(cinemaId);
+            if (cinema.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Rạp phim không tồn tại.")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
             Page<Food> foods;
             if (type.isEmpty()){
                 foods = foodRepository.findAll(pageable);
@@ -178,8 +196,25 @@ public class FoodService {
                 FoodType foodType = FoodType.valueOf(type);
                 foods = foodRepository.findAllByFoodType(foodType, pageable);
             }
+            List<FoodByCinema> foodByCinemas = new ArrayList<>();
+            for (Food item : foods.getContent()) {
+                Optional<FoodInventory> foodInventory = foodInventoryRepository.findByFoodAndCinema(item, cinema.get());
+                FoodByCinema foodByCinema = new FoodByCinema();
+                if (foodInventory.isEmpty()){
+                    foodByCinema.setQuantity(0);
+                }else {
+                    foodByCinema.setQuantity(foodInventory.get().getQuantity());
+                }
+                foodByCinema.setName(item.getName());
+                foodByCinema.setImage(item.getImage());
+                foodByCinema.setPrice(item.getPrice());
+                foodByCinema.setFoodType(item.getFoodType());
+                foodByCinema.setStatus(item.isStatus());
+
+                foodByCinemas.add(foodByCinema);
+            }
             Map<String, Object> map = new HashMap<>();
-            map.put("content", foods.getContent());
+            map.put("content", foodByCinemas);
             map.put("pageNumber", foods.getPageable().getPageNumber() + 1);
             map.put("pageSize", foods.getSize());
             map.put("totalPages", foods.getTotalPages());

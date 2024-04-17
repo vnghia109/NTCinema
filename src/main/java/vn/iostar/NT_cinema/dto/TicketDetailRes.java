@@ -15,6 +15,8 @@ import java.util.List;
 @Builder
 public class TicketDetailRes {
     private String movieId;
+    private String userName;
+    private String fullName;
     private String movieName;
     private LocalDate date;
     private String startTime;
@@ -26,4 +28,5 @@ public class TicketDetailRes {
     private List<FoodWithCount> foods;
     private int price;
     private TicketStatus status;
+    private Date createAt;
 }
