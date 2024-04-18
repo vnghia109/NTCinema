@@ -653,7 +653,7 @@ public class BookingService {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Vé đã quá thời hạn để hủy.")
+                                .message("Vé đã quá thời hạn để hủy. Vé chỉ có thể hủy trước giờ chiếu 1 tiếng.")
                                 .result(null)
                                 .statusCode(HttpStatus.BAD_REQUEST.value())
                                 .build());

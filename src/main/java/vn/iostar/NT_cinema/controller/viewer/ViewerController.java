@@ -111,7 +111,7 @@ public class ViewerController {
         return bookingService.getTicketDetail(id);
     }
 
-    @GetMapping("/ticket/cancel/{bookingId}")
+    @PutMapping("/ticket/cancel/{bookingId}")
     public ResponseEntity<?> cancelTicket(@PathVariable("bookingId") String bookingId,
                                           @RequestHeader("Authorization") String authorizationHeader) {
         String userId = jwtTokenProvider.getUserIdFromJwt(
