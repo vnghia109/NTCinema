@@ -119,4 +119,12 @@ public class ViewerController {
         );
         return bookingService.cancelTicket(bookingId, userId);
     }
+
+    @GetMapping("/ticket/canceled")
+    public ResponseEntity<?> getTicketCanceled(@RequestHeader("Authorization") String authorizationHeader){
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        return bookingService.getTicketCanceled(userId);
+    }
 }

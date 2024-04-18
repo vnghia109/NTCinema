@@ -276,6 +276,7 @@ public class BookingService {
             Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTime().getShowTimeId());
             Schedule schedule = booking.get().getSeats().get(0).getSchedule();
             TicketDetailRes ticket = new TicketDetailRes();
+            ticket.setBookingId(booking.get().getBookingId());
             ticket.setMovieId(showTime.get().getMovie().getMovieId());
             ticket.setMovieName(showTime.get().getMovie().getTitle());
             ticket.setUserName(user.get().getUserName());
@@ -675,6 +676,39 @@ public class BookingService {
                             .success(true)
                             .message("Đã hủy vé thành công!")
                             .result(booking)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<?> getTicketCanceled(String userId) {
+        try {
+            List<Booking> bookings = bookingRepository.findAllByUserIdAndTicketStatus(userId, TicketStatus.CANCELLED);
+            List<HistoryMovieRes> historyMovieRes = new ArrayList<>();
+            for (Booking item : bookings) {
+                Movie movie = item.getSeats().get(0).getShowTime().getMovie();
+                historyMovieRes.add(new HistoryMovieRes(item.getBookingId(),
+                        movie.getMovieId(),
+                        movie.getTitle(),
+                        item.getSeats().get(0).getShowTime().getRoom().getCinema().getCinemaName(),
+                        item.getSeats().get(0).getSchedule().getDate(),
+                        item.getSeats().get(0).getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")),
+                        item.getTotal(),
+                        item.getTicketStatus()));
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy danh sách vé đã hủy thành công!")
+                            .result(historyMovieRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {

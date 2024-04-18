@@ -14,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class TicketDetailRes {
+    private String bookingId;
     private String movieId;
     private String userName;
     private String fullName;

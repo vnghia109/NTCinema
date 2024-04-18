@@ -462,6 +462,7 @@ public class MovieService {
                     upcoming.setDate(schedule.getDate());
                     upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                     upcoming.setPrice(item.getTotal());
+                    upcoming.setTicketStatus(item.getTicketStatus());
 
                     historyMovieRes.add(upcoming);
                 }
@@ -495,16 +496,17 @@ public class MovieService {
                 LocalDateTime localDateTime = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
                 Date end = Date.from(localDateTime.plusMinutes(Integer.parseInt(showTime.getMovie().getDuration())).atZone(ZoneId.systemDefault()).toInstant());
                 if (end.before(new Date())){
-                    HistoryMovieRes upcoming = new HistoryMovieRes();
-                    upcoming.setBookingId(item.getBookingId());
-                    upcoming.setMovieId(showTime.getMovie().getMovieId());
-                    upcoming.setMovieName(showTime.getMovie().getTitle());
-                    upcoming.setCinemaName(showTime.getRoom().getCinema().getCinemaName());
-                    upcoming.setDate(schedule.getDate());
-                    upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-                    upcoming.setPrice(item.getTotal());
+                    HistoryMovieRes viewed = new HistoryMovieRes();
+                    viewed.setBookingId(item.getBookingId());
+                    viewed.setMovieId(showTime.getMovie().getMovieId());
+                    viewed.setMovieName(showTime.getMovie().getTitle());
+                    viewed.setCinemaName(showTime.getRoom().getCinema().getCinemaName());
+                    viewed.setDate(schedule.getDate());
+                    viewed.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
+                    viewed.setPrice(item.getTotal());
+                    viewed.setTicketStatus(item.getTicketStatus());
 
-                    historyMovieRes.add(upcoming);
+                    historyMovieRes.add(viewed);
                 }
             }
             Collections.reverse(historyMovieRes);

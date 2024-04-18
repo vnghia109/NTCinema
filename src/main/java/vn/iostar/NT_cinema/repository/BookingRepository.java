@@ -27,4 +27,6 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     Page<Booking> findAllByTicketStatus(TicketStatus ticketStatus, Pageable pageable);
     Page<Booking> findAllByShowtimeIdInAndTicketStatus(List<String> showtimeIds, TicketStatus ticketStatus, Pageable pageable);
     Page<Booking> findAllByShowtimeIdIn(List<String> showtimeIds, Pageable pageable);
+
+    List<Booking> findAllByUserIdAndTicketStatus(String userId, TicketStatus ticketStatus);
 }

@@ -2,6 +2,7 @@ package vn.iostar.NT_cinema.dto;
 
 import lombok.*;
 import org.springframework.scheduling.support.SimpleTriggerContext;
+import vn.iostar.NT_cinema.constant.TicketStatus;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -19,4 +20,5 @@ public class HistoryMovieRes {
     private LocalDate date;
     private String startTime;
     private int price;
+    private TicketStatus ticketStatus;
 }
