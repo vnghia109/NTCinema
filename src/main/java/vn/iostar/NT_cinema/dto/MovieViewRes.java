@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
-import org.springframework.data.annotation.Id;
 
 import java.util.Date;
 
@@ -14,32 +13,12 @@ import java.util.Date;
 @NoArgsConstructor
 @Getter
 @Setter
-public class MovieRes {
+public class MovieViewRes {
     private String movieId;
 
-    @NotBlank
-    @UniqueElements
     private String title;
 
-    private String director;
-
-    private String genres;
-
-    @NotBlank
-    private String actor;
-
-    @NotBlank
-    private Date releaseDate;
-
-    private String desc;
-
-    @NotBlank
     private String poster;
-
-    @NotBlank
-    private String trailerLink;
-
-    private String duration;
 
     private String rating;
 }

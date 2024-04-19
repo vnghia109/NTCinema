@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @Document(collection = "showTime")
-public class ShowTime {
+public class  ShowTime {
     @Id
     private String showTimeId;
 

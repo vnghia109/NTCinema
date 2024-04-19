@@ -275,17 +275,18 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findNowPlayingMovies() {
         try {
             List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.SHOWING);
-            Map<String, Movie> uniqueMoviesMap = new HashMap<>();
+            Map<String, MovieViewRes> uniqueMoviesMap = new HashMap<>();
 
             for (ShowTime showTime : showTimes) {
-                String movieId = showTime.getMovie().getMovieId();
+                Movie movie = showTime.getMovie();
+                String movieId = movie.getMovieId();
 
                 if (!uniqueMoviesMap.containsKey(movieId)) {
-                    uniqueMoviesMap.put(movieId, showTime.getMovie());
+                    uniqueMoviesMap.put(movieId, new MovieViewRes(movie.getMovieId(), movie.getTitle(), movie.getPoster(), movie.getRating()));
                 }
             }
 
-            List<Movie> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
+            List<MovieViewRes> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -307,17 +308,18 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findComingSoonMovies() {
         try {
             List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.COMING_SOON);
-            Map<String, Movie> uniqueMoviesMap = new HashMap<>();
+            Map<String, MovieViewRes> uniqueMoviesMap = new HashMap<>();
 
             for (ShowTime showTime : showTimes) {
-                String movieId = showTime.getMovie().getMovieId();
+                Movie movie = showTime.getMovie();
+                String movieId = movie.getMovieId();
 
                 if (!uniqueMoviesMap.containsKey(movieId)) {
-                    uniqueMoviesMap.put(movieId, showTime.getMovie());
+                    uniqueMoviesMap.put(movieId, new MovieViewRes(movie.getMovieId(), movie.getTitle(), movie.getPoster(), movie.getRating()));
                 }
             }
 
-            List<Movie> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
+            List<MovieViewRes> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -339,17 +341,18 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findSpecialMovies() {
         try {
             List<ShowTime> showTimes = showTimeRepository.findAllByIsSpecialIsTrueAndIsDeleteIsFalse();
-            Map<String, Movie> uniqueMoviesMap = new HashMap<>();
+            Map<String, MovieViewRes> uniqueMoviesMap = new HashMap<>();
 
             for (ShowTime showTime : showTimes) {
-                String movieId = showTime.getMovie().getMovieId();
+                Movie movie = showTime.getMovie();
+                String movieId = movie.getMovieId();
 
                 if (!uniqueMoviesMap.containsKey(movieId)) {
-                    uniqueMoviesMap.put(movieId, showTime.getMovie());
+                    uniqueMoviesMap.put(movieId, new MovieViewRes(movie.getMovieId(), movie.getTitle(), movie.getPoster(), movie.getRating()));
                 }
             }
 
-            List<Movie> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
+            List<MovieViewRes> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)

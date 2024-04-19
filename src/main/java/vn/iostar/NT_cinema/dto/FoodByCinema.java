@@ -11,6 +11,8 @@ import vn.iostar.NT_cinema.constant.FoodType;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FoodByCinema {
+    private String foodId;
+
     private String name;
 
     private String image;

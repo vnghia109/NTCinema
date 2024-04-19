@@ -173,6 +173,7 @@ public class FoodService {
                 }else {
                     foodByCinema.setQuantity(foodInventory.get().getQuantity());
                 }
+                foodByCinema.setFoodId(item.getFoodId());
                 foodByCinema.setName(item.getName());
                 foodByCinema.setImage(item.getImage());
                 foodByCinema.setPrice(item.getPrice());
