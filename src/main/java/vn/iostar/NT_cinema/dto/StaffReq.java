@@ -31,4 +31,7 @@ public class StaffReq {
 
     @Size(max = 10, message = "SDT không đúng định dạng.")
     private String phone;
+
+    @NotEmpty(message = "Phải có thông tin rạp phim.")
+    private String cinemaId;
 }

@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
+import vn.iostar.NT_cinema.entity.Promotion;
 import vn.iostar.NT_cinema.service.*;
 
 import java.time.LocalDate;
@@ -45,6 +46,8 @@ public class AdminController {
     ScheduleService scheduleService;
     @Autowired
     SeatService seatService;
+    @Autowired
+    PromotionService promotionService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -60,7 +63,7 @@ public class AdminController {
     }
 
     @PostMapping("/staff")
-    public ResponseEntity<GenericResponse> addStaff(@Valid@RequestBody StaffReq request,
+    public ResponseEntity<GenericResponse> addStaff(@Valid @RequestBody StaffReq request,
                                                       BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
@@ -402,5 +405,26 @@ public class AdminController {
     @GetMapping("/cinemas/total-revenue")
     public ResponseEntity<GenericResponse> getTotalRevenueByCinemas() {
         return bookingService.getTotalRevenueByCinemas();
+    }
+
+    @GetMapping("/promotions")
+    public ResponseEntity<GenericResponse> getAllPromotions() {
+        return promotionService.getAllPromotions();
+    }
+
+    @PostMapping("/promotions")
+    public ResponseEntity<GenericResponse> createPromotion(@RequestBody PromotionReq promotionReq) {
+        return promotionService.createPromotion(promotionReq);
+    }
+
+    @PutMapping("/promotions/{id}")
+    public ResponseEntity<GenericResponse> updatePromotion(@PathVariable String id,
+                                                           @RequestBody PromotionReq promotionReq) {
+        return promotionService.updatePromotion(id, promotionReq);
+    }
+
+    @DeleteMapping("/promotions/{id}")
+    public ResponseEntity<GenericResponse> deletePromotion(@PathVariable String id) {
+        return promotionService.deletePromotion(id);
     }
 }

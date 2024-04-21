@@ -226,7 +226,7 @@ public class UserService {
 
     public ResponseEntity<GenericResponse> addStaff(StaffReq request) {
         try {
-            User user = new User();
+            Staff user = new Staff();
             if (userRepository.findByUserName(request.getUserName()).isPresent()){
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(
@@ -260,6 +260,15 @@ public class UserService {
                                         .build()
                         );
             }
+            Optional<Cinema> cinema = cinemaRepository.findById(request.getCinemaId());
+            if (cinema.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Rạp phim không tồn tại.")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
 
             user.setUserName(request.getUserName());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -270,6 +279,7 @@ public class UserService {
             user.setPhone(request.getPhone());
             user.setRole(roleService.findByRoleName("STAFF"));
             user.setActive(true);
+            user.setCinema(cinema.get());
 
             User staff = save(user);
 
