@@ -959,7 +959,7 @@ public class UserService {
 
             Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent().stream().sorted(Comparator.comparingInt(user -> getRolePriority(user.getRole())))
+            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed().thenComparing(user -> getRolePriority(user.getRole())))
                     .collect(Collectors.toList()));
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());
@@ -1000,7 +1000,7 @@ public class UserService {
             roles.add(roleService.findByRoleName("VIEWER"));
             Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getFullName)).collect(Collectors.toList()));
+            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed()).collect(Collectors.toList()));
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());
             result.put("totalPages", users.getTotalPages());
@@ -1028,7 +1028,7 @@ public class UserService {
 
             Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent().stream().sorted(Comparator.comparingInt(user -> getRolePriority(user.getRole())))
+            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed().thenComparing(user -> getRolePriority(user.getRole())))
                     .collect(Collectors.toList()));
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());

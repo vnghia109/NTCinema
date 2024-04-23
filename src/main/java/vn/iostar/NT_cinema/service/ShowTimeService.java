@@ -366,7 +366,7 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> adminGetShowTimes(LocalDate date, Pageable pageable) {
         try {
-            Page<ShowTime> showTimes = showTimeRepository.findAll(pageable);
+            Page<ShowTime> showTimes = showTimeRepository.findAllByOrderByShowTimeIdDesc(pageable);
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
             Map<String, Object> map = createResponseMap(responses, showTimes);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
@@ -397,7 +397,7 @@ public class ShowTimeService {
                         .build());
             }
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms, pageable);
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomInOrderByShowTimeIdDesc(rooms, pageable);
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
             Map<String, Object> map = createResponseMap(responses, showTimes);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
@@ -480,7 +480,7 @@ public class ShowTimeService {
     public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, LocalDate date, Pageable pageable) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms, pageable);
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomInOrderByShowTimeIdDesc(rooms, pageable);
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
             Map<String, Object> map = createResponseMap(responses, showTimes);
             return ResponseEntity.ok()
@@ -503,7 +503,7 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date, Pageable pageable) {
         try {
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomId(roomId, pageable);
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomIdOrderByShowTimeIdDesc(roomId, pageable);
 
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
 

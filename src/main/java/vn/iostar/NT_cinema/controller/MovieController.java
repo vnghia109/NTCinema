@@ -59,34 +59,4 @@ public class MovieController {
     public ResponseEntity<GenericResponse> searchMovie(@RequestParam(defaultValue = "") String keyWord){
         return movieService.searchMovie(keyWord);
     }
-
-    @PostMapping("/upload")
-    public ResponseEntity<?> createEvent(@Valid @ModelAttribute List<MultipartFile> file) {
-        try {
-            if (file != null && !file.isEmpty()) {
-                String url = cloudinaryService.uploadImage(file);
-                return ResponseEntity.status(HttpStatus.OK)
-                        .body(GenericResponse.builder()
-                                .success(true)
-                                .message("Tải tệp lên thành công")
-                                .result(url)
-                                .statusCode(HttpStatus.OK.value())
-                                .build());
-            }
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(GenericResponse.builder()
-                    .success(false)
-                    .message("Tải tệp lên thất bại")
-                    .result(null)
-                    .statusCode(HttpStatus.NOT_FOUND.value())
-                    .build());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Lỗi máy chủ")
-                    .result(e.getMessage())
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
-        }
-    }
 }

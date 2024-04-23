@@ -37,7 +37,7 @@ public class MovieService {
     ScheduleRepository scheduleRepository;
 
     public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
-        Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalse(pageable);
+        Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalseOrderByMovieIdDesc(pageable);
         List<MovieRes> movieRes = moviePage.getContent().stream()
                 .map(this::mapCinemaToMovieRes)
                 .collect(Collectors.toList());
@@ -76,7 +76,7 @@ public class MovieService {
     }
 
     public ResponseEntity<GenericResponse> adminGetAllMovie(Pageable pageable) {
-        Page<Movie> moviePage = movieRepository.findAll(pageable);
+        Page<Movie> moviePage = movieRepository.findAllByOrderByMovieIdDesc(pageable);
 
         Map<String, Object> map = new HashMap<>();
         map.put("content", moviePage.getContent());

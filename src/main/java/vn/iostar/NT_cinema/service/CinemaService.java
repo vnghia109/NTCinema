@@ -60,7 +60,7 @@ public class CinemaService {
 
     public ResponseEntity<GenericResponse> adminGetAllCinema(Pageable pageable){
         try {
-            Page<Cinema> cinemas = cinemaRepository.findAll(pageable);
+            Page<Cinema> cinemas = cinemaRepository.findAllByOrderByCinemaIdDesc(pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", cinemas.getContent());

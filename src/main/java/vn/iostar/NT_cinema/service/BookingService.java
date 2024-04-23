@@ -353,19 +353,19 @@ public class BookingService {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(cinemaId);
             if (cinemaId == null) {
                 if (status.isEmpty() || status.isBlank()) {
-                    bookings = bookingRepository.findAll(pageable);
+                    bookings = bookingRepository.findAllByOrderByBookingIdDesc(pageable);
                 } else {
                     TicketStatus ticketStatus = TicketStatus.valueOf(status);
-                    bookings = bookingRepository.findAllByTicketStatus(ticketStatus, pageable);
+                    bookings = bookingRepository.findAllByTicketStatusOrderByBookingIdDesc(ticketStatus, pageable);
                 }
             } else {
                 List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
                 List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
                 if (status.isEmpty() || status.isBlank()) {
-                    bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds, pageable);
+                    bookings = bookingRepository.findAllByShowtimeIdInOrderByBookingIdDesc(showtimeIds, pageable);
                 } else {
                     TicketStatus ticketStatus = TicketStatus.valueOf(status);
-                    bookings = bookingRepository.findAllByShowtimeIdInAndTicketStatus(showtimeIds, ticketStatus, pageable);
+                    bookings = bookingRepository.findAllByShowtimeIdInAndTicketStatusOrderByBookingIdDesc(showtimeIds, ticketStatus, pageable);
                 }
             }
 

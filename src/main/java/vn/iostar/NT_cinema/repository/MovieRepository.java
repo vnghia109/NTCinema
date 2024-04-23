@@ -14,11 +14,9 @@ import java.util.Optional;
 
 @Repository
 public interface MovieRepository extends MongoRepository<Movie, String> {
-    Page<Movie> findAllByIsDeleteIsFalse(Pageable pageable);
+    Page<Movie> findAllByIsDeleteIsFalseOrderByMovieIdDesc(Pageable pageable);
 
-    @Override
-    @NotNull
-    Page<Movie> findAll(@NotNull Pageable pageable);
+    Page<Movie> findAllByOrderByMovieIdDesc(Pageable pageable);
 
     Optional<Movie> findByTitle(String name);
 

@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -157,7 +158,7 @@ public class RoomService {
 
     public ResponseEntity<GenericResponse> getRooms(Pageable pageable) {
         try {
-            Page<Room> rooms = roomRepository.findAll(pageable);
+            Page<Room> rooms = roomRepository.findAllByOrderByRoomIdDesc(pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", rooms.getContent());
@@ -186,7 +187,7 @@ public class RoomService {
     public ResponseEntity<GenericResponse> getRoomsOfManager(String id, Pageable pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(id);
-            Page<Room> rooms = roomRepository.findAllByCinema(manager.get().getCinema(), pageable);
+            Page<Room> rooms = roomRepository.findAllByCinemaOrderByRoomIdDesc(manager.get().getCinema(), pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", rooms.getContent());
@@ -239,7 +240,7 @@ public class RoomService {
 
     public ResponseEntity<GenericResponse> findRoomsByCinema(String id, Pageable pageable) {
         try {
-            Page<Room> rooms = roomRepository.findAllByCinema_CinemaId(id, pageable);
+            Page<Room> rooms = roomRepository.findAllByCinema_CinemaIdOrderByRoomIdDesc(id, pageable);
             Map<String, Object> map = new HashMap<>();
             map.put("content", rooms.getContent());
             map.put("pageNumber", rooms.getPageable().getPageNumber() + 1);

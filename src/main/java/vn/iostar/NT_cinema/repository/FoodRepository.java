@@ -12,9 +12,7 @@ import java.util.List;
 
 @Repository
 public interface FoodRepository extends MongoRepository<Food, String> {
-    Page<Food> findAllByFoodType(FoodType foodType, Pageable pageable);
+    Page<Food> findAllByFoodTypeOrderByFoodIdDesc(FoodType foodType, Pageable pageable);
 
-    @Override
-    @NotNull
-    Page<Food> findAll(@NotNull Pageable pageable);
+    Page<Food> findAllByOrderByFoodIdDesc(Pageable pageable);
 }

@@ -24,9 +24,11 @@ public interface BookingRepository extends MongoRepository<Booking, String> {
     @Query("{ 'createAt': { $gte: ?0, $lt: ?1 }, 'showtimeId': { $in: ?2 } }")
     List<Booking> findByYearAndShowtimeIds(Date startDate, Date endDate, List<String> showtimeIds);
     Optional<Booking> findByBookingIdAndUserId(String bookingId, String userId);
-    Page<Booking> findAllByTicketStatus(TicketStatus ticketStatus, Pageable pageable);
-    Page<Booking> findAllByShowtimeIdInAndTicketStatus(List<String> showtimeIds, TicketStatus ticketStatus, Pageable pageable);
-    Page<Booking> findAllByShowtimeIdIn(List<String> showtimeIds, Pageable pageable);
+    Page<Booking> findAllByTicketStatusOrderByBookingIdDesc(TicketStatus ticketStatus, Pageable pageable);
+    Page<Booking> findAllByShowtimeIdInAndTicketStatusOrderByBookingIdDesc(List<String> showtimeIds, TicketStatus ticketStatus, Pageable pageable);
+    Page<Booking> findAllByShowtimeIdInOrderByBookingIdDesc(List<String> showtimeIds, Pageable pageable);
 
     List<Booking> findAllByUserIdAndTicketStatus(String userId, TicketStatus ticketStatus);
+
+    Page<Booking> findAllByOrderByBookingIdDesc(Pageable pageable);
 }

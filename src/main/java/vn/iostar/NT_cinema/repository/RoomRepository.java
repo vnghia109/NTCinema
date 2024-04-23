@@ -14,8 +14,10 @@ import java.util.Optional;
 public interface RoomRepository extends MongoRepository<Room, String> {
     Optional<Room> findByRoomNameAndCinema(String roomName, Cinema cinema);
 
-    Page<Room> findAllByCinema(Cinema cinema, Pageable pageable);
+    Page<Room> findAllByCinemaOrderByRoomIdDesc(Cinema cinema, Pageable pageable);
     List<Room> findAllByCinema(Cinema cinema);
     List<Room> findAllByCinema_CinemaId(String cinemaId);
-    Page<Room> findAllByCinema_CinemaId(String cinemaId, Pageable pageable);
+    Page<Room> findAllByCinema_CinemaIdOrderByRoomIdDesc(String cinemaId, Pageable pageable);
+
+    Page<Room> findAllByOrderByRoomIdDesc(Pageable pageable);
 }
