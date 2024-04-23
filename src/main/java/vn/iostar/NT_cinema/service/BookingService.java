@@ -702,6 +702,7 @@ public class BookingService {
                         item.getSeats().get(0).getSchedule().getDate(),
                         item.getSeats().get(0).getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")),
                         item.getTotal(),
+                        item.getCreateAt(),
                         item.getTicketStatus()));
             }
             return ResponseEntity.status(HttpStatus.OK)

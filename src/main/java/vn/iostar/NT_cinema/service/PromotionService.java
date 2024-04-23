@@ -10,6 +10,7 @@ import vn.iostar.NT_cinema.dto.PromotionReq;
 import vn.iostar.NT_cinema.entity.Promotion;
 import vn.iostar.NT_cinema.repository.PromotionRepository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -151,4 +152,71 @@ public class PromotionService {
                             .build());
         }
     }
+//
+//    public BigDecimal applyApplicablePromotions(Order order, List<Promotion> promotions) {
+//        BigDecimal totalDiscount = BigDecimal.ZERO;
+//
+//        for (Promotion promotion : promotions) {
+//            if (isPromotionApplicable(promotion, order)) {
+//                BigDecimal discount = calculateDiscount(promotion, order);
+//                totalDiscount = totalDiscount.add(discount);
+//            }
+//        }
+//
+//        return totalDiscount;
+//    }
+//
+//    private boolean isPromotionApplicable(Promotion promotion, Order order) {
+//        // Check if the promotion is not deleted
+//        if (promotion.isDeleted()) {
+//            return false;
+//        }
+//
+//        // Check if we are within the promotion period
+//        Date currentDate = new Date();
+//        if (currentDate.before(promotion.getStartDate()) || currentDate.after(promotion.getEndDate())) {
+//            return false;
+//        }
+//
+//        // Check if the promotion is applicable for the current day of week
+//        if (promotion.getValidDayOfWeek() != null) {
+//            Calendar calendar = Calendar.getInstance();
+//            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
+//            if (promotion.getValidDayOfWeek() != dayOfWeek) {
+//                return false;
+//            }
+//        }
+//
+//        // Check if promotion is not applicable on holidays
+//        if (promotion.isExcludeHolidays() && isTodayHoliday(currentDate)) {
+//            return false;
+//        }
+//
+//        // ...additional checks based on promotion criteria
+//
+//        return true;
+//    }
+//
+//    private BigDecimal calculateDiscount(Promotion promotion, Order order) {
+//        BigDecimal discount = BigDecimal.ZERO;
+//
+//        switch (promotion.getDiscountType()) {
+//            case PERCENTAGE:
+//                discount = order.getTotalPrice().multiply(promotion.getDiscountValue().divide(new BigDecimal("100")));
+//                break;
+//            case FIXED_AMOUNT:
+//                discount = promotion.getDiscountValue();
+//                break;
+//            default:
+//                throw new IllegalStateException("Unexpected value: " + promotion.getDiscountType());
+//        }
+//
+//        return discount;
+//    }
+//
+//    // Dummy method to determine if today is a holiday, implementation depends on your context
+//    private boolean isTodayHoliday(Date currentDate) {
+//        // Check against a list of holidays, possibly from a database or configuration
+//        return true; // For example purposes
+//    }
 }

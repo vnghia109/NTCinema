@@ -1021,6 +1021,35 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<GenericResponse> getAllStaff(PageRequest pageable) {
+        try {
+            List<Role> roles = new ArrayList<>();
+            roles.add(roleService.findByRoleName("STAFF"));
+
+            Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
+            Map<String, Object> result = new HashMap<>();
+            result.put("content", users.getContent().stream().sorted(Comparator.comparingInt(user -> getRolePriority(user.getRole())))
+                    .collect(Collectors.toList()));
+            result.put("pageNumber", users.getPageable().getPageNumber() + 1);
+            result.put("pageSize", users.getSize());
+            result.put("totalPages", users.getTotalPages());
+            result.put("totalElements", users.getTotalElements());
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get user success")
+                    .result(result)
+                    .statusCode(200)
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result("Lỗi máy chủ.")
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
 //    public String validateVerificationAccount(String token) {
 //
 //        VerificationToken verificationToken = tokenRepository.findByToken(token);

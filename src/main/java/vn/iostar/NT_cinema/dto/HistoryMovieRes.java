@@ -20,5 +20,6 @@ public class HistoryMovieRes {
     private LocalDate date;
     private String startTime;
     private int price;
+    private Date createAt;
     private TicketStatus ticketStatus;
 }

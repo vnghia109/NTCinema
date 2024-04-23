@@ -465,6 +465,7 @@ public class MovieService {
                     upcoming.setDate(schedule.getDate());
                     upcoming.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                     upcoming.setPrice(item.getTotal());
+                    upcoming.setCreateAt(item.getCreateAt());
                     upcoming.setTicketStatus(item.getTicketStatus());
 
                     historyMovieRes.add(upcoming);
@@ -507,6 +508,7 @@ public class MovieService {
                     viewed.setDate(schedule.getDate());
                     viewed.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
                     viewed.setPrice(item.getTotal());
+                    viewed.setCreateAt(item.getCreateAt());
                     viewed.setTicketStatus(item.getTicketStatus());
 
                     historyMovieRes.add(viewed);

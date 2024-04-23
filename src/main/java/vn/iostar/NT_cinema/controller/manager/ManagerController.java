@@ -41,6 +41,8 @@ public class ManagerController {
     ScheduleService scheduleService;
     @Autowired
     StockEntryService stockEntryService;
+    @Autowired
+    SeatService seatService;
 
     @PostMapping("/rooms")
     public ResponseEntity<GenericResponse> addRoom(@RequestHeader("Authorization") String authorizationHeader,
@@ -121,6 +123,14 @@ public class ManagerController {
         return showTimeService.getTimeShowOfRoom(roomId);
     }
 
+    @GetMapping("/rooms/{Id}/showtimes")
+    public ResponseEntity<GenericResponse> getShowtimesOfRoom(@PathVariable("Id") String Id,
+                                                              @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                              @RequestParam(defaultValue = "1") int index,
+                                                              @RequestParam(defaultValue = "10") int size) {
+        return showTimeService.findShowtimesByRoom(Id, date, PageRequest.of(index-1, size));
+    }
+
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
                                                       @RequestParam(defaultValue = "10") int size){
@@ -177,11 +187,23 @@ public class ManagerController {
         return userService.addStaff(request);
     }
 
+    @GetMapping("/personnel")
+    public ResponseEntity<GenericResponse> getPersonnel(@RequestParam(defaultValue = "1") int index,
+                                                        @RequestParam(defaultValue = "10") int size){
+        return userService.getAllStaff(PageRequest.of(index-1, size));
+    }
+
     @PostMapping("/foods/import")
     public ResponseEntity<GenericResponse> importFoods(@RequestHeader("Authorization") String authorizationHeader,
                                                        @RequestBody StockEntryReq req) {
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
         return stockEntryService.importFoods(managerId, req);
+    }
+
+    @GetMapping("/seats-booked/count")
+    public ResponseEntity<GenericResponse> countSeatBooked(@RequestParam("showtimeId") String showtimeId,
+                                                           @RequestParam("scheduleId") String scheduleId){
+        return seatService.countSeatBooked(showtimeId, scheduleId);
     }
 }
