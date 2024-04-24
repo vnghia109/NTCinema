@@ -534,7 +534,7 @@ public class ShowTimeService {
         if (date != null) {
             schedules = schedules.stream()
                     .filter(schedule -> schedule.getDate().equals(date))
-                    .sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime))
+                    .sorted(Comparator.comparing(Schedule::getDate).reversed().thenComparing(Schedule::getStartTime).reversed())
                     .toList();
         }
         return new ShowScheduleResp(

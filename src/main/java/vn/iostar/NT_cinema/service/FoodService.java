@@ -159,10 +159,10 @@ public class FoodService {
             }
             Page<Food> foods;
             if (type.isEmpty()){
-                foods = foodRepository.findAllByOrderByFoodIdDesc(pageable);
+                foods = foodRepository.findAllByIsDeleteIsFalseOrderByFoodIdDesc(pageable);
             }else {
                 FoodType foodType = FoodType.valueOf(type);
-                foods = foodRepository.findAllByFoodTypeOrderByFoodIdDesc(foodType, pageable);
+                foods = foodRepository.findAllByFoodTypeAndIsDeleteIsFalseOrderByFoodIdDesc(foodType, pageable);
             }
             List<FoodByCinema> foodByCinemas = new ArrayList<>();
             for (Food item : foods.getContent()) {
