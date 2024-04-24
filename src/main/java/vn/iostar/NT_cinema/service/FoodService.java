@@ -159,10 +159,10 @@ public class FoodService {
             }
             Page<Food> foods;
             if (type.isEmpty()){
-                foods = foodRepository.findAllByIsDeleteIsFalseOrderByFoodIdDesc(pageable);
+                foods = foodRepository.findAllByStatusIsFalseOrderByFoodIdDesc(pageable);
             }else {
                 FoodType foodType = FoodType.valueOf(type);
-                foods = foodRepository.findAllByFoodTypeAndIsDeleteIsFalseOrderByFoodIdDesc(foodType, pageable);
+                foods = foodRepository.findAllByFoodTypeAndStatusIsFalseOrderByFoodIdDesc(foodType, pageable);
             }
             List<FoodByCinema> foodByCinemas = new ArrayList<>();
             for (Food item : foods.getContent()) {
@@ -210,10 +210,10 @@ public class FoodService {
         try {
             Page<Food> foods;
             if (type.isEmpty()){
-                foods = foodRepository.findAllByIsDeleteOrderByFoodIdDesc(isDelete, pageable);
+                foods = foodRepository.findAllByStatusOrderByFoodIdDesc(isDelete, pageable);
             }else {
                 FoodType foodType = FoodType.valueOf(type);
-                foods = foodRepository.findAllByFoodTypeAndIsDeleteOrderByFoodIdDesc(foodType, isDelete, pageable);
+                foods = foodRepository.findAllByFoodTypeAndStatusOrderByFoodIdDesc(foodType, isDelete, pageable);
             }
             Map<String, Object> map = new HashMap<>();
             map.put("content", foods.getContent());
