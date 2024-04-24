@@ -12,7 +12,7 @@ import java.util.List;
 
 @Repository
 public interface FoodRepository extends MongoRepository<Food, String> {
-    Page<Food> findAllByFoodTypeOrderByFoodIdDesc(FoodType foodType, Pageable pageable);
+    Page<Food> findAllByFoodTypeAndIsDeleteOrderByFoodIdDesc(FoodType foodType, boolean isDelete, Pageable pageable);
 
-    Page<Food> findAllByOrderByFoodIdDesc(Pageable pageable);
+    Page<Food> findAllByIsDeleteOrderByFoodIdDesc(boolean isDelete, Pageable pageable);
 }

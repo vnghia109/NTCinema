@@ -75,8 +75,8 @@ public class MovieService {
         return movieRes;
     }
 
-    public ResponseEntity<GenericResponse> adminGetAllMovie(Pageable pageable) {
-        Page<Movie> moviePage = movieRepository.findAllByOrderByMovieIdDesc(pageable);
+    public ResponseEntity<GenericResponse> adminGetAllMovie(boolean isDelete, Pageable pageable) {
+        Page<Movie> moviePage = movieRepository.findAllByIsDeleteOrderByMovieIdDesc(isDelete, pageable);
 
         Map<String, Object> map = new HashMap<>();
         map.put("content", moviePage.getContent());

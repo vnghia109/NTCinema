@@ -227,8 +227,9 @@ public class AdminController {
 
     @GetMapping("/movies")
     public ResponseEntity<GenericResponse> getAllMovies(@RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size) {
-        return movieService.adminGetAllMovie(PageRequest.of(index-1, size));
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @RequestParam(defaultValue = "false") boolean isDelete) {
+        return movieService.adminGetAllMovie(isDelete, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/foods/food")
@@ -239,8 +240,9 @@ public class AdminController {
     @GetMapping("/foods")
     public ResponseEntity<GenericResponse> getFoods(@RequestParam(defaultValue = "") String type,
                                                     @RequestParam(defaultValue = "1") int index,
-                                                    @RequestParam(defaultValue = "10") int size) {
-        return foodService.adminGetFoods(type, PageRequest.of(index-1, size));
+                                                    @RequestParam(defaultValue = "10") int size,
+                                                    @RequestParam(defaultValue = "false") boolean isDelete) {
+        return foodService.adminGetFoods(isDelete, type, PageRequest.of(index-1, size));
     }
 
     @PatchMapping("/foods/{id}")
@@ -311,8 +313,9 @@ public class AdminController {
 
     @GetMapping("/rooms")
     public ResponseEntity<GenericResponse> getAllRoom(@RequestParam(defaultValue = "1") int index,
-                                                      @RequestParam(defaultValue = "10") int size){
-        return roomService.getRooms(PageRequest.of(index-1, size));
+                                                      @RequestParam(defaultValue = "10") int size,
+                                                      @RequestParam(defaultValue = "false") boolean isDelete) {
+        return roomService.getRooms(isDelete, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/rooms/room")

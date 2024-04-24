@@ -206,14 +206,14 @@ public class FoodService {
         }
     }
 
-    public ResponseEntity<GenericResponse> adminGetFoods(String type, Pageable pageable) {
+    public ResponseEntity<GenericResponse> adminGetFoods(boolean isDelete, String type, Pageable pageable) {
         try {
             Page<Food> foods;
             if (type.isEmpty()){
-                foods = foodRepository.findAllByOrderByFoodIdDesc(pageable);
+                foods = foodRepository.findAllByIsDeleteOrderByFoodIdDesc(isDelete, pageable);
             }else {
                 FoodType foodType = FoodType.valueOf(type);
-                foods = foodRepository.findAllByFoodTypeOrderByFoodIdDesc(foodType, pageable);
+                foods = foodRepository.findAllByFoodTypeAndIsDeleteOrderByFoodIdDesc(foodType, isDelete, pageable);
             }
             Map<String, Object> map = new HashMap<>();
             map.put("content", foods.getContent());
