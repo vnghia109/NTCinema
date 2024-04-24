@@ -241,7 +241,7 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getFoods(@RequestParam(defaultValue = "") String type,
                                                     @RequestParam(defaultValue = "1") int index,
                                                     @RequestParam(defaultValue = "10") int size,
-                                                    @RequestParam(defaultValue = "false") boolean isDelete) {
+                                                    @RequestParam(defaultValue = "true") boolean isDelete) {
         return foodService.adminGetFoods(isDelete, type, PageRequest.of(index-1, size));
     }
 

@@ -16,7 +16,7 @@ public interface FoodRepository extends MongoRepository<Food, String> {
 
     Page<Food> findAllByStatusOrderByFoodIdDesc(boolean isDelete, Pageable pageable);
 
-    Page<Food> findAllByStatusIsFalseOrderByFoodIdDesc(Pageable pageable);
+    Page<Food> findAllByStatusIsTrueOrderByFoodIdDesc(Pageable pageable);
 
-    Page<Food> findAllByFoodTypeAndStatusIsFalseOrderByFoodIdDesc(FoodType foodType, Pageable pageable);
+    Page<Food> findAllByFoodTypeAndStatusIsTrueOrderByFoodIdDesc(FoodType foodType, Pageable pageable);
 }
