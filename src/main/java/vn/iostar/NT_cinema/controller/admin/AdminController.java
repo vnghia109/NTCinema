@@ -423,7 +423,7 @@ public class AdminController {
         return promotionService.updatePromotion(id, promotionReq);
     }
 
-    @DeleteMapping("/promotions/{id}")
+    @PatchMapping("/promotions/{id}")
     public ResponseEntity<GenericResponse> deletePromotion(@PathVariable String id) {
         return promotionService.deletePromotion(id);
     }

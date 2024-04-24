@@ -11,6 +11,7 @@ import vn.iostar.NT_cinema.constant.DiscountType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 
 @AllArgsConstructor
@@ -27,8 +28,8 @@ public class Promotion {
     private BigDecimal discountValue;
     private Integer validDayOfWeek;
     private Integer ageLimit;
-    private Date validTimeFrameStart;
-    private Date validTimeFrameEnd;
+    private LocalTime validTimeFrameStart;
+    private LocalTime validTimeFrameEnd;
     private Date startDate;
     private Date endDate;
     private boolean excludeHolidays;

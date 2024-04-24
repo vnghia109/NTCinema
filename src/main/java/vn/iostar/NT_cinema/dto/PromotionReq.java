@@ -7,6 +7,7 @@ import lombok.Setter;
 import vn.iostar.NT_cinema.constant.DiscountType;
 
 import java.math.BigDecimal;
+import java.time.LocalTime;
 import java.util.Date;
 
 @Setter
@@ -20,8 +21,8 @@ public class PromotionReq {
     private BigDecimal discountValue;
     private int validDayOfWeek;
     private int ageLimit;
-    private Date validTimeFrameStart;
-    private Date validTimeFrameEnd;
+    private LocalTime validTimeFrameStart;
+    private LocalTime validTimeFrameEnd;
     private Date startDate;
     private Date endDate;
     private boolean excludeHolidays;
