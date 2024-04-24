@@ -19,5 +19,5 @@ public interface RoomRepository extends MongoRepository<Room, String> {
     List<Room> findAllByCinema_CinemaId(String cinemaId);
     Page<Room> findAllByCinema_CinemaIdAndIsDeleteIsFalseOrderByRoomIdDesc(String cinemaId, Pageable pageable);
 
-    Page<Room> findAllByIsDeleteOrderByRoomIdDesc(boolean isDelete, Pageable pageable);
+    Page<Room> findAllByOrderByRoomIdDesc(Pageable pageable);
 }

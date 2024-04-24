@@ -17,7 +17,7 @@ public interface CinemaRepository extends MongoRepository<Cinema, String> {
 
     Page<Cinema> findAllByStatusIsTrue(Pageable pageable);
 
-    Page<Cinema> findAllByOrderByCinemaIdDesc(Pageable pageable);
+    Page<Cinema> findAllByStatusOrderByCinemaIdDesc(boolean status, Pageable pageable);
 
     List<Cinema> findAllByStatusIsTrue();
 }

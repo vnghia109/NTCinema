@@ -58,9 +58,9 @@ public class CinemaService {
         }
     }
 
-    public ResponseEntity<GenericResponse> adminGetAllCinema(Pageable pageable){
+    public ResponseEntity<GenericResponse> adminGetAllCinema(boolean status, Pageable pageable){
         try {
-            Page<Cinema> cinemas = cinemaRepository.findAllByOrderByCinemaIdDesc(pageable);
+            Page<Cinema> cinemas = cinemaRepository.findAllByStatusOrderByCinemaIdDesc(status, pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", cinemas.getContent());

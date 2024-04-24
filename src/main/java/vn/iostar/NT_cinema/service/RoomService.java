@@ -156,9 +156,9 @@ public class RoomService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getRooms(boolean isDelete, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getRooms(Pageable pageable) {
         try {
-            Page<Room> rooms = roomRepository.findAllByIsDeleteOrderByRoomIdDesc(isDelete, pageable);
+            Page<Room> rooms = roomRepository.findAllByOrderByRoomIdDesc(pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", rooms.getContent());

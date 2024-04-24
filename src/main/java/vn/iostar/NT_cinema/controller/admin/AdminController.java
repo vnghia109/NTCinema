@@ -156,8 +156,9 @@ public class AdminController {
 
     @GetMapping("/cinemas")
     public ResponseEntity<GenericResponse> getAllCinema(@RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size){
-        return cinemaService.adminGetAllCinema(PageRequest.of(index-1, size));
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @RequestParam(defaultValue = "true") boolean status){
+        return cinemaService.adminGetAllCinema(status, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/cinemas/{id}")
@@ -228,8 +229,8 @@ public class AdminController {
     @GetMapping("/movies")
     public ResponseEntity<GenericResponse> getAllMovies(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size,
-                                                        @RequestParam(defaultValue = "false") boolean isDelete) {
-        return movieService.adminGetAllMovie(isDelete, PageRequest.of(index-1, size));
+                                                        @RequestParam(required = false) boolean isDelete) {
+        return movieService.adminGetAllMovie(PageRequest.of(index-1, size));
     }
 
     @PostMapping("/foods/food")
@@ -241,8 +242,8 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getFoods(@RequestParam(defaultValue = "") String type,
                                                     @RequestParam(defaultValue = "1") int index,
                                                     @RequestParam(defaultValue = "10") int size,
-                                                    @RequestParam(defaultValue = "true") boolean isDelete) {
-        return foodService.adminGetFoods(isDelete, type, PageRequest.of(index-1, size));
+                                                    @RequestParam(defaultValue = "true") boolean status) {
+        return foodService.adminGetFoods(status, type, PageRequest.of(index-1, size));
     }
 
     @PatchMapping("/foods/{id}")
@@ -313,9 +314,8 @@ public class AdminController {
 
     @GetMapping("/rooms")
     public ResponseEntity<GenericResponse> getAllRoom(@RequestParam(defaultValue = "1") int index,
-                                                      @RequestParam(defaultValue = "10") int size,
-                                                      @RequestParam(defaultValue = "false") boolean isDelete) {
-        return roomService.getRooms(isDelete, PageRequest.of(index-1, size));
+                                                      @RequestParam(defaultValue = "10") int size) {
+        return roomService.getRooms(PageRequest.of(index-1, size));
     }
 
     @PostMapping("/rooms/room")
