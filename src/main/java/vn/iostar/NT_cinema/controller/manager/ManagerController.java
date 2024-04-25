@@ -66,10 +66,11 @@ public class ManagerController {
     @GetMapping("/rooms")
     public ResponseEntity<GenericResponse> getAllRoom(@RequestHeader("Authorization") String authorizationHeader,
                                                       @RequestParam(defaultValue = "1") int index,
-                                                      @RequestParam(defaultValue = "10") int size){
+                                                      @RequestParam(defaultValue = "10") int size,
+                                                      @RequestParam(defaultValue = "false") boolean isDelete){
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return roomService.getRoomsOfManager(managerId, PageRequest.of(index-1, size));
+        return roomService.getRoomsOfManager(isDelete, managerId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/rooms/{id}")
@@ -187,10 +188,18 @@ public class ManagerController {
         return userService.addStaff(request);
     }
 
+    @PatchMapping("/staffs/{id}")
+    public ResponseEntity<GenericResponse> updateIsDeleteStaff(@PathVariable("id") String id){
+        return userService.updateStaff(id);
+    }
+
     @GetMapping("/personnel")
-    public ResponseEntity<GenericResponse> getPersonnel(@RequestParam(defaultValue = "1") int index,
+    public ResponseEntity<GenericResponse> getPersonnel(@RequestHeader("Authorization") String authorizationHeader,
+                                                        @RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size){
-        return userService.getAllStaff(PageRequest.of(index-1, size));
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return userService.getAllStaff(managerId, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/foods/import")

@@ -19,10 +19,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
-import vn.iostar.NT_cinema.repository.AddressRepository;
-import vn.iostar.NT_cinema.repository.CinemaRepository;
-import vn.iostar.NT_cinema.repository.PasswordResetOtpRepository;
-import vn.iostar.NT_cinema.repository.UserRepository;
+import vn.iostar.NT_cinema.repository.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -51,6 +48,10 @@ public class UserService {
     AddressRepository addressRepository;
     @Autowired
     CloudinaryService cloudinaryService;
+    @Autowired
+    ManagerRepository managerRepository;
+    @Autowired
+    StaffRepository staffRepository;
 
     public Optional<User> findByUserName(String userName) {
         Optional<User> user = userRepository.findByUserName(userName);
@@ -950,17 +951,23 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getAllPersonnel(Pageable pageable) {
+    public ResponseEntity<GenericResponse> getAllPersonnel(boolean sortByRole, Pageable pageable) {
         try {
             List<Role> roles = new ArrayList<>();
-            roles.add(roleService.findByRoleName("ADMIN"));
             roles.add(roleService.findByRoleName("MANAGER"));
             roles.add(roleService.findByRoleName("STAFF"));
 
             Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
+            List<User> list;
+            if (sortByRole) {
+                list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed().thenComparing(user -> getRolePriority(user.getRole())))
+                        .toList();
+            }else {
+                list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed())
+                        .toList();
+            }
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed().thenComparing(user -> getRolePriority(user.getRole())))
-                    .collect(Collectors.toList()));
+            result.put("content", list);
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());
             result.put("totalPages", users.getTotalPages());
@@ -1021,14 +1028,13 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getAllStaff(PageRequest pageable) {
+    public ResponseEntity<GenericResponse> getAllStaff(String managerId, PageRequest pageable) {
         try {
-            List<Role> roles = new ArrayList<>();
-            roles.add(roleService.findByRoleName("STAFF"));
+            Optional<Manager> manager = managerRepository.findById(managerId);
 
-            Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
+            Page<Staff> users = staffRepository.findAllByRoleAndCinema(roleService.findByRoleName("STAFF"), manager.get().getCinema(), pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed().thenComparing(user -> getRolePriority(user.getRole())))
+            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed())
                     .collect(Collectors.toList()));
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());
@@ -1045,6 +1051,36 @@ public class UserService {
                     .success(false)
                     .message(e.getMessage())
                     .result("Lỗi máy chủ.")
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> updateStaff(String id) {
+        try {
+            Optional<User> user = userRepository.findById(id);
+            if (user.isPresent()) {
+                user.get().setDelete(!user.get().isDelete());
+                userRepository.save(user.get());
+                return ResponseEntity.ok().body(GenericResponse.builder()
+                        .success(true)
+                        .message("Xóa nhân viên thành công!")
+                        .result(user.get())
+                        .statusCode(200)
+                        .build());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Nhân viên không tồn tại.")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result("Lỗi máy chủ")
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .build());
         }

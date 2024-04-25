@@ -9,11 +9,12 @@ import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Manager;
 import vn.iostar.NT_cinema.entity.Role;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ManagerRepository extends MongoRepository<Manager, String> {
-    Optional<Manager> findByCinema(Cinema cinema);
+    Optional<Manager> findByCinemaAndRole(Cinema cinema, Role role);
 
     Page<Manager> findAllByRole(Role Role, Pageable pageable);
 }

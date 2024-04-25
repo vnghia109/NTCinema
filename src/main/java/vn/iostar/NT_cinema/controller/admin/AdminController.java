@@ -88,8 +88,9 @@ public class AdminController {
 
     @GetMapping("/personnel")
     public ResponseEntity<GenericResponse> getPersonnel(@RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size){
-        return userService.getAllPersonnel(PageRequest.of(index-1, size));
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @RequestParam(required = false) boolean sortByRole){
+        return userService.getAllPersonnel(sortByRole, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/viewers")
@@ -177,8 +178,9 @@ public class AdminController {
     @GetMapping("/cinemas/{Id}/rooms")
     public ResponseEntity<GenericResponse> getRooms(@PathVariable("Id") String Id,
                                                     @RequestParam(defaultValue = "1") int index,
-                                                    @RequestParam(defaultValue = "10") int size) {
-        return roomService.findRoomsByCinema(Id, PageRequest.of(index-1, size));
+                                                    @RequestParam(defaultValue = "10") int size,
+                                                    @RequestParam(defaultValue = "false") boolean isDelete) {
+        return roomService.findRoomsByCinema(isDelete, Id, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/rooms/{Id}/showtimes")

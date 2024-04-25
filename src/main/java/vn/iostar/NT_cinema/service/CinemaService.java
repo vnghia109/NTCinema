@@ -31,6 +31,9 @@ public class CinemaService {
     @Autowired
     RoomRepository roomRepository;
 
+    @Autowired
+    RoleService roleService;
+
     public ResponseEntity<GenericResponse> getAllCinema(Pageable pageable){
         try {
             Page<Cinema> cinemas = cinemaRepository.findAllByStatusIsTrue(pageable);
@@ -298,16 +301,15 @@ public class CinemaService {
             List<Cinema> cinemas = cinemaRepository.findAllByStatusIsTrue();
             List<Cinema> cinemaList = new ArrayList<>();
             for (Cinema item : cinemas) {
-                Optional<Manager> manager = managerRepository.findByCinema(item);
-                if (manager.isPresent()){
-                    continue;
+                Optional<Manager> manager = managerRepository.findByCinemaAndRole(item, roleService.findByRoleName("MANAGER"));
+                if (manager.isEmpty()){
+                    cinemaList.add(item);
                 }
-                cinemaList.add(item);
             }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Lấy các rapj phim chưa có quản lý thành công!")
+                            .message("Lấy các rạp phim chưa có quản lý thành công!")
                             .result(cinemaList)
                             .statusCode(HttpStatus.OK.value())
                             .build());

@@ -184,10 +184,10 @@ public class RoomService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getRoomsOfManager(String id, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getRoomsOfManager(boolean isDelete, String id, Pageable pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(id);
-            Page<Room> rooms = roomRepository.findAllByCinemaOrderByRoomIdDesc(manager.get().getCinema(), pageable);
+            Page<Room> rooms = roomRepository.findAllByCinemaAndIsDeleteOrderByRoomIdDesc(manager.get().getCinema(), isDelete, pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", rooms.getContent());
@@ -238,9 +238,9 @@ public class RoomService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findRoomsByCinema(String id, Pageable pageable) {
+    public ResponseEntity<GenericResponse> findRoomsByCinema(boolean isDelete, String id, Pageable pageable) {
         try {
-            Page<Room> rooms = roomRepository.findAllByCinema_CinemaIdAndIsDeleteIsFalseOrderByRoomIdDesc(id, pageable);
+            Page<Room> rooms = roomRepository.findAllByCinema_CinemaIdAndIsDeleteOrderByRoomIdDesc(id, isDelete, pageable);
             Map<String, Object> map = new HashMap<>();
             map.put("content", rooms.getContent());
             map.put("pageNumber", rooms.getPageable().getPageNumber() + 1);
