@@ -4,10 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import vn.iostar.NT_cinema.constant.DiscountType;
+import vn.iostar.NT_cinema.constant.PromotionType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,6 +24,10 @@ import java.util.Date;
 public class Promotion {
     @Id
     private String promotionId;
+    private PromotionType promotionType;
+    @UniqueElements(message = "Mã khuyến mãi đã tồn tại.")
+    private String promotionCode;
+    private Integer maxUsage;
     private String name;
     private String description;
     private DiscountType discountType;

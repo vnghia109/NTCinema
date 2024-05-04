@@ -24,5 +24,8 @@ public class UserReq {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private Date dob;
 
-    private Address address;
+    private String street;
+    private String province;
+    private String district;
+    private String country;
 }

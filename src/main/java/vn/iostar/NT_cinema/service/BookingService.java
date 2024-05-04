@@ -82,17 +82,14 @@ public class BookingService {
                     seats.add(seat.get());
                 }
             }
-            List<Food> foods = new ArrayList<>();
-            for (String item : foodIds) {
-                Optional<Food> food = foodRepository.findById(item);
-                food.ifPresent(foods::add);
-            }
+            List<FoodWithCount> foods = convertToFoodWithCountList(foodIds);
+
             Booking booking = new Booking();
             booking.setUserId(userId);
             booking.setShowtimeId(seats.get(0).getShowTime().getShowTimeId());
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
-            booking.setFoods(convertToFoodWithCountList(foodIds));
+            booking.setFoods(foods);
             booking.setTotal(totalBooking(seats, foods));
             booking.setTicketStatus(TicketStatus.UNCONFIRMED);
 
@@ -136,15 +133,12 @@ public class BookingService {
                     seats.add(seat.get());
                 }
             }
-            List<Food> foods = new ArrayList<>();
-            for (String item : foodIds) {
-                Optional<Food> food = foodRepository.findById(item);
-                food.ifPresent(foods::add);
-            }
+            List<FoodWithCount> foods = convertToFoodWithCountList(foodIds);
+
             BookingInfoRes booking = new BookingInfoRes();
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
-            booking.setFoods(convertToFoodWithCountList(foodIds));
+            booking.setFoods(foods);
             booking.setTotal(totalBooking(seats, foods));
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -215,13 +209,13 @@ public class BookingService {
         return foodWithCounts;
     }
 
-    public int totalBooking(List<Seat> seats, List<Food> foods){
+    public int totalBooking(List<Seat> seats, List<FoodWithCount> foods){
         int total = 0;
         for (Seat item : seats) {
             total += item.getPrice().getPrice();
         }
-        for (Food item : foods) {
-            total += item.getPrice();
+        for (FoodWithCount item : foods) {
+            total += item.getFood().getPrice() * item.getCount();
         }
         return total;
     }

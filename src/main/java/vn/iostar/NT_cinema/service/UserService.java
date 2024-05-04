@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.service;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -12,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -520,16 +522,20 @@ public class UserService {
                     String image = cloudinaryService.uploadImage(request.getImage());
                     user.setAvatar(image);
                 }
-                if (request.getAddress() != null){
+                Address addressRq = new Address(request.getStreet(),
+                                            request.getProvince(),
+                                            request.getDistrict(),
+                                            request.getCountry());
+                if (request.getCountry() != null && request.getDistrict() != null && request.getProvince() != null && request.getStreet() != null) {
                     Optional<Address> optionalAddress = addressRepository.findByStreetAndProvinceAndDistrictAndCountry(
-                            request.getAddress().getStreet(),
-                            request.getAddress().getProvince(),
-                            request.getAddress().getDistrict(),
-                            request.getAddress().getCountry());
+                            request.getStreet(),
+                            request.getProvince(),
+                            request.getDistrict(),
+                            request.getCountry());
                     if (optionalAddress.isPresent()){
                         user.setAddress(optionalAddress.get());
                     }else {
-                        Address address = addressRepository.save(request.getAddress());
+                        Address address = addressRepository.save(addressRq);
                         user.setAddress(address);
                     }
                 }
@@ -626,7 +632,6 @@ public class UserService {
         }
     }
 
-    @Transactional
     public void deleteUnverifiedAccounts() {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.HOUR_OF_DAY, -24);
@@ -635,14 +640,14 @@ public class UserService {
         List<User> unverifiedAccounts = userRepository.findByIsActiveFalseAndCreatedAtBefore(twentyFourHoursAgo);
         userRepository.deleteAll(unverifiedAccounts);
     }
-//    @PostConstruct
-//    public void init() {
-//        deleteUnverifiedAccounts();
-//    }
-//    @Scheduled(fixedDelay = 86400000) // 24 hours
-//    public void scheduledDeleteUnverifiedAccounts() {
-//        deleteUnverifiedAccounts();
-//    }
+    @PostConstruct
+    public void init() {
+        deleteUnverifiedAccounts();
+    }
+    @Scheduled(fixedDelay = 86400000) // 24 hours
+    public void scheduledDeleteUnverifiedAccounts() {
+        deleteUnverifiedAccounts();
+    }
 
     public ResponseEntity<?> validateOtp(String token) {
         try {

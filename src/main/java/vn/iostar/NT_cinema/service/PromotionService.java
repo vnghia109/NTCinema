@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.service;
 
+import de.jollyday.Holiday;
 import de.jollyday.HolidayManager;
 import de.jollyday.parameter.CalendarPartManagerParameter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,14 +8,21 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.DiscountType;
+import vn.iostar.NT_cinema.constant.PromotionType;
+import vn.iostar.NT_cinema.dto.ApplyPromotion;
+import vn.iostar.NT_cinema.dto.FoodWithCount;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.PromotionReq;
-import vn.iostar.NT_cinema.entity.Booking;
-import vn.iostar.NT_cinema.entity.Promotion;
+import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.PromotionRepository;
+import vn.iostar.NT_cinema.repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +30,8 @@ import java.util.stream.Collectors;
 public class PromotionService {
     @Autowired
     PromotionRepository promotionRepository;
+    @Autowired
+    UserRepository userRepository;
 
     public ResponseEntity<GenericResponse> getAllPromotions() {
         try {
@@ -49,6 +59,9 @@ public class PromotionService {
         try {
             Promotion promotion = new Promotion();
             promotion.setName(promotionReq.getName());
+            promotion.setPromotionType(PromotionType.valueOf(promotionReq.getPromotionType()));
+            promotion.setPromotionCode(promotionReq.getPromotionCode());
+            promotion.setMaxUsage(promotionReq.getMaxUsage());
             promotion.setDescription(promotionReq.getDescription());
             promotion.setDiscountType(DiscountType.valueOf(promotionReq.getDiscountType()));
             promotion.setDiscountValue(promotionReq.getDiscountValue());
@@ -84,6 +97,9 @@ public class PromotionService {
             Optional<Promotion> promotion = promotionRepository.findById(id);
             if (promotion.isPresent()) {
                 promotion.get().setName(promotionReq.getName());
+                promotion.get().setPromotionType(PromotionType.valueOf(promotionReq.getPromotionType()));
+                promotion.get().setPromotionCode(promotionReq.getPromotionCode());
+                promotion.get().setMaxUsage(promotionReq.getMaxUsage());
                 promotion.get().setDescription(promotionReq.getDescription());
                 promotion.get().setDiscountType(DiscountType.valueOf(promotionReq.getDiscountType()));
                 promotion.get().setDiscountValue(promotionReq.getDiscountValue());
@@ -157,48 +173,78 @@ public class PromotionService {
         }
     }
 
-    public BigDecimal applyApplicablePromotions(Booking booking, List<Promotion> promotions) {
+    public ApplyPromotion applyApplicablePromotions(Booking booking) {
         BigDecimal totalDiscount = BigDecimal.ZERO;
+        List<Promotion> promotions = promotionRepository.findAll();
+        List<Promotion> applyPromotions = new ArrayList<>();
 
         for (Promotion promotion : promotions) {
-            if (isPromotionApplicable(promotion, booking)) {
-                BigDecimal discount = calculateDiscount(promotion, booking);
-                totalDiscount = totalDiscount.add(discount);
+            if (promotion.getDiscountType() != DiscountType.SPECIAL_OFFER && promotion.getPromotionType() == PromotionType.FIXED) {
+                if (isPromotionApplicableFixed(promotion, booking)) {
+                    BigDecimal discount = calculateDiscount(promotion, booking);
+                    totalDiscount = totalDiscount.add(discount);
+                    applyPromotions.add(promotion);
+                }
+            }
+            if (promotion.getPromotionType() == PromotionType.CODE) {
+
             }
         }
 
-        return totalDiscount;
+        return new ApplyPromotion(applyPromotions, totalDiscount);
     }
 
-    private boolean isPromotionApplicable(Promotion promotion, Booking booking) {
+    private  boolean isPromotionApplicableCode(Promotion promotion, Booking booking) {
+        if (promotion.isDeleted()) {
+            return false;
+        }
+
+        if (promotion.getMaxUsage() != null && promotion.getMaxUsage() <= 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isPromotionApplicableFixed(Promotion promotion, Booking booking) {
         // Check if the promotion is not deleted
         if (promotion.isDeleted()) {
             return false;
         }
 
         // Check if we are within the promotion period
-        Date currentDate = new Date();
+        LocalDateTime localDateTime = LocalDateTime.of(booking.getSeats().get(0).getSchedule().getDate(), booking.getSeats().get(0).getSchedule().getStartTime());
+        Date currentDate = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
         if (currentDate.before(promotion.getStartDate()) || currentDate.after(promotion.getEndDate())) {
             return false;
         }
 
         // Check if the promotion is applicable for the current day of week
-        if (promotion.getValidDayOfWeek() != null) {
-            Calendar calendar = Calendar.getInstance();
-            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-            if (promotion.getValidDayOfWeek() != dayOfWeek) {
-                return false;
-            }
-        }
-
-        LocalDate currentDateLocalDate = LocalDate.now();
-        if (promotion.isExcludeHolidays() && isPublicHoliday(currentDateLocalDate, "vn")) {
+        if (promotion.getValidDayOfWeek() != null && promotion.getValidDayOfWeek() != booking.getSeats().get(0).getSchedule().getDate().getDayOfWeek().getValue()) {
             return false;
         }
 
-        // ...additional checks based on promotion criteria
+        LocalDate currentDateLocalDate = booking.getSeats().get(0).getSchedule().getDate();
+        if (promotion.isExcludeHolidays() && isPublicHoliday(currentDateLocalDate, "vn")){
+            return false;
+        }
+
+        if (promotion.getAgeLimit() != null && promotion.getAgeLimit() > getUserAge(booking.getUserId())) {
+            return false;
+        }
+
+        LocalTime localTime = booking.getSeats().get(0).getSchedule().getStartTime();
+        if (promotion.getValidTimeFrameStart() != null && promotion.getValidTimeFrameEnd() != null) {
+            return !localTime.isBefore(promotion.getValidTimeFrameStart()) && !localTime.isAfter(promotion.getValidTimeFrameEnd());
+        }
 
         return true;
+    }
+
+    public int getUserAge(String userId) {
+        User user = userRepository.findById(userId).get();
+        LocalDate date = user.getDob().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return LocalDate.now().getYear() - date.getYear();
     }
 
     public boolean isPublicHoliday(LocalDate date, String countryCode) {
@@ -206,7 +252,7 @@ public class PromotionService {
         CalendarPartManagerParameter param = new CalendarPartManagerParameter(countryCode, properties);
         HolidayManager manager = HolidayManager.getInstance(param);
         Set<LocalDate> holidays = manager.getHolidays(date.getYear()).stream()
-                .map(holiday -> holiday.getDate())
+                .map(Holiday::getDate)
                 .collect(Collectors.toSet());
         return holidays.contains(date);
     }
@@ -216,11 +262,14 @@ public class PromotionService {
 
         switch (promotion.getDiscountType()) {
             case PERCENTAGE:
-                BigDecimal total = new BigDecimal(order.getTotal());
-                discount = total.multiply(promotion.getDiscountValue().divide(BigDecimal.valueOf(100)));
+                List<Seat> seats = order.getSeats();
+                for (Seat item : seats) {
+                    int total = item.getPrice().getPrice();
+                    discount = discount.add(BigDecimal.valueOf(total).multiply(promotion.getDiscountValue().divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)));
+                }
                 break;
             case FIXED_AMOUNT:
-                discount = promotion.getDiscountValue();
+                discount = promotion.getDiscountValue().multiply(BigDecimal.valueOf(order.getSeats().size()));
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + promotion.getDiscountType());

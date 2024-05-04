@@ -4,7 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.UniqueElements;
 import vn.iostar.NT_cinema.constant.DiscountType;
+import vn.iostar.NT_cinema.constant.PromotionType;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
@@ -16,6 +18,9 @@ import java.util.Date;
 @NoArgsConstructor
 public class PromotionReq {
     private String name;
+    private String promotionType;
+    private String promotionCode;
+    private int maxUsage;
     private String description;
     private String discountType;
     private BigDecimal discountValue;

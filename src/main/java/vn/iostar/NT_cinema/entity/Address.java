@@ -21,4 +21,10 @@ public class Address {
     private String district;
     private String country;
 
+    public Address(String street, String province, String district, String country) {
+        this.street = street;
+        this.province = province;
+        this.district = district;
+        this.country = country;
+    }
 }

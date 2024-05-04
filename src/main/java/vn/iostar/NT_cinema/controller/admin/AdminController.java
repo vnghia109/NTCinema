@@ -10,7 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
-import vn.iostar.NT_cinema.entity.Promotion;
 import vn.iostar.NT_cinema.service.*;
 
 import java.time.LocalDate;

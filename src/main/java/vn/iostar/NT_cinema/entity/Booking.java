@@ -30,6 +30,8 @@ public class Booking {
 
     private List<FoodWithCount> foods;
 
+    private List<Promotion> promotions;
+
     private int total;
 
     private TicketStatus ticketStatus;
