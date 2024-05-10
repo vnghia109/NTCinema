@@ -47,6 +47,8 @@ public class AdminController {
     SeatService seatService;
     @Autowired
     PromotionService promotionService;
+    @Autowired
+    StatsService statsService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -351,15 +353,15 @@ public class AdminController {
         return managerService.updateCinemaManager(userId, cinemaId);
     }
 
-    @PostMapping("/total-revenue")
-    public ResponseEntity<?> getTotalRevenueDay(@RequestBody TotalRevenueReq req) {
-        return bookingService.getBookingsInDateRange(req.getStartDate(), req.getEndDate());
-    }
-
-    @GetMapping("/total-revenue")
-    public ResponseEntity<?> getTotalRevenue() {
-        return bookingService.getTotalRevenue();
-    }
+//    @PostMapping("/total-revenue")
+//    public ResponseEntity<?> getTotalRevenueDay(@RequestBody TotalRevenueReq req) {
+//        return bookingService.getBookingsInDateRange(req.getStartDate(), req.getEndDate());
+//    }
+//
+//    @GetMapping("/total-revenue")
+//    public ResponseEntity<?> getTotalRevenue() {
+//        return bookingService.getTotalRevenue();
+//    }
 
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
@@ -396,19 +398,42 @@ public class AdminController {
         return ticketService.getTicketsSoldBetweenDates(req.getStartDate(), req.getEndDate());
     }
 
-    @GetMapping("/year/total-revenue")
-    public ResponseEntity<GenericResponse> getTotalRevenueOfYear(@RequestParam("year") int year){
-        return bookingService.getTotalRevenueOfYear(year);
+    @GetMapping("/stats/overview")
+    public ResponseEntity<GenericResponse> getStatsOverview() {
+        return statsService.getStatsOverview();
+    }
+
+    @GetMapping("/total-revenue")
+    public ResponseEntity<GenericResponse> getTotalRevenueOfYear(@RequestParam(required = false) Integer year,
+                                                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
+        return statsService.getRevenueStats(year, month);
+    }
+
+    @GetMapping("/top-rated-movies")
+    public ResponseEntity<GenericResponse> getTopRatedMovies(@RequestParam(defaultValue = "5") int top) {
+        return movieService.findTop5Movie(top);
+    }
+
+    @GetMapping("/top-users")
+    public ResponseEntity<GenericResponse> getTopUsers(@RequestParam(defaultValue = "5") int top,
+                                                       @RequestParam(defaultValue = "false") boolean isStaff) {
+        return statsService.getTopUsers(top, isStaff);
+    }
+
+    @GetMapping("/finance")
+    public ResponseEntity<GenericResponse> getFinance(@RequestParam() int year) {
+        return statsService.getFinance(year);
+    }
+
+    @GetMapping("/finance/detail")
+    public ResponseEntity<GenericResponse> getFinanceDetail(@RequestParam("cinemaId") String cinemaId,
+                                                            @RequestParam("month") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
+        return statsService.getFinanceDetail(cinemaId, month);
     }
 
     @GetMapping("/year/total-ticket")
     public ResponseEntity<GenericResponse> getTotalTicketsByYear(@RequestParam("year") int year){
         return ticketService.getTotalTicketsByYear(year);
-    }
-
-    @GetMapping("/cinemas/total-revenue")
-    public ResponseEntity<GenericResponse> getTotalRevenueByCinemas() {
-        return bookingService.getTotalRevenueByCinemas();
     }
 
     @GetMapping("/promotions")

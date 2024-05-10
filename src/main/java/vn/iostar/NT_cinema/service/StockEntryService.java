@@ -4,18 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import vn.iostar.NT_cinema.dto.FoodWithCount;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.StockEntryReq;
 import vn.iostar.NT_cinema.dto.StockEntryRes;
-import vn.iostar.NT_cinema.entity.Food;
-import vn.iostar.NT_cinema.entity.FoodInventory;
-import vn.iostar.NT_cinema.entity.Manager;
-import vn.iostar.NT_cinema.entity.StockEntry;
-import vn.iostar.NT_cinema.repository.FoodInventoryRepository;
-import vn.iostar.NT_cinema.repository.FoodRepository;
-import vn.iostar.NT_cinema.repository.ManagerRepository;
-import vn.iostar.NT_cinema.repository.StockEntryRepository;
+import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.repository.*;
 
+import java.math.BigDecimal;
+import java.security.PublicKey;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.Optional;
 
@@ -29,6 +28,8 @@ public class StockEntryService {
     FoodRepository foodRepository;
     @Autowired
     FoodInventoryRepository foodInventoryRepository;
+    @Autowired
+    CinemaFinanceStatsRepository cinemaFinanceStatsRepository;
 
     public ResponseEntity<GenericResponse> importFoods(String managerId, StockEntryReq req) {
         try {
@@ -71,6 +72,7 @@ public class StockEntryService {
             stockEntry.setTotalPrice(req.getQuantity() * req.getPurchasePrice());
 
             StockEntry saved = stockEntryRepository.save(stockEntry);
+            handleImportFoods(saved, manager.get().getCinema());
 
             Optional<FoodInventory> inventory = foodInventoryRepository.findByFoodAndCinema(food.get(), manager.get().getCinema());
             if (inventory.isEmpty()) {
@@ -105,6 +107,30 @@ public class StockEntryService {
                             .result(null)
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
+        }
+    }
+
+    public void handleImportFoods(StockEntry stockEntry, Cinema cinema) {
+        LocalDate date = stockEntry.getEntryDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1);
+        Optional<CinemaFinanceStats> financeStats = cinemaFinanceStatsRepository.findByCinemaAndMonth(
+                cinema,
+                date
+        );
+        if (financeStats.isPresent()) {
+            financeStats.get().setTotalExpense(financeStats.get().getTotalExpense().add(BigDecimal.valueOf(stockEntry.getTotalPrice())));
+            financeStats.get().setFoodExpense(financeStats.get().getFoodExpense().add(BigDecimal.valueOf(stockEntry.getTotalPrice())));
+            financeStats.get().setTotalOfOrder(financeStats.get().getTotalOfOrder() + 1);
+            financeStats.get().calculateProfit();
+            cinemaFinanceStatsRepository.save(financeStats.get());
+        }else {
+            CinemaFinanceStats cinemaFinanceStats = new CinemaFinanceStats(
+                    date,
+                    cinema,
+                    BigDecimal.valueOf(stockEntry.getTotalPrice()),
+                    BigDecimal.valueOf(stockEntry.getTotalPrice()),
+                    1);
+            cinemaFinanceStats.calculateProfit();
+            cinemaFinanceStatsRepository.save(cinemaFinanceStats);
         }
     }
 }

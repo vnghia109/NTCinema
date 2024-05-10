@@ -20,10 +20,8 @@ import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.math.BigDecimal;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 import java.util.*;
@@ -59,6 +57,125 @@ public class BookingService {
     ScheduleRepository scheduleRepository;
     @Autowired
     FoodInventoryRepository foodInventoryRepository;
+    @Autowired
+    DailyStatsRepository dailyStatsRepository;
+    @Autowired
+    MonthlyStatsRepository monthlyStatsRepository;
+    @Autowired
+    UserStatsRepository userStatsRepository;
+    @Autowired
+    CinemaFinanceStatsRepository cinemaFinanceStatsRepository;
+
+    public void handleBookingChange(Booking booking) {
+        if(booking.isPayment() && !booking.getTicketStatus().equals(TicketStatus.CANCELLED)) {
+            Optional<DailyStats> dailyStats = dailyStatsRepository.findByCinemaAndDate(booking.getSeats().get(0).getShowTime().getRoom().getCinema(), booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            if (dailyStats.isPresent()) {
+                dailyStats.get().setTotalOfTickets(dailyStats.get().getTotalOfTickets() + booking.getSeats().size());
+                dailyStats.get().setTotalOfBookings(dailyStats.get().getTotalOfBookings() + 1);
+                dailyStats.get().setRevenue(dailyStats.get().getRevenue().add(BigDecimal.valueOf(booking.getTotal())));
+                dailyStatsRepository.save(dailyStats.get());
+            }else {
+                dailyStatsRepository.save(new DailyStats(booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                        booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
+                        BigDecimal.valueOf(booking.getTotal()), booking.getSeats().size(), 1));
+            }
+
+            LocalDate date = booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1);
+            Optional<MonthlyStats> monthlyStats = monthlyStatsRepository.findByCinemaAndMonth(booking.getSeats().get(0).getShowTime().getRoom().getCinema(), date);
+            if (monthlyStats.isPresent()) {
+                monthlyStats.get().setTotalOfTickets(monthlyStats.get().getTotalOfTickets() + booking.getSeats().size());
+                monthlyStats.get().setTotalOfBookings(monthlyStats.get().getTotalOfBookings() + 1);
+                monthlyStats.get().setRevenue(monthlyStats.get().getRevenue().add(BigDecimal.valueOf(booking.getTotal())));
+                monthlyStatsRepository.save(monthlyStats.get());
+            }else {
+                monthlyStatsRepository.save(new MonthlyStats(booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                        booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
+                        BigDecimal.valueOf(booking.getTotal()), booking.getSeats().size(), 1));
+            }
+
+            Optional<User> user = userRepository.findById(booking.getUserId());
+            Optional<UserStats> userStats = userStatsRepository.findByUser_UserId(booking.getUserId());
+            if (userStats.isPresent()) {
+                userStats.get().setTotalSpent(userStats.get().getTotalSpent().add(BigDecimal.valueOf(booking.getTotal())));
+                userStats.get().setTotalOfTickets(userStats.get().getTotalOfTickets() + booking.getSeats().size());
+                userStats.get().setTotalOfBookings(userStats.get().getTotalOfBookings() + 1);
+                userStatsRepository.save(userStats.get());
+            }else {
+                userStatsRepository.save(new UserStats(user.get(), BigDecimal.valueOf(booking.getTotal()), 1, booking.getSeats().size()));
+            }
+
+            Optional<CinemaFinanceStats> financeStats = cinemaFinanceStatsRepository.findByCinemaAndMonth(
+                    booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
+                    booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1)
+            );
+            if (financeStats.isPresent()) {
+                financeStats.get().setTotalRevenue(financeStats.get().getTotalRevenue().add(BigDecimal.valueOf(booking.getTotal())));
+                financeStats.get().setTicketRevenue(financeStats.get().getTicketRevenue().add(BigDecimal.valueOf((long) booking.getSeats().size() *booking.getSeats().get(0).getPrice().getPrice())));
+                long total = 0;
+                for (FoodWithCount item : booking.getFoods()) {
+                    total += (long) item.getFood().getPrice() * item.getCount();
+                }
+                financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().add(BigDecimal.valueOf(total)));
+                financeStats.get().calculateProfit();
+                cinemaFinanceStatsRepository.save(financeStats.get());
+            }else {
+                long total = 0;
+                for (FoodWithCount item : booking.getFoods()) {
+                    total += (long) item.getFood().getPrice() * item.getCount();
+                }
+                CinemaFinanceStats cinemaFinanceStats = new CinemaFinanceStats(
+                        booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1),
+                        booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
+                        BigDecimal.valueOf(booking.getTotal()),
+                        BigDecimal.valueOf((long) booking.getSeats().size() *booking.getSeats().get(0).getPrice().getPrice()),
+                        BigDecimal.valueOf(total));
+                cinemaFinanceStats.calculateProfit();
+                cinemaFinanceStatsRepository.save(cinemaFinanceStats);
+            }
+        }
+        if (booking.isPayment() && booking.getTicketStatus().equals(TicketStatus.CANCELLED)) {
+            Optional<DailyStats> dailyStats = dailyStatsRepository.findByCinemaAndDate(booking.getSeats().get(0).getShowTime().getRoom().getCinema(), booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            if (dailyStats.isPresent()) {
+                dailyStats.get().setTotalOfTickets(dailyStats.get().getTotalOfTickets() - booking.getSeats().size());
+                dailyStats.get().setTotalOfBookings(dailyStats.get().getTotalOfBookings() - 1);
+                dailyStats.get().setRevenue(dailyStats.get().getRevenue().subtract(BigDecimal.valueOf(booking.getTotal())));
+                dailyStatsRepository.save(dailyStats.get());
+            }
+            LocalDate date = booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1);
+            Optional<MonthlyStats> monthlyStats = monthlyStatsRepository.findByCinemaAndMonth(booking.getSeats().get(0).getShowTime().getRoom().getCinema(), date);
+            if (monthlyStats.isPresent()) {
+                monthlyStats.get().setTotalOfTickets(monthlyStats.get().getTotalOfTickets() - booking.getSeats().size());
+                monthlyStats.get().setTotalOfBookings(monthlyStats.get().getTotalOfBookings() - 1);
+                monthlyStats.get().setRevenue(monthlyStats.get().getRevenue().subtract(BigDecimal.valueOf(booking.getTotal())));
+                monthlyStatsRepository.save(monthlyStats.get());
+            }
+
+            Optional<User> user = userRepository.findById(booking.getUserId());
+            Optional<UserStats> userStats = userStatsRepository.findByUser_UserId(booking.getUserId());
+            if (userStats.isPresent()) {
+                userStats.get().setTotalSpent(userStats.get().getTotalSpent().subtract(BigDecimal.valueOf(booking.getTotal())));
+                userStats.get().setTotalOfTickets(userStats.get().getTotalOfTickets() - booking.getSeats().size());
+                userStats.get().setTotalOfBookings(userStats.get().getTotalOfBookings() - 1);
+                userStatsRepository.save(userStats.get());
+            }
+
+            Optional<CinemaFinanceStats> financeStats = cinemaFinanceStatsRepository.findByCinemaAndMonth(
+                    booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
+                    booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1)
+            );
+            if (financeStats.isPresent()) {
+                financeStats.get().setTotalRevenue(financeStats.get().getTotalRevenue().subtract(BigDecimal.valueOf(booking.getTotal())));
+                financeStats.get().setTicketRevenue(financeStats.get().getTicketRevenue().subtract(BigDecimal.valueOf((long) booking.getSeats().size() *booking.getSeats().get(0).getPrice().getPrice())));
+                long total = 0;
+                for (FoodWithCount item : booking.getFoods()) {
+                    total += (long) item.getFood().getPrice() * item.getCount();
+                }
+                financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().subtract(BigDecimal.valueOf(total)));
+                financeStats.get().calculateProfit();
+                cinemaFinanceStatsRepository.save(financeStats.get());
+            }
+        }
+    }
 
     public ResponseEntity<GenericResponse> bookTicket(String userId, BookReq bookReq) {
         try {
@@ -98,7 +215,7 @@ public class BookingService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Xác nhận thông tin thành công")
+                            .message("Đặt vé thành công. Vui lòng thanh toán!!")
                             .result(bookingRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
@@ -344,7 +461,6 @@ public class BookingService {
     public ResponseEntity<GenericResponse> getBookings(String status, String cinemaId, Pageable pageable) {
         try {
             Page<Booking> bookings;
-            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(cinemaId);
             if (cinemaId == null) {
                 if (status.isEmpty() || status.isBlank()) {
                     bookings = bookingRepository.findAllByOrderByBookingIdDesc(pageable);
@@ -353,6 +469,7 @@ public class BookingService {
                     bookings = bookingRepository.findAllByTicketStatusOrderByBookingIdDesc(ticketStatus, pageable);
                 }
             } else {
+                List<Room> rooms = roomRepository.findAllByCinema_CinemaId(cinemaId);
                 List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
                 List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
                 if (status.isEmpty() || status.isBlank()) {
@@ -393,196 +510,6 @@ public class BookingService {
                             .success(true)
                             .message("Lấy tất cả vé đã đặt thành công.")
                             .result(map)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
-    public ResponseEntity<?> getTotalRevenueOfCinemaManager(String managerId) {
-        try {
-            Optional<Manager> manager = managerRepository.findById(managerId);
-            if (manager.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Quản lý chưa được thêm rạp phim.")
-                        .result(null)
-                        .statusCode(HttpStatus.NOT_FOUND.value())
-                        .build());
-            }
-            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
-            List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
-            List<Booking> bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds);
-            int total = calculateTotalRevenue(bookings);
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Lấy tổng doanh thu theo rạp của quản lý thành công.")
-                            .result(total)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
-    public ResponseEntity<?> getTotalRevenueYearOfCinemaManager(String managerId, int year) {
-        try {
-            Optional<Manager> manager = managerRepository.findById(managerId);
-            if (manager.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Quản lý chưa được thêm rạp phim.")
-                        .result(null)
-                        .statusCode(HttpStatus.NOT_FOUND.value())
-                        .build());
-            }
-
-            List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
-            List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
-            List<Integer> temp = getTotalRevenueByYear(year, showtimeIds);
-            RevenueOfYearRes res = new RevenueOfYearRes(manager.get().getCinema().getCinemaName(), temp);
-
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Lấy tổng doanh thu theo rạp của quản lý thành công.")
-                            .result(res)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
-    // Tổng doanh thu theo năm
-    public List<Integer> getTotalRevenueByYear(int year, List<String> showTimeIds) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.YEAR, year);
-        calendar.set(Calendar.MONTH, Calendar.JANUARY);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        Date startDate = calendar.getTime();
-
-        calendar.set(Calendar.MONTH, Calendar.DECEMBER);
-        calendar.set(Calendar.DAY_OF_MONTH, 31);
-        Date endDate = calendar.getTime();
-
-        List<Booking> bookings = bookingRepository.findByYearAndShowtimeIds(startDate, endDate, showTimeIds);
-        return calculateRevenueByMonths(bookings);
-    }
-
-    // Hàm tính doanh thu từng tháng
-    private List<Integer> calculateRevenueByMonths(List<Booking> bookings) {
-        List<Integer> revenueByMonths = new ArrayList<>(12);
-
-        for (int i = 0; i < 12; i++) {
-            revenueByMonths.add(0);
-        }
-
-        for (Booking booking : bookings) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(booking.getCreateAt());
-            int month = calendar.get(Calendar.MONTH);
-            int total = booking.getTotal();
-            revenueByMonths.set(month, revenueByMonths.get(month) + total);
-        }
-
-        return revenueByMonths;
-    }
-
-    public ResponseEntity<GenericResponse> getTotalRevenueOfYear(int year) {
-        try {
-            List<Cinema> cinemas = cinemaRepository.findAll();
-            List<Object> list = new ArrayList<>();
-            for (Cinema item : cinemas) {
-                List<Room> rooms = roomRepository.findAllByCinema_CinemaId(item.getCinemaId());
-                List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
-                List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
-                List<Integer> total = getTotalRevenueByYear(year, showtimeIds);
-                RevenueOfYearRes res = new RevenueOfYearRes(item.getCinemaName(), total);
-                list.add(res);
-            }
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Lấy tổng doanh thu theo năm của rạp phim thành công.")
-                            .result(list)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
-    public ResponseEntity<?> getTotalRevenue() {
-        try {
-            int total = calculateTotalRevenue(bookingRepository.findAllByIsPaymentIsTrue());
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Lấy tổng doanh thu thành công!")
-                            .result(total)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
-    public ResponseEntity<GenericResponse> getTotalRevenueByCinemas() {
-        try {
-            List<Cinema> cinemas = cinemaRepository.findAll();
-            List<RevenueOfCinemasRes> revenue = new ArrayList<>();
-            for (Cinema item : cinemas) {
-                List<Room> rooms = roomRepository.findAllByCinema_CinemaId(item.getCinemaId());
-                List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
-                List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
-                List<Booking> bookings = bookingRepository.findAllByShowtimeIdIn(showtimeIds);
-                int temp = calculateTotalRevenue(bookings);
-                revenue.add(new RevenueOfCinemasRes(item.getCinemaName(), temp));
-            }
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Lấy tổng doanh thu thành công!")
-                            .result(revenue)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -654,6 +581,7 @@ public class BookingService {
             }
             booking.get().setTicketStatus(TicketStatus.CANCELLED);
             bookingRepository.save(booking.get());
+            handleBookingChange(booking.get());
 
             for (FoodWithCount item: booking.get().getFoods()) {
                 Food food = item.getFood();

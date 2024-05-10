@@ -13,4 +13,6 @@ import java.util.List;
 @Registered
 public interface StaffRepository extends MongoRepository<Staff, String> {
     Page<Staff> findAllByRoleAndCinema(Role role, Cinema cinema, Pageable pageable);
+
+    List<Staff> findAllByCinema(Cinema cinema);
 }

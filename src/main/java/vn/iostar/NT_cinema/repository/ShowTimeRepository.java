@@ -12,6 +12,8 @@ import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.Room;
 import vn.iostar.NT_cinema.entity.ShowTime;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -34,4 +36,6 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     List<ShowTime> findAllByIsSpecialIsTrueAndIsDeleteIsFalse();
 
     List<ShowTime> findAllByRoom_Cinema(Cinema cinema);
+
+    List<ShowTime> findByTimeStartBetween(Date timeStart, Date timeStart2);
 }

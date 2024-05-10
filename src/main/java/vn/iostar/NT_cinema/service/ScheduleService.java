@@ -14,10 +14,7 @@ import vn.iostar.NT_cinema.repository.MovieRepository;
 import vn.iostar.NT_cinema.repository.ScheduleRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -55,7 +52,11 @@ public class ScheduleService {
                         .build());
             }
             for (Schedule schedule : schedules) {
-                if (!(scheduleReq.getStartTime().isAfter(schedule.getEndTime().plusMinutes(15)) || endTime.plusMinutes(15).isBefore(schedule.getStartTime())) && scheduleReq.getDate().equals(schedule.getDate())) {
+                LocalDateTime startNew = LocalDateTime.of(scheduleReq.getDate(), scheduleReq.getStartTime());
+                LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration())+15);
+                LocalDateTime startOld = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
+                LocalDateTime endOld = startOld.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration())+15);
+                if (startNew.isBefore(endOld) && endNew.isAfter(startOld)) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
                             .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime())

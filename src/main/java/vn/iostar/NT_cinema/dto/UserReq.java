@@ -1,6 +1,8 @@
 package vn.iostar.NT_cinema.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,8 +19,10 @@ public class UserReq {
 
     private List<MultipartFile> image;
 
+    @Size(max = 10, message = "Số điện thoại phải ít hơn 10 số")
     private String phone;
 
+    @Email(message = "Email không đúng định dạng")
     private String email;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

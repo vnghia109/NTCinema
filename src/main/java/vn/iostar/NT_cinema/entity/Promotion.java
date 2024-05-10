@@ -28,6 +28,7 @@ public class Promotion {
     @UniqueElements(message = "Mã khuyến mãi đã tồn tại.")
     private String promotionCode;
     private Integer maxUsage;
+    private Integer useForUserPerDay;
     private String name;
     private String description;
     private DiscountType discountType;

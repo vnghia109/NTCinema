@@ -130,6 +130,8 @@ public class VnPayController {
                 booking.get().setPayment(true);
                 bookingRepository.save(booking.get());
                 bookingService.sendEmailBookingSuccess(booking.get());
+                bookingService.handleBookingChange(booking.get());
+
                 for (Seat item: booking.get().getSeats()) {
                     Ticket ticket = new Ticket();
                     ticket.setUserId(booking.get().getUserId());
@@ -154,6 +156,7 @@ public class VnPayController {
                     Cinema cinema = booking.get().getSeats().get(0).getShowTime().getRoom().getCinema();
                     FoodInventory foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema).get();
                     foodInventory.setQuantity(foodInventory.getQuantity() - item.getCount());
+                    foodInventory.setUpdateAt(new Date());
                     foodInventoryRepository.save(foodInventory);
                 }
                 response.sendRedirect("http://localhost:5173/user/payment-success");

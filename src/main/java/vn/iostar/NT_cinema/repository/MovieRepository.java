@@ -22,4 +22,6 @@ public interface MovieRepository extends MongoRepository<Movie, String> {
 
     @Query("{$or: [{ 'title': { $regex: ?0, $options: 'i' } }, { 'actor': { $regex: ?0, $options: 'i' } }, { 'genres': { $regex: ?0, $options: 'i' } }]}")
     List<Movie> searchMoviesByKeyword(String keyword);
+
+    List<Movie> findByOrderByRatingDesc();
 }

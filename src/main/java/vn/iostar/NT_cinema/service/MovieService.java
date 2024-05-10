@@ -533,4 +533,36 @@ public class MovieService {
         }
     }
 
+    public ResponseEntity<GenericResponse> findTop5Movie(int top) {
+        try {
+            List<Movie> movies = movieRepository.findByOrderByRatingDesc();
+            List<Map<String, Object>> top5Movies = new ArrayList<>();
+            int dem = 0;
+            for (Movie movie : movies) {
+                Map<String, Object> movieMap = new HashMap<>();
+                movieMap.put("movie", movie.getTitle());
+                movieMap.put("rating", movie.getRating());
+                top5Movies.add(movieMap);
+                dem++;
+                if (dem == top) {
+                    break;
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Top 5 phim đánh giá cao nhất!")
+                            .result(top5Movies)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Lỗi máy chủ.")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

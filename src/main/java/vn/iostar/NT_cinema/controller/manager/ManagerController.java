@@ -43,6 +43,8 @@ public class ManagerController {
     StockEntryService stockEntryService;
     @Autowired
     SeatService seatService;
+    @Autowired
+    StatsService statsService;
 
     @PostMapping("/rooms")
     public ResponseEntity<GenericResponse> addRoom(@RequestHeader("Authorization") String authorizationHeader,
@@ -161,18 +163,35 @@ public class ManagerController {
     }
 
     @GetMapping("/total-revenue")
-    public ResponseEntity<?> getTotalRevenueOfCinemaManager(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<?> getTotalRevenueOfCinemaManager(@RequestHeader("Authorization") String authorizationHeader,
+                                                            @RequestParam(required = false) Integer year,
+                                                            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return bookingService.getTotalRevenueOfCinemaManager(managerId);
+        return statsService.getRevenueStatsForManager(managerId, year, month);
     }
 
-    @GetMapping("/year/total-revenue")
-    public ResponseEntity<?> getTotalRevenueOfCinemaManager(@RequestHeader("Authorization") String authorizationHeader,
-                                                            @RequestParam("year") int year) {
+    @GetMapping("/top-users")
+    public ResponseEntity<GenericResponse> getTopUsers(@RequestParam(defaultValue = "5") int top,
+                                                       @RequestParam(defaultValue = "false") boolean isStaff,
+                                                       @RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return bookingService.getTotalRevenueYearOfCinemaManager(managerId, year);
+        return statsService.getTopUsersOfManager(top, isStaff, managerId);
+    }
+
+    @GetMapping("/finance")
+    public ResponseEntity<GenericResponse> getFinance(@RequestParam() int year,
+                                                      @RequestHeader("Authorization") String authorizationHeader) {
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return statsService.getFinanceOfManager(year, managerId);
+    }
+
+    @GetMapping("/finance/detail")
+    public ResponseEntity<GenericResponse> getFinanceDetail(@RequestParam("cinemaId") String cinemaId,
+                                                            @RequestParam("month") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
+        return statsService.getFinanceDetail(cinemaId, month);
     }
 
     @PostMapping("/staff")
