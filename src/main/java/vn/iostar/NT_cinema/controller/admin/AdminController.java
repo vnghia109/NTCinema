@@ -405,7 +405,7 @@ public class AdminController {
 
     @GetMapping("/total-revenue")
     public ResponseEntity<GenericResponse> getTotalRevenueOfYear(@RequestParam(required = false) Integer year,
-                                                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
+                                                                 @RequestParam(required = false) Integer month) {
         return statsService.getRevenueStats(year, month);
     }
 

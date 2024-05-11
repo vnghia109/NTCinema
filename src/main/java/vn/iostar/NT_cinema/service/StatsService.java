@@ -46,12 +46,12 @@ public class StatsService {
     @Autowired
     StaffRepository staffRepository;
 
-    public ResponseEntity<GenericResponse> getRevenueStats(Integer year, LocalDate month) {
+    public ResponseEntity<GenericResponse> getRevenueStats(Integer year, Integer month) {
         try {
             List<Map<String, Object>> cinemaStats = new ArrayList<>();
             List<Cinema> cinemas = cinemaRepository.findAll();
 
-            if (year != null) {
+            if (year != null && month == null) {
                 // Thống kê theo năm
                 for (Cinema cinema : cinemas) {
                     List<MonthlyStats> monthlyStats = monthlyStatsRepository.findByCinemaAndMonthBetween(cinema,
@@ -70,12 +70,14 @@ public class StatsService {
                     revenueByYearAndCinema.put("data", revenueByMonth);
                     cinemaStats.add(revenueByYearAndCinema);
                 }
-            } else if (month != null) {
+            }
+            if (year != null && month != null) {
                 // Thống kê theo tháng
-                for (Cinema cinema : cinemas){
-                    List<BigDecimal> monthlyRevenues = new ArrayList<>(Collections.nCopies(month.lengthOfMonth(), BigDecimal.ZERO));
-                    LocalDate start = LocalDate.of(month.getYear(), month.getMonthValue(), 1);
-                    LocalDate end = LocalDate.of(month.getYear(), month.getMonthValue(), month.lengthOfMonth());
+                for (Cinema cinema : cinemas) {
+                    LocalDate month1 = LocalDate.of(year, month, 1);
+                    List<BigDecimal> monthlyRevenues = new ArrayList<>(Collections.nCopies(month1.lengthOfMonth(), BigDecimal.ZERO));
+                    LocalDate start = LocalDate.of(month1.getYear(), month1.getMonthValue(), 1);
+                    LocalDate end = LocalDate.of(month1.getYear(), month1.getMonthValue(), month1.lengthOfMonth());
                     List<DailyStats> dailyStats = dailyStatsRepository.findByCinemaAndDateBetween(cinema, start, end);
                     for (DailyStats dailyStat : dailyStats) {
                         monthlyRevenues.set(dailyStat.getDate().getDayOfMonth() - 1, dailyStat.getRevenue());
@@ -85,18 +87,12 @@ public class StatsService {
                     monthlyStats.put("data", monthlyRevenues);
                     cinemaStats.add(monthlyStats);
                 }
-            } else {
-                throw new IllegalArgumentException("Bạn phải chọn tháng hoặc năm cần thống kê.");
             }
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("revenue", cinemaStats);
-
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Thống kê thành công!!")
-                            .result(result)
+                            .result(cinemaStats)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
@@ -110,7 +106,7 @@ public class StatsService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getRevenueStatsForManager(String managerId, Integer year, LocalDate month) {
+    public ResponseEntity<GenericResponse> getRevenueStatsForManager(String managerId, Integer year, Integer month) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
             if (manager.isEmpty()){
@@ -141,11 +137,13 @@ public class StatsService {
                 revenueByYearAndCinema.put("name", cinema.getCinemaName());
                 revenueByYearAndCinema.put("data", revenueByMonth);
                 cinemaStats.add(revenueByYearAndCinema);
-            } else if (month != null) {
+            }
+            if (month != null) {
                 // Thống kê theo tháng
-                List<BigDecimal> monthlyRevenues = new ArrayList<>(Collections.nCopies(month.lengthOfMonth(), BigDecimal.ZERO));
-                LocalDate start = LocalDate.of(month.getYear(), month.getMonthValue(), 1);
-                LocalDate end = LocalDate.of(month.getYear(), month.getMonthValue(), month.lengthOfMonth());
+                LocalDate month1 = LocalDate.of(year, month, 1);
+                List<BigDecimal> monthlyRevenues = new ArrayList<>(Collections.nCopies(month1.lengthOfMonth(), BigDecimal.ZERO));
+                LocalDate start = LocalDate.of(month1.getYear(), month1.getMonthValue(), 1);
+                LocalDate end = LocalDate.of(month1.getYear(), month1.getMonthValue(), month1.lengthOfMonth());
                 List<DailyStats> dailyStats = dailyStatsRepository.findByCinemaAndDateBetween(cinema, start, end);
                 for (DailyStats dailyStat : dailyStats) {
                     monthlyRevenues.set(dailyStat.getDate().getDayOfMonth() - 1, dailyStat.getRevenue());
@@ -155,18 +153,13 @@ public class StatsService {
                 monthlyStats.put("data", monthlyRevenues);
                 cinemaStats.add(monthlyStats);
 
-            } else {
-                throw new IllegalArgumentException("Bạn phải chọn tháng hoặc năm cần thống kê.");
             }
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("revenue", cinemaStats);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Thống kê thành công!!")
-                            .result(result)
+                            .result(cinemaStats)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
