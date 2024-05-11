@@ -212,14 +212,11 @@ public class StatsService {
             result.put("qCinema", cinemas.size());
             result.put("qUser", users.size());
 
-            Map<String, Object> statistical = new HashMap<>();
-            statistical.put("statistical", result);
-
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Lấy thống kê thành công!!")
-                            .result(statistical)
+                            .result(result)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
