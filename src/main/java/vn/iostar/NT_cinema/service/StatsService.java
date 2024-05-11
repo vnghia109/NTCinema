@@ -200,9 +200,7 @@ public class StatsService {
             }
             List<Movie> movies = new ArrayList<>(uniqueMoviesMap.values());
 
-            List<Role> roles = new ArrayList<>();
-            roles.add(roleRepository.findByRoleName("VIEWER"));
-            List<User> users = userRepository.findAllByRoleIn(roles);
+            List<User> users = userRepository.findAll();
 
             List<Cinema> cinemas = cinemaRepository.findAll();
 
