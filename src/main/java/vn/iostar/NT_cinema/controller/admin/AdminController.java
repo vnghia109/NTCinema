@@ -412,7 +412,7 @@ public class AdminController {
 
     @GetMapping("/top-rated-movies")
     public ResponseEntity<GenericResponse> getTopRatedMovies(@RequestParam(defaultValue = "5") int top) {
-        return movieService.findTop5Movie(top);
+        return movieService.findTopMovie(top);
     }
 
     @GetMapping("/top-users")

@@ -15,6 +15,7 @@ public class Finance {
     private BigDecimal totalRevenue;
     private BigDecimal ticketRevenue;
     private BigDecimal foodRevenue;
+    private int totalOfBooking;
     private BigDecimal totalExpense;
     private BigDecimal foodExpense;
     private BigDecimal otherExpense;

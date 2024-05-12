@@ -87,12 +87,22 @@ public class StatsService {
         LocalDate start = LocalDate.of(month1.getYear(), month1.getMonthValue(), 1);
         LocalDate end = LocalDate.of(month1.getYear(), month1.getMonthValue(), month1.lengthOfMonth());
         List<DailyStats> dailyStats = dailyStatsRepository.findByCinemaAndDateBetween(cinema, start, end);
-        for (DailyStats dailyStat : dailyStats) {
-            monthlyRevenues.set(dailyStat.getDate().getDayOfMonth() - 1, isTicket ? BigDecimal.valueOf(dailyStat.getTotalOfTickets()) : dailyStat.getRevenue());
-        }
         Map<String, Object> monthlyStats = new HashMap<>();
-        monthlyStats.put("name", cinema.getCinemaName());
-        monthlyStats.put("data", monthlyRevenues);
+        if (isTicket) {
+            int totalTicket = 0;
+            for (DailyStats dailyStat : dailyStats) {
+                totalTicket = totalTicket + dailyStat.getTotalOfTickets();
+            }
+
+            monthlyStats.put("name", cinema.getCinemaName());
+            monthlyStats.put("totalTicket", totalTicket);
+        }else {
+            for (DailyStats dailyStat : dailyStats) {
+                monthlyRevenues.set(dailyStat.getDate().getDayOfMonth() - 1, dailyStat.getRevenue());
+            }
+            monthlyStats.put("name", cinema.getCinemaName());
+            monthlyStats.put("data", monthlyRevenues);
+        }
         cinemaStats.add(monthlyStats);
     }
 
@@ -100,14 +110,23 @@ public class StatsService {
         List<MonthlyStats> monthlyStats = monthlyStatsRepository.findByCinemaAndMonthBetween(cinema,
                 LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31)
         );
-        List<BigDecimal> revenueByMonth = new ArrayList<>(Collections.nCopies(12, BigDecimal.ZERO));
-
-        for (MonthlyStats monthlyStat : monthlyStats) {
-            revenueByMonth.set(monthlyStat.getMonth().getMonth().getValue() - 1, isTicket ? BigDecimal.valueOf(monthlyStat.getTotalOfTickets()) : monthlyStat.getRevenue());
-        }
         Map<String, Object> revenueByYearAndCinema = new HashMap<>();
-        revenueByYearAndCinema.put("name", cinema.getCinemaName());
-        revenueByYearAndCinema.put("data", revenueByMonth);
+        if (isTicket) {
+            int totalTicket = 0;
+            for (MonthlyStats monthlyStat : monthlyStats) {
+                totalTicket = totalTicket + monthlyStat.getTotalOfTickets();
+            }
+            revenueByYearAndCinema.put("name", cinema.getCinemaName());
+            revenueByYearAndCinema.put("totalTicket", totalTicket);
+        }else {
+            List<BigDecimal> revenueByMonth = new ArrayList<>(Collections.nCopies(12, BigDecimal.ZERO));
+
+            for (MonthlyStats monthlyStat : monthlyStats) {
+                revenueByMonth.set(monthlyStat.getMonth().getMonth().getValue() - 1, monthlyStat.getRevenue());
+            }
+            revenueByYearAndCinema.put("name", cinema.getCinemaName());
+            revenueByYearAndCinema.put("data", revenueByMonth);
+        }
         cinemaStats.add(revenueByYearAndCinema);
     }
 
@@ -203,23 +222,29 @@ public class StatsService {
 
     public ResponseEntity<GenericResponse> getTopUsers(int top, boolean isStaff) {
         try {
-            List<Map<String, Object>> topUsers = new ArrayList<>();
+            List<BigDecimal> money = new ArrayList<>();
+            List<Integer> ticket = new ArrayList<>();
+            List<String> name = new ArrayList<>();
+
             if (isStaff) {
                 List<StaffStats> staffStats = staffStatsRepository.findAllByOrderByTotalOfTicketsDesc().stream()
                         .sorted(Comparator.comparing(StaffStats::getRevenue).reversed()).toList();
                 int dem = 0;
                 for (StaffStats staffStat : staffStats) {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("money", staffStat.getRevenue());
-                    result.put("ticket", staffStat.getTotalOfTickets());
-                    result.put("name", staffStat.getStaff().getFullName());
-                    topUsers.add(result);
+                    money.add(staffStat.getRevenue());
+                    ticket.add(staffStat.getTotalOfTickets());
+                    name.add(staffStat.getStaff().getFullName());
+
                     dem++;
                     if (dem == top) {
                         break;
                     }
                 }
 
+                Map<String, Object> topUsers = new HashMap<>();
+                topUsers.put("money", money);
+                topUsers.put("ticket", ticket);
+                topUsers.put("name", name);
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -232,16 +257,19 @@ public class StatsService {
                         .sorted(Comparator.comparing(UserStats::getTotalSpent).reversed()).toList();
                 int dem = 0;
                 for (UserStats userStat : userStats) {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("money", userStat.getTotalSpent());
-                    result.put("ticket", userStat.getTotalOfTickets());
-                    result.put("name", userStat.getUser().getFullName());
-                    topUsers.add(result);
+                    money.add(userStat.getTotalSpent());
+                    ticket.add(userStat.getTotalOfTickets());
+                    name.add(userStat.getUser().getFullName());
                     dem++;
                     if (dem == top) {
                         break;
                     }
                 }
+
+                Map<String, Object> topUsers = new HashMap<>();
+                topUsers.put("money", money);
+                topUsers.put("ticket", ticket);
+                topUsers.put("name", name);
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -274,22 +302,27 @@ public class StatsService {
                                 .build());
             }
             List<Staff> staffs = staffRepository.findAllByCinema(manager.get().getCinema());
-            List<Map<String, Object>> topUsers = new ArrayList<>();
+
+            List<BigDecimal> money = new ArrayList<>();
+            List<Integer> ticket = new ArrayList<>();
+            List<String> name = new ArrayList<>();
             if (isStaff) {
                 List<StaffStats> staffStats = staffStatsRepository.findAllByStaffIn(staffs).stream()
                         .sorted(Comparator.comparing(StaffStats::getTotalOfTickets).reversed().thenComparing(StaffStats::getRevenue).reversed()).toList();
                 int dem = 0;
                 for (StaffStats staffStat : staffStats) {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("money", staffStat.getRevenue());
-                    result.put("ticket", staffStat.getTotalOfTickets());
-                    result.put("name", staffStat.getStaff().getFullName());
-                    topUsers.add(result);
+                    money.add(staffStat.getRevenue());
+                    ticket.add(staffStat.getTotalOfTickets());
+                    name.add(staffStat.getStaff().getFullName());
                     dem++;
                     if (dem == top) {
                         break;
                     }
                 }
+                Map<String, Object> topUsers = new HashMap<>();
+                topUsers.put("money", money);
+                topUsers.put("ticket", ticket);
+                topUsers.put("name", name);
 
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
@@ -303,16 +336,19 @@ public class StatsService {
                         .sorted(Comparator.comparing(UserStats::getTotalSpent).reversed()).toList();
                 int dem = 0;
                 for (UserStats userStat : userStats) {
-                    Map<String, Object> result = new HashMap<>();
-                    result.put("money", userStat.getTotalSpent());
-                    result.put("ticket", userStat.getTotalOfTickets());
-                    result.put("name", userStat.getUser().getFullName());
-                    topUsers.add(result);
+                    money.add(userStat.getTotalSpent());
+                    ticket.add(userStat.getTotalOfTickets());
+                    name.add(userStat.getUser().getFullName());
                     dem++;
                     if (dem == top) {
                         break;
                     }
                 }
+
+                Map<String, Object> topUsers = new HashMap<>();
+                topUsers.put("money", money);
+                topUsers.put("ticket", ticket);
+                topUsers.put("name", name);
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -348,7 +384,7 @@ public class StatsService {
                 }
 
                 Map<String, Object> item = new HashMap<>();
-                item.put("name", cinema.getCinemaName());
+                item.put("cinema", cinema.getCinemaId());
                 item.put("revenue", revenue);
                 item.put("expense", expense);
                 result.add(item);
@@ -396,7 +432,7 @@ public class StatsService {
             }
 
             Map<String, Object> item = new HashMap<>();
-            item.put("name", manager.get().getCinema().getCinemaName());
+            item.put("cinema", manager.get().getCinema().getCinemaId());
             item.put("revenue", revenue);
             item.put("expense", expense);
             result.add(item);
@@ -440,6 +476,7 @@ public class StatsService {
                 result.setTotalRevenue(BigDecimal.ZERO);
                 result.setTicketRevenue(BigDecimal.ZERO);
                 result.setFoodRevenue(BigDecimal.ZERO);
+                result.setTotalOfBooking(0);
                 result.setTotalExpense(BigDecimal.ZERO);
                 result.setFoodExpense(BigDecimal.ZERO);
                 result.setOtherExpense(BigDecimal.ZERO);
@@ -455,6 +492,7 @@ public class StatsService {
                 }
                 result.setTicketRevenue(ticketRevenue);
                 result.setFoodRevenue(ticketRevenue.equals(BigDecimal.ZERO) ? BigDecimal.ZERO : BigDecimal.ONE.subtract(ticketRevenue));
+                result.setTotalOfBooking(stats.get().getTotalOfBooking());
                 result.setTotalExpense(stats.get().getTotalExpense());
                 BigDecimal foodExpense;
                 if (stats.get().getFoodExpense().equals(BigDecimal.ZERO) || stats.get().getTotalExpense().equals(BigDecimal.ZERO)) {

@@ -26,6 +26,7 @@ public class CinemaFinanceStats {
     private BigDecimal totalRevenue = BigDecimal.ZERO;
     private BigDecimal ticketRevenue = BigDecimal.ZERO;
     private BigDecimal foodRevenue = BigDecimal.ZERO;
+    private Integer totalOfBooking = 0;
     private BigDecimal totalExpense = BigDecimal.ZERO;
     private BigDecimal foodExpense = BigDecimal.ZERO;
     private BigDecimal otherExpense = BigDecimal.ZERO;
@@ -43,12 +44,13 @@ public class CinemaFinanceStats {
 
     public CinemaFinanceStats(LocalDate month, Cinema cinema,
                               BigDecimal totalRevenue, BigDecimal ticketRevenue,
-                              BigDecimal foodRevenue) {
+                              BigDecimal foodRevenue, Integer totalOfBooking) {
         this.month = month;
         this.cinema = cinema;
         this.totalRevenue = totalRevenue;
         this.ticketRevenue = ticketRevenue;
         this.foodRevenue = foodRevenue;
+        this.totalOfBooking = totalOfBooking;
     }
     public CinemaFinanceStats(LocalDate month, Cinema cinema,
                               BigDecimal totalExpense, BigDecimal foodExpense,

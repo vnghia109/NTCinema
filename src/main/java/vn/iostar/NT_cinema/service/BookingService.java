@@ -116,6 +116,7 @@ public class BookingService {
                     total += (long) item.getFood().getPrice() * item.getCount();
                 }
                 financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().add(BigDecimal.valueOf(total)));
+                financeStats.get().setTotalOfBooking(financeStats.get().getTotalOfBooking() + 1);
                 financeStats.get().calculateProfit();
                 cinemaFinanceStatsRepository.save(financeStats.get());
             }else {
@@ -128,7 +129,8 @@ public class BookingService {
                         booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
                         BigDecimal.valueOf(booking.getTotal()),
                         BigDecimal.valueOf((long) booking.getSeats().size() *booking.getSeats().get(0).getPrice().getPrice()),
-                        BigDecimal.valueOf(total));
+                        BigDecimal.valueOf(total),
+                        1);
                 cinemaFinanceStats.calculateProfit();
                 cinemaFinanceStatsRepository.save(cinemaFinanceStats);
             }

@@ -505,26 +505,28 @@ public class MovieService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findTop5Movie(int top) {
+    public ResponseEntity<GenericResponse> findTopMovie(int top) {
         try {
             List<Movie> movies = movieRepository.findByOrderByRatingDesc();
-            List<Map<String, Object>> top5Movies = new ArrayList<>();
+            List<String> movieN = new ArrayList<>();
+            List<String> rating = new ArrayList<>();
             int dem = 0;
             for (Movie movie : movies) {
-                Map<String, Object> movieMap = new HashMap<>();
-                movieMap.put("movie", movie.getTitle());
-                movieMap.put("rating", movie.getRating());
-                top5Movies.add(movieMap);
+                movieN.add(movie.getTitle());
+                rating.add(String.valueOf(movie.getRating()));
                 dem++;
                 if (dem == top) {
                     break;
                 }
             }
+            Map<String, Object> topMovies = new HashMap<>();
+            topMovies.put("data", rating);
+            topMovies.put("movie", movieN);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Top 5 phim đánh giá cao nhất!")
-                            .result(top5Movies)
+                            .message("Top " + top + " phim đánh giá cao nhất!")
+                            .result(topMovies)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
