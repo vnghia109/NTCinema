@@ -35,6 +35,8 @@ public class MovieService {
     RoomRepository roomRepository;
     @Autowired
     ScheduleRepository scheduleRepository;
+    @Autowired
+    StaffRepository staffRepository;
 
     public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
         Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalseOrderByMovieIdDesc(pageable);
@@ -275,18 +277,8 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findNowPlayingMovies() {
         try {
             List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.SHOWING);
-            Map<String, MovieViewRes> uniqueMoviesMap = new HashMap<>();
 
-            for (ShowTime showTime : showTimes) {
-                Movie movie = showTime.getMovie();
-                String movieId = movie.getMovieId();
-
-                if (!uniqueMoviesMap.containsKey(movieId)) {
-                    uniqueMoviesMap.put(movieId, new MovieViewRes(movie.getMovieId(), movie.getTitle(), movie.getPoster(), movie.getRating()));
-                }
-            }
-
-            List<MovieViewRes> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
+            List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -308,18 +300,8 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findComingSoonMovies() {
         try {
             List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.COMING_SOON);
-            Map<String, MovieViewRes> uniqueMoviesMap = new HashMap<>();
 
-            for (ShowTime showTime : showTimes) {
-                Movie movie = showTime.getMovie();
-                String movieId = movie.getMovieId();
-
-                if (!uniqueMoviesMap.containsKey(movieId)) {
-                    uniqueMoviesMap.put(movieId, new MovieViewRes(movie.getMovieId(), movie.getTitle(), movie.getPoster(), movie.getRating()));
-                }
-            }
-
-            List<MovieViewRes> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
+            List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -341,18 +323,8 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findSpecialMovies() {
         try {
             List<ShowTime> showTimes = showTimeRepository.findAllByIsSpecialIsTrueAndIsDeleteIsFalse();
-            Map<String, MovieViewRes> uniqueMoviesMap = new HashMap<>();
 
-            for (ShowTime showTime : showTimes) {
-                Movie movie = showTime.getMovie();
-                String movieId = movie.getMovieId();
-
-                if (!uniqueMoviesMap.containsKey(movieId)) {
-                    uniqueMoviesMap.put(movieId, new MovieViewRes(movie.getMovieId(), movie.getTitle(), movie.getPoster(), movie.getRating()));
-                }
-            }
-
-            List<MovieViewRes> uniqueMovies = new ArrayList<>(uniqueMoviesMap.values());
+            List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -564,5 +536,90 @@ public class MovieService {
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
+    }
+
+    public ResponseEntity<GenericResponse> findNowPlayingMoviesByStaff(String staffId) {
+        try {
+            Optional<Staff> staff = staffRepository.findById(staffId);
+            if (staff.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Không tìm thấy nhân viên!")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+
+            List<Room> rooms = roomRepository.findAllByCinema(staff.get().getCinema());
+            List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndRoomInAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.SHOWING, rooms);
+
+            List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy phim đang chiếu thành công!")
+                            .result(uniqueMovies)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Lỗi máy chủ.")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> findComingSoonMoviesAndSpecialByStaff(String staffId) {
+        try {
+            Optional<Staff> staff = staffRepository.findById(staffId);
+            if (staff.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Không tìm thấy nhân viên!")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
+            List<Room> rooms = roomRepository.findAllByCinema(staff.get().getCinema());
+            List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndRoomInAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.COMING_SOON, rooms);
+            showTimes.addAll(showTimeRepository.findAllByRoomInAndIsSpecialIsTrueAndIsDeleteIsFalse(rooms));
+
+            List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy phim sắp chiếu và xuất chiếu đặc biệt thành công!")
+                            .result(uniqueMovies)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Lỗi máy chủ.")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    private List<MovieViewRes> getUniqueMovies(List<ShowTime> showTimes) {
+        Map<String, MovieViewRes> uniqueMoviesMap = new HashMap<>();
+
+        for (ShowTime showTime : showTimes) {
+            if (!uniqueMoviesMap.containsKey(showTime.getMovie().getMovieId())) {
+                uniqueMoviesMap.put(showTime.getMovie().getMovieId(), new MovieViewRes(
+                        showTime.getMovie().getMovieId(),
+                        showTime.getMovie().getTitle(),
+                        showTime.getMovie().getPoster(),
+                        showTime.getMovie().getRating()));
+            }
+        }
+        return new ArrayList<>(uniqueMoviesMap.values());
     }
 }

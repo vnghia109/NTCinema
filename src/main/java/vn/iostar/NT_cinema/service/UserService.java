@@ -1091,6 +1091,27 @@ public class UserService {
         }
     }
 
+    public ResponseEntity<GenericResponse> searchViewers(String keyWord) {
+        try {
+            List<User> users = userRepository.searchByKeyWord(keyWord);
+            users.removeIf(user -> !user.getRole().getRoleName().equals("VIEWER"));
+            List<UserRes> userRes = users.stream().map(UserRes::new).toList();
+            return ResponseEntity.ok().body(GenericResponse.builder()
+                    .success(true)
+                    .message("Get user success")
+                    .result(userRes)
+                    .statusCode(200)
+                    .build());
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .result("Lỗi máy chủ.")
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
 //    public String validateVerificationAccount(String token) {
 //
 //        VerificationToken verificationToken = tokenRepository.findByToken(token);

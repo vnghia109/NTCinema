@@ -46,7 +46,7 @@ public class StatsService {
     @Autowired
     StaffRepository staffRepository;
 
-    public ResponseEntity<GenericResponse> getRevenueStats(Integer year, Integer month) {
+    public ResponseEntity<GenericResponse> getRevenueStats(Integer year, Integer month, boolean isTicket) {
         try {
             List<Map<String, Object>> cinemaStats = new ArrayList<>();
             List<Cinema> cinemas = cinemaRepository.findAll();
@@ -54,38 +54,13 @@ public class StatsService {
             if (year != null && month == null) {
                 // Thống kê theo năm
                 for (Cinema cinema : cinemas) {
-                    List<MonthlyStats> monthlyStats = monthlyStatsRepository.findByCinemaAndMonthBetween(cinema,
-                            LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31)
-                    );
-                    List<BigDecimal> revenueByMonth = new ArrayList<>(Collections.nCopies(12, BigDecimal.ZERO));
-
-                    for (MonthlyStats monthlyStat : monthlyStats) {
-                        BigDecimal revenue = monthlyStat.getRevenue();
-
-                        int month1 = monthlyStat.getMonth().getMonth().getValue();
-                        revenueByMonth.set(month1 - 1, revenue);
-                    }
-                    Map<String, Object> revenueByYearAndCinema = new HashMap<>();
-                    revenueByYearAndCinema.put("name", cinema.getCinemaName());
-                    revenueByYearAndCinema.put("data", revenueByMonth);
-                    cinemaStats.add(revenueByYearAndCinema);
+                    getRevenueByYear(year, cinemaStats, cinema, isTicket);
                 }
             }
             if (year != null && month != null) {
                 // Thống kê theo tháng
                 for (Cinema cinema : cinemas) {
-                    LocalDate month1 = LocalDate.of(year, month, 1);
-                    List<BigDecimal> monthlyRevenues = new ArrayList<>(Collections.nCopies(month1.lengthOfMonth(), BigDecimal.ZERO));
-                    LocalDate start = LocalDate.of(month1.getYear(), month1.getMonthValue(), 1);
-                    LocalDate end = LocalDate.of(month1.getYear(), month1.getMonthValue(), month1.lengthOfMonth());
-                    List<DailyStats> dailyStats = dailyStatsRepository.findByCinemaAndDateBetween(cinema, start, end);
-                    for (DailyStats dailyStat : dailyStats) {
-                        monthlyRevenues.set(dailyStat.getDate().getDayOfMonth() - 1, dailyStat.getRevenue());
-                    }
-                    Map<String, Object> monthlyStats = new HashMap<>();
-                    monthlyStats.put("name", cinema.getCinemaName());
-                    monthlyStats.put("data", monthlyRevenues);
-                    cinemaStats.add(monthlyStats);
+                    getRevenueByMonth(year, month, cinemaStats, cinema, isTicket);
                 }
             }
             return ResponseEntity.status(HttpStatus.OK)
@@ -106,7 +81,37 @@ public class StatsService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getRevenueStatsForManager(String managerId, Integer year, Integer month) {
+    public void getRevenueByMonth(Integer year, Integer month, List<Map<String, Object>> cinemaStats, Cinema cinema, boolean isTicket) {
+        LocalDate month1 = LocalDate.of(year, month, 1);
+        List<BigDecimal> monthlyRevenues = new ArrayList<>(Collections.nCopies(month1.lengthOfMonth(), BigDecimal.ZERO));
+        LocalDate start = LocalDate.of(month1.getYear(), month1.getMonthValue(), 1);
+        LocalDate end = LocalDate.of(month1.getYear(), month1.getMonthValue(), month1.lengthOfMonth());
+        List<DailyStats> dailyStats = dailyStatsRepository.findByCinemaAndDateBetween(cinema, start, end);
+        for (DailyStats dailyStat : dailyStats) {
+            monthlyRevenues.set(dailyStat.getDate().getDayOfMonth() - 1, isTicket ? BigDecimal.valueOf(dailyStat.getTotalOfTickets()) : dailyStat.getRevenue());
+        }
+        Map<String, Object> monthlyStats = new HashMap<>();
+        monthlyStats.put("name", cinema.getCinemaName());
+        monthlyStats.put("data", monthlyRevenues);
+        cinemaStats.add(monthlyStats);
+    }
+
+    public void getRevenueByYear(Integer year, List<Map<String, Object>> cinemaStats, Cinema cinema, boolean isTicket) {
+        List<MonthlyStats> monthlyStats = monthlyStatsRepository.findByCinemaAndMonthBetween(cinema,
+                LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31)
+        );
+        List<BigDecimal> revenueByMonth = new ArrayList<>(Collections.nCopies(12, BigDecimal.ZERO));
+
+        for (MonthlyStats monthlyStat : monthlyStats) {
+            revenueByMonth.set(monthlyStat.getMonth().getMonth().getValue() - 1, isTicket ? BigDecimal.valueOf(monthlyStat.getTotalOfTickets()) : monthlyStat.getRevenue());
+        }
+        Map<String, Object> revenueByYearAndCinema = new HashMap<>();
+        revenueByYearAndCinema.put("name", cinema.getCinemaName());
+        revenueByYearAndCinema.put("data", revenueByMonth);
+        cinemaStats.add(revenueByYearAndCinema);
+    }
+
+    public ResponseEntity<GenericResponse> getRevenueStatsForManager(String managerId, Integer year, Integer month, boolean isTicket) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
             if (manager.isEmpty()){
@@ -122,36 +127,11 @@ public class StatsService {
             Cinema cinema = manager.get().getCinema();
             if (year != null) {
                 // Thống kê theo năm
-                List<MonthlyStats> monthlyStats = monthlyStatsRepository.findByCinemaAndMonthBetween(cinema,
-                        LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31)
-                );
-                List<BigDecimal> revenueByMonth = new ArrayList<>(Collections.nCopies(12, BigDecimal.ZERO));
-
-                for (MonthlyStats monthlyStat : monthlyStats) {
-                    BigDecimal revenue = monthlyStat.getRevenue();
-
-                    int month1 = monthlyStat.getMonth().getMonth().getValue();
-                    revenueByMonth.set(month1 - 1, revenue);
-                }
-                Map<String, Object> revenueByYearAndCinema = new HashMap<>();
-                revenueByYearAndCinema.put("name", cinema.getCinemaName());
-                revenueByYearAndCinema.put("data", revenueByMonth);
-                cinemaStats.add(revenueByYearAndCinema);
+                getRevenueByYear(year, cinemaStats, cinema, isTicket);
             }
             if (month != null) {
                 // Thống kê theo tháng
-                LocalDate month1 = LocalDate.of(year, month, 1);
-                List<BigDecimal> monthlyRevenues = new ArrayList<>(Collections.nCopies(month1.lengthOfMonth(), BigDecimal.ZERO));
-                LocalDate start = LocalDate.of(month1.getYear(), month1.getMonthValue(), 1);
-                LocalDate end = LocalDate.of(month1.getYear(), month1.getMonthValue(), month1.lengthOfMonth());
-                List<DailyStats> dailyStats = dailyStatsRepository.findByCinemaAndDateBetween(cinema, start, end);
-                for (DailyStats dailyStat : dailyStats) {
-                    monthlyRevenues.set(dailyStat.getDate().getDayOfMonth() - 1, dailyStat.getRevenue());
-                }
-                Map<String, Object> monthlyStats = new HashMap<>();
-                monthlyStats.put("name", cinema.getCinemaName());
-                monthlyStats.put("data", monthlyRevenues);
-                cinemaStats.add(monthlyStats);
+                getRevenueByMonth(year, month, cinemaStats, cinema, isTicket);
 
             }
 

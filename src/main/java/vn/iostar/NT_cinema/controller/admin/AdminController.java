@@ -405,8 +405,9 @@ public class AdminController {
 
     @GetMapping("/total-revenue")
     public ResponseEntity<GenericResponse> getTotalRevenueOfYear(@RequestParam(required = false) Integer year,
-                                                                 @RequestParam(required = false) Integer month) {
-        return statsService.getRevenueStats(year, month);
+                                                                 @RequestParam(required = false) Integer month,
+                                                                 @RequestParam(defaultValue = "false") boolean isTicket) {
+        return statsService.getRevenueStats(year, month, isTicket);
     }
 
     @GetMapping("/top-rated-movies")

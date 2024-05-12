@@ -33,7 +33,11 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
 
     List<ShowTime> findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus status);
 
+    List<ShowTime> findAllByStatusAndRoomInAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus status, List<Room> rooms);
+
     List<ShowTime> findAllByIsSpecialIsTrueAndIsDeleteIsFalse();
+
+    List<ShowTime> findAllByRoomInAndIsSpecialIsTrueAndIsDeleteIsFalse(List<Room> rooms);
 
     List<ShowTime> findAllByRoom_Cinema(Cinema cinema);
 
