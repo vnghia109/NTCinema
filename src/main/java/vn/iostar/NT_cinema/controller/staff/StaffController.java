@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.SellTicketReq;
 import vn.iostar.NT_cinema.dto.StaffReq;
 import vn.iostar.NT_cinema.dto.ViewerReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
@@ -75,5 +76,13 @@ public class StaffController {
     @GetMapping("/search/viewer")
     public ResponseEntity<GenericResponse> searchViewers(@RequestParam("keyWord") String keyWord) {
         return userService.searchViewers(keyWord);
+    }
+
+    @PostMapping("/sell-ticket")
+    public ResponseEntity<GenericResponse> bookTicket(@RequestHeader("Authorization") String authorizationHeader,
+                                                      @RequestBody SellTicketReq request) {
+        String token = authorizationHeader.substring(7);
+        String staffId = jwtTokenProvider.getUserIdFromJwt(token);
+        return bookingService.sellTicket(staffId, request);
     }
 }

@@ -12,6 +12,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class SellTicketReq {
+    private String userId;
+    private String showtimeId;
     List<String> seatIds;
     List<String> foodIds;
 

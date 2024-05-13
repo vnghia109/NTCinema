@@ -88,7 +88,7 @@ public class BookingService {
                 monthlyStats.get().setRevenue(monthlyStats.get().getRevenue().add(BigDecimal.valueOf(booking.getTotal())));
                 monthlyStatsRepository.save(monthlyStats.get());
             }else {
-                monthlyStatsRepository.save(new MonthlyStats(booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
+                monthlyStatsRepository.save(new MonthlyStats(booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1),
                         booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
                         BigDecimal.valueOf(booking.getTotal()), booking.getSeats().size(), 1));
             }
@@ -637,6 +637,61 @@ public class BookingService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> sellTicket(String staffId, SellTicketReq request) {
+        try {
+            Booking booking = new Booking();
+
+            List<String> seatIds = request.getSeatIds();
+            List<String> foodIds = request.getFoodIds();
+            List<Seat> seats = new ArrayList<>();
+            for (String item: seatIds) {
+                Optional<Seat> seat = seatRepository.findById(item);
+                if (seat.isPresent()){
+                    if (!seat.get().isStatus()){
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(GenericResponse.builder()
+                                        .success(false)
+                                        .message("Ghế đã được đặt trước rồi!")
+                                        .result(seat.get())
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build());
+                    }
+                    seat.get().setStatus(false);
+                    seatRepository.save(seat.get());
+                    seats.add(seat.get());
+                }
+            }
+            List<FoodWithCount> foods = convertToFoodWithCountList(foodIds);
+
+            booking.setUserId(request.getUserId());
+            booking.setShowtimeId(seats.get(0).getShowTime().getShowTimeId());
+            booking.setCreateAt(new Date());
+            booking.setSeats(seats);
+            booking.setFoods(foods);
+            booking.setTotal(totalBooking(seats, foods));
+            booking.setPayment(true);
+            booking.setTicketStatus(TicketStatus.CONFIRMED);
+
+            Booking bookingRes = bookingRepository.save(booking);
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Đặt vé thành công!!")
+                            .result(bookingRes)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)
