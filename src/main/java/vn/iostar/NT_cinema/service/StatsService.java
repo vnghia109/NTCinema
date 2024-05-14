@@ -2,23 +2,19 @@ package vn.iostar.NT_cinema.service;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.Finance;
 import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.dto.MovieViewRes;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class StatsService {

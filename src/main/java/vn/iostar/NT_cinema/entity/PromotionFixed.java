@@ -1,31 +1,36 @@
-package vn.iostar.NT_cinema.dto;
+package vn.iostar.NT_cinema.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import vn.iostar.NT_cinema.constant.DiscountType;
 
 import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.Date;
 
-@Setter
-@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PromotionReq {
+@Getter
+@Setter
+@Document(collection = "promotionFixed")
+public class PromotionFixed {
+    @Id
+    private String promotionFixedId;
     private String name;
-    private String promotionType;
-    private String promotionCode;
-    private int maxUsage;
     private String description;
-    private String discountType;
+    private DiscountType discountType;
     private BigDecimal discountValue;
-    private int validDayOfWeek;
-    private int ageLimit;
+    private Integer validDayOfWeek;
+    private Integer ageLimit;
     private LocalTime validTimeFrameStart;
     private LocalTime validTimeFrameEnd;
     private Date startDate;
     private Date endDate;
     private boolean excludeHolidays;
+    private boolean isDeleted = false;
+    private Date createAt;
 }
