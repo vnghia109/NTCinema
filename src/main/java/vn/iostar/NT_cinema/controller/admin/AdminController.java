@@ -428,8 +428,8 @@ public class AdminController {
 
     @GetMapping("/finance/detail")
     public ResponseEntity<GenericResponse> getFinanceDetail(@RequestParam("cinemaId") String cinemaId,
-                                                            @RequestParam("month") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate month) {
-        return statsService.getFinanceDetail(cinemaId, month);
+                                                            @RequestParam("year") Integer year) {
+        return statsService.getFinanceDetail(cinemaId, year);
     }
 
     @GetMapping("/year/total-ticket")

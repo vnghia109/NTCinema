@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.service;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -455,7 +456,7 @@ public class StatsService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getFinanceDetail(String cinemaId, LocalDate month) {
+    public ResponseEntity<GenericResponse> getFinanceDetail(String cinemaId, Integer year) {
         try {
             Optional<Cinema> cinema = cinemaRepository.findById(cinemaId);
             if (cinema.isEmpty()) {
@@ -467,44 +468,9 @@ public class StatsService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
             }
-            Optional<CinemaFinanceStats> stats = cinemaFinanceStatsRepository.findByCinemaAndMonth(cinema.get(), month.withDayOfMonth(1));
-            Finance result = new Finance();
-            if (stats.isEmpty()) {
-                CinemaFinanceStats newStats = new CinemaFinanceStats(
-                        month.withDayOfMonth(1), cinema.get());
-                cinemaFinanceStatsRepository.save(newStats);
-                result.setTotalRevenue(BigDecimal.ZERO);
-                result.setTicketRevenue(BigDecimal.ZERO);
-                result.setFoodRevenue(BigDecimal.ZERO);
-                result.setTotalOfBooking(0);
-                result.setTotalExpense(BigDecimal.ZERO);
-                result.setFoodExpense(BigDecimal.ZERO);
-                result.setOtherExpense(BigDecimal.ZERO);
-                result.setTotalOfOrder(0);
-                result.setProfit(BigDecimal.ZERO);
-            }else {
-                result.setTotalRevenue(stats.get().getTotalRevenue());
-                BigDecimal ticketRevenue;
-                if (stats.get().getTicketRevenue().equals(BigDecimal.ZERO) || stats.get().getTotalRevenue().equals(BigDecimal.ZERO)) {
-                    ticketRevenue = BigDecimal.ZERO;
-                }else {
-                    ticketRevenue = stats.get().getTicketRevenue().divide(stats.get().getTotalRevenue(), 3, RoundingMode.HALF_UP);
-                }
-                result.setTicketRevenue(ticketRevenue);
-                result.setFoodRevenue(ticketRevenue.equals(BigDecimal.ZERO) ? BigDecimal.ZERO : BigDecimal.ONE.subtract(ticketRevenue));
-                result.setTotalOfBooking(stats.get().getTotalOfBooking());
-                result.setTotalExpense(stats.get().getTotalExpense());
-                BigDecimal foodExpense;
-                if (stats.get().getFoodExpense().equals(BigDecimal.ZERO) || stats.get().getTotalExpense().equals(BigDecimal.ZERO)) {
-                    foodExpense = BigDecimal.ZERO;
-                }else {
-                    foodExpense = stats.get().getFoodExpense().divide(stats.get().getTotalExpense(), 3, RoundingMode.HALF_UP);
-                }
-                result.setFoodExpense(foodExpense);
-                result.setOtherExpense(foodExpense.equals(BigDecimal.ZERO) ? BigDecimal.ZERO : BigDecimal.ONE.subtract(foodExpense));
-                result.setTotalOfOrder(stats.get().getTotalOfOrder());
-                result.setProfit(stats.get().getProfit());
-            }
+            List<CinemaFinanceStats> statsList = cinemaFinanceStatsRepository.findAllByCinemaAndMonthBetween(cinema.get(),
+                    LocalDate.of(year, 1, 1), LocalDate.of(year, 12, 31));
+            Finance result = getFinanceResult(statsList);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -522,5 +488,40 @@ public class StatsService {
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
+    }
+
+    @NotNull
+    private static Finance getFinanceResult(List<CinemaFinanceStats> statsList) {
+        Finance result = new Finance();
+        for (CinemaFinanceStats stats : statsList) {
+            result.setTotalRevenue(result.getTotalRevenue().add(stats.getTotalRevenue()));
+            result.setTicketRevenue(result.getTicketRevenue().add(stats.getTicketRevenue()));
+            result.setFoodRevenue(result.getFoodRevenue().add(stats.getFoodRevenue()));
+            result.setTotalExpense(result.getTotalExpense().add(stats.getTotalExpense()));
+            result.setFoodExpense(result.getFoodExpense().add(stats.getFoodExpense()));
+            result.setOtherExpense(result.getOtherExpense().add(stats.getOtherExpense()));
+            result.setTotalOfBooking(result.getTotalOfBooking() + stats.getTotalOfBooking());
+            result.setTotalOfOrder(result.getTotalOfOrder() + stats.getTotalOfOrder());
+            result.setProfit(result.getProfit().add(stats.getProfit()));
+        }
+        //Tính tỉ lệ cho thu từ vé và thu từ đồ ăn
+        BigDecimal ticketRevenue;
+        if (result.getTicketRevenue().equals(BigDecimal.ZERO) || result.getTotalRevenue().equals(BigDecimal.ZERO)) {
+            ticketRevenue = BigDecimal.ZERO;
+        }else {
+            ticketRevenue = result.getTicketRevenue().divide(result.getTotalRevenue(), 3, RoundingMode.HALF_UP);
+        }
+        result.setTicketRevenue(ticketRevenue);
+        result.setFoodRevenue(ticketRevenue.equals(BigDecimal.ZERO) ? BigDecimal.ZERO : BigDecimal.ONE.subtract(ticketRevenue));
+        //Tính tỉ lệ cho chi đồ ăn và chi khác
+        BigDecimal foodExpense;
+        if (result.getFoodExpense().equals(BigDecimal.ZERO) || result.getTotalExpense().equals(BigDecimal.ZERO)) {
+            foodExpense = BigDecimal.ZERO;
+        }else {
+            foodExpense = result.getFoodExpense().divide(result.getTotalExpense(), 3, RoundingMode.HALF_UP);
+        }
+        result.setFoodExpense(foodExpense);
+        result.setOtherExpense(foodExpense.equals(BigDecimal.ZERO) ? BigDecimal.ZERO : BigDecimal.ONE.subtract(foodExpense));
+        return result;
     }
 }

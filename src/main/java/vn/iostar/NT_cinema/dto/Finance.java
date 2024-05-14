@@ -12,13 +12,13 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Finance {
-    private BigDecimal totalRevenue;
-    private BigDecimal ticketRevenue;
-    private BigDecimal foodRevenue;
-    private int totalOfBooking;
-    private BigDecimal totalExpense;
-    private BigDecimal foodExpense;
-    private BigDecimal otherExpense;
-    private int totalOfOrder;
-    private BigDecimal profit;
+    private BigDecimal totalRevenue = BigDecimal.ZERO;
+    private BigDecimal ticketRevenue = BigDecimal.ZERO;
+    private BigDecimal foodRevenue = BigDecimal.ZERO;
+    private int totalOfBooking = 0;
+    private BigDecimal totalExpense = BigDecimal.ZERO;
+    private BigDecimal foodExpense = BigDecimal.ZERO;
+    private BigDecimal otherExpense = BigDecimal.ZERO;
+    private int totalOfOrder = 0;
+    private BigDecimal profit = BigDecimal.ZERO;
 }
