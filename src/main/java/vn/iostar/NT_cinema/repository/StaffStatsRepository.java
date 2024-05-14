@@ -6,10 +6,13 @@ import vn.iostar.NT_cinema.entity.Staff;
 import vn.iostar.NT_cinema.entity.StaffStats;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface StaffStatsRepository extends MongoRepository<StaffStats, String> {
     List<StaffStats> findAllByOrderByTotalOfTicketsDesc();
 
     List<StaffStats> findAllByStaffIn(List<Staff> staffs);
+
+    Optional<StaffStats> findByStaff(Staff staff);
 }

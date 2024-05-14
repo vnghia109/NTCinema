@@ -79,7 +79,7 @@ public class StaffController {
     }
 
     @PostMapping("/sell-ticket")
-    public ResponseEntity<GenericResponse> bookTicket(@RequestHeader("Authorization") String authorizationHeader,
+    public ResponseEntity<GenericResponse> sellTicket(@RequestHeader("Authorization") String authorizationHeader,
                                                       @RequestBody SellTicketReq request) {
         String token = authorizationHeader.substring(7);
         String staffId = jwtTokenProvider.getUserIdFromJwt(token);

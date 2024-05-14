@@ -41,7 +41,7 @@ public class SeatService {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(GenericResponse.builder()
                                 .success(false)
-                                .message("Showtime does not exist")
+                                .message("Lịch chiếu không tồn tại")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
@@ -60,7 +60,7 @@ public class SeatService {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
                             .body(GenericResponse.builder()
                                     .success(false)
-                                    .message("Price type does not exist")
+                                    .message("Loại ghế không tồn tại.")
                                     .result(null)
                                     .statusCode(HttpStatus.NOT_FOUND.value())
                                     .build());

@@ -65,6 +65,10 @@ public class BookingService {
     UserStatsRepository userStatsRepository;
     @Autowired
     CinemaFinanceStatsRepository cinemaFinanceStatsRepository;
+    @Autowired
+    StaffRepository staffRepository;
+    @Autowired
+    StaffStatsRepository staffStatsRepository;
 
     public void handleBookingChange(Booking booking) {
         if(booking.isPayment() && !booking.getTicketStatus().equals(TicketStatus.CANCELLED)) {
@@ -94,14 +98,16 @@ public class BookingService {
             }
 
             Optional<User> user = userRepository.findById(booking.getUserId());
-            Optional<UserStats> userStats = userStatsRepository.findByUser_UserId(booking.getUserId());
-            if (userStats.isPresent()) {
-                userStats.get().setTotalSpent(userStats.get().getTotalSpent().add(BigDecimal.valueOf(booking.getTotal())));
-                userStats.get().setTotalOfTickets(userStats.get().getTotalOfTickets() + booking.getSeats().size());
-                userStats.get().setTotalOfBookings(userStats.get().getTotalOfBookings() + 1);
-                userStatsRepository.save(userStats.get());
-            }else {
-                userStatsRepository.save(new UserStats(user.get(), BigDecimal.valueOf(booking.getTotal()), 1, booking.getSeats().size()));
+            if (user.isPresent()) {
+                Optional<UserStats> userStats = userStatsRepository.findByUser_UserId(booking.getUserId());
+                if (userStats.isPresent()) {
+                    userStats.get().setTotalSpent(userStats.get().getTotalSpent().add(BigDecimal.valueOf(booking.getTotal())));
+                    userStats.get().setTotalOfTickets(userStats.get().getTotalOfTickets() + booking.getSeats().size());
+                    userStats.get().setTotalOfBookings(userStats.get().getTotalOfBookings() + 1);
+                    userStatsRepository.save(userStats.get());
+                }else {
+                    userStatsRepository.save(new UserStats(user.get(), BigDecimal.valueOf(booking.getTotal()), 1, booking.getSeats().size()));
+                }
             }
 
             Optional<CinemaFinanceStats> financeStats = cinemaFinanceStatsRepository.findByCinemaAndMonth(
@@ -152,7 +158,6 @@ public class BookingService {
                 monthlyStatsRepository.save(monthlyStats.get());
             }
 
-            Optional<User> user = userRepository.findById(booking.getUserId());
             Optional<UserStats> userStats = userStatsRepository.findByUser_UserId(booking.getUserId());
             if (userStats.isPresent()) {
                 userStats.get().setTotalSpent(userStats.get().getTotalSpent().subtract(BigDecimal.valueOf(booking.getTotal())));
@@ -585,6 +590,11 @@ public class BookingService {
             bookingRepository.save(booking.get());
             handleBookingChange(booking.get());
 
+            for (Seat seat: booking.get().getSeats()) {
+                seat.setStatus(true);
+                seatRepository.save(seat);
+            }
+
             for (FoodWithCount item: booking.get().getFoods()) {
                 Food food = item.getFood();
                 food.setQuantity(food.getQuantity() + item.getCount());
@@ -649,7 +659,17 @@ public class BookingService {
 
     public ResponseEntity<GenericResponse> sellTicket(String staffId, SellTicketReq request) {
         try {
-            Booking booking = new Booking();
+
+            Optional<Staff> staff = staffRepository.findById(staffId);
+            if (staff.isEmpty()){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Không tìm thấy nhân viên. Hãy đăng nhập lại!")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
 
             List<String> seatIds = request.getSeatIds();
             List<String> foodIds = request.getFoodIds();
@@ -673,6 +693,7 @@ public class BookingService {
             }
             List<FoodWithCount> foods = convertToFoodWithCountList(foodIds);
 
+            Booking booking = new Booking();
             booking.setUserId(request.getUserId());
             booking.setShowtimeId(seats.get(0).getShowTime().getShowTimeId());
             booking.setCreateAt(new Date());
@@ -683,6 +704,16 @@ public class BookingService {
             booking.setTicketStatus(TicketStatus.CONFIRMED);
 
             Booking bookingRes = bookingRepository.save(booking);
+
+            handleBookingChange(bookingRes);
+            Optional<StaffStats> staffStats = staffStatsRepository.findByStaff(staff.get());
+            if (staffStats.isPresent()) {
+                staffStats.get().setRevenue(staffStats.get().getRevenue().add(BigDecimal.valueOf(booking.getTotal())));
+                staffStats.get().setTotalOfTickets(staffStats.get().getTotalOfTickets() + booking.getSeats().size());
+                staffStatsRepository.save(staffStats.get());
+            }else {
+                staffStatsRepository.save(new StaffStats(staff.get(), BigDecimal.valueOf(booking.getTotal()), 1));
+            }
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()

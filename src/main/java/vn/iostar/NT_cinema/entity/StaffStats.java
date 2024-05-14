@@ -22,4 +22,10 @@ public class StaffStats {
     private Staff staff;
     private int totalOfTickets;
     private BigDecimal revenue;
+
+    public StaffStats(Staff staff, BigDecimal revenue, int totalOfTickets) {
+        this.staff = staff;
+        this.revenue = revenue;
+        this.totalOfTickets = totalOfTickets;
+    }
 }
