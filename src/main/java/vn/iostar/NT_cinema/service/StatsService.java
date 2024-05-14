@@ -504,24 +504,6 @@ public class StatsService {
             result.setTotalOfOrder(result.getTotalOfOrder() + stats.getTotalOfOrder());
             result.setProfit(result.getProfit().add(stats.getProfit()));
         }
-        //Tính tỉ lệ cho thu từ vé và thu từ đồ ăn
-        BigDecimal ticketRevenue;
-        if (result.getTicketRevenue().equals(BigDecimal.ZERO) || result.getTotalRevenue().equals(BigDecimal.ZERO)) {
-            ticketRevenue = BigDecimal.ZERO;
-        }else {
-            ticketRevenue = result.getTicketRevenue().divide(result.getTotalRevenue(), 3, RoundingMode.HALF_UP);
-        }
-        result.setTicketRevenue(ticketRevenue);
-        result.setFoodRevenue(ticketRevenue.equals(BigDecimal.ZERO) ? BigDecimal.ZERO : BigDecimal.ONE.subtract(ticketRevenue));
-        //Tính tỉ lệ cho chi đồ ăn và chi khác
-        BigDecimal foodExpense;
-        if (result.getFoodExpense().equals(BigDecimal.ZERO) || result.getTotalExpense().equals(BigDecimal.ZERO)) {
-            foodExpense = BigDecimal.ZERO;
-        }else {
-            foodExpense = result.getFoodExpense().divide(result.getTotalExpense(), 3, RoundingMode.HALF_UP);
-        }
-        result.setFoodExpense(foodExpense);
-        result.setOtherExpense(foodExpense.equals(BigDecimal.ZERO) ? BigDecimal.ZERO : BigDecimal.ONE.subtract(foodExpense));
         return result;
     }
 }
