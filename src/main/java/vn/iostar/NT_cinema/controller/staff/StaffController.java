@@ -6,11 +6,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.SellTicketReq;
-import vn.iostar.NT_cinema.dto.StaffReq;
 import vn.iostar.NT_cinema.dto.ViewerReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.BookingService;
@@ -60,17 +58,17 @@ public class StaffController {
     }
 
     @GetMapping("/movie/now-playing")
-    public ResponseEntity<GenericResponse> getNowPlayingMovies(@RequestHeader("Authorization") String authorizationHeader) {
+    public ResponseEntity<GenericResponse> getNowPlayingAndSpecialMovies(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String staffId = jwtTokenProvider.getUserIdFromJwt(token);
-        return movieService.findNowPlayingMoviesByStaff(staffId);
+        return movieService.findNowPlayingMoviesAndSpecialByStaff(staffId);
     }
 
-    @GetMapping("/movie/other")
-    public ResponseEntity<GenericResponse> getComingSoonAndSpecialMovies(@RequestHeader("Authorization") String authorizationHeader) {
+    @GetMapping("/movie/coming-soon")
+    public ResponseEntity<GenericResponse> getComingSoonMovies(@RequestHeader("Authorization") String authorizationHeader) {
         String token = authorizationHeader.substring(7);
         String staffId = jwtTokenProvider.getUserIdFromJwt(token);
-        return movieService.findComingSoonMoviesAndSpecialByStaff(staffId);
+        return movieService.findComingSoonMoviesByStaff(staffId);
     }
 
     @GetMapping("/search/viewer")

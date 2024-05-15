@@ -12,9 +12,7 @@ import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -540,7 +538,7 @@ public class MovieService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findNowPlayingMoviesByStaff(String staffId) {
+    public ResponseEntity<GenericResponse> findNowPlayingMoviesAndSpecialByStaff(String staffId) {
         try {
             Optional<Staff> staff = staffRepository.findById(staffId);
             if (staff.isEmpty()){
@@ -555,6 +553,7 @@ public class MovieService {
 
             List<Room> rooms = roomRepository.findAllByCinema(staff.get().getCinema());
             List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndRoomInAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.SHOWING, rooms);
+            showTimes.addAll(showTimeRepository.findAllByRoomInAndIsSpecialIsTrueAndIsDeleteIsFalse(rooms));
 
             List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
             return ResponseEntity.status(HttpStatus.OK)
@@ -575,7 +574,7 @@ public class MovieService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findComingSoonMoviesAndSpecialByStaff(String staffId) {
+    public ResponseEntity<GenericResponse> findComingSoonMoviesByStaff(String staffId) {
         try {
             Optional<Staff> staff = staffRepository.findById(staffId);
             if (staff.isEmpty()){
@@ -589,7 +588,6 @@ public class MovieService {
             }
             List<Room> rooms = roomRepository.findAllByCinema(staff.get().getCinema());
             List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndRoomInAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.COMING_SOON, rooms);
-            showTimes.addAll(showTimeRepository.findAllByRoomInAndIsSpecialIsTrueAndIsDeleteIsFalse(rooms));
 
             List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
             return ResponseEntity.status(HttpStatus.OK)
