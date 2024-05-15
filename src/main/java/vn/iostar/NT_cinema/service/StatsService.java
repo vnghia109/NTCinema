@@ -141,11 +141,11 @@ public class StatsService {
             List<Map<String, Object>> cinemaStats = new ArrayList<>();
 
             Cinema cinema = manager.get().getCinema();
-            if (year != null) {
+            if (year != null && month == null) {
                 // Thống kê theo năm
                 getRevenueByYear(year, cinemaStats, cinema, isTicket);
             }
-            if (month != null) {
+            if (year != null && month != null) {
                 // Thống kê theo tháng
                 getRevenueByMonth(year, month, cinemaStats, cinema, isTicket);
 

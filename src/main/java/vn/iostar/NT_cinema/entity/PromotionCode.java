@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import vn.iostar.NT_cinema.constant.DiscountType;
 
@@ -20,7 +20,7 @@ import java.util.Date;
 public class PromotionCode {
     @Id
     private String promotionCodeId;
-    @UniqueElements(message = "Mã khuyến mãi đã tồn tại.")
+    @Indexed(unique = true)
     private String promotionCode;
     private Integer maxUsage;
     private Integer useForUserPerDay;
