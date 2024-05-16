@@ -36,6 +36,8 @@ public class MovieReq {
     @NotEmpty
     private List<MultipartFile> poster;
 
+    private List<MultipartFile> slider;
+
     @NotBlank
     private String trailerLink;
 

@@ -37,9 +37,11 @@ public class CloudinaryService {
         Map<String, String> params= ObjectUtils.asMap(
                 "folder", "Movie",
                 "resource_type", "image");
-        Map result = cloudinary.uploader().destroy(getPublicIdImage(imageUrl), params);
-        System.out.println(result.get("result").toString());
-
+        List<String> urls = List.of(imageUrl.split(";"));
+        for (String url : urls) {
+            Map result = cloudinary.uploader().destroy(getPublicIdImage(url), params);
+            System.out.println(result.get("result").toString());
+        }
     }
 
     public String getPublicIdImage(String imageUrl)  {

@@ -132,6 +132,9 @@ public class MovieService {
                 String url = cloudinaryService.uploadImage(req.getPoster());
                 movie.setPoster(url);
 
+                String url2 = cloudinaryService.uploadImage(req.getSlider());
+                movie.setSlider(url2);
+
                 Movie movieRes = movieRepository.save(movie);
                 BeanUtils.copyProperties(req, movie);
                 return ResponseEntity.status(HttpStatus.OK)
@@ -175,6 +178,9 @@ public class MovieService {
                 cloudinaryService.deleteImage(movie.getPoster());
                 String url = cloudinaryService.uploadImage(movieRequest.getPoster());
                 movie.setPoster(url);
+                cloudinaryService.deleteImage(movie.getSlider());
+                String url2 = cloudinaryService.uploadImage(movieRequest.getSlider());
+                movie.setSlider(url2);
                 movie.setTrailerLink(movieRequest.getTrailerLink());
                 movie.setDuration(movieRequest.getDuration());
 
@@ -211,6 +217,8 @@ public class MovieService {
         try {
             Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
+                cloudinaryService.deleteImage(optionalMovie.get().getPoster());
+                cloudinaryService.deleteImage(optionalMovie.get().getSlider());
                 movieRepository.delete(optionalMovie.get());
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()

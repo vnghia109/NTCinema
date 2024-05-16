@@ -231,8 +231,7 @@ public class AdminController {
 
     @GetMapping("/movies")
     public ResponseEntity<GenericResponse> getAllMovies(@RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size,
-                                                        @RequestParam(required = false) boolean isDelete) {
+                                                        @RequestParam(defaultValue = "10") int size) {
         return movieService.adminGetAllMovie(PageRequest.of(index-1, size));
     }
 

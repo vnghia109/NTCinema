@@ -41,6 +41,8 @@ public class Movie {
     @NotBlank
     private String poster;
 
+    private String slider;
+
     @NotBlank
     private String trailerLink;
 
