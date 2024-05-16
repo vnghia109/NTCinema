@@ -15,9 +15,6 @@ import java.util.List;
 @NoArgsConstructor
 public class SellTicketReq {
     private String userId;
-    @NotEmpty
-    @NotBlank
-    private String showtimeId;
     List<String> seatIds;
     List<String> foodIds;
 

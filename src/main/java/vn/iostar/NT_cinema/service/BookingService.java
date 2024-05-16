@@ -286,7 +286,13 @@ public class BookingService {
     public void sendEmailBookingSuccess(Booking booking) {
         try {
             Optional<User> user = userRepository.findById(booking.getUserId());
-            ShowTime showTime = showTimeRepository.findById(booking.getSeats().get(0).getShowTime().getShowTimeId()).get();
+            if (user.isEmpty()){
+                return;
+            }
+            Optional<ShowTime> showTime = showTimeRepository.findById(booking.getSeats().get(0).getShowTime().getShowTimeId());
+            if (showTime.isEmpty()){
+                return;
+            }
             Schedule schedule = booking.getSeats().get(0).getSchedule();
 
             MimeMessage message = mailSender.createMimeMessage();
@@ -297,7 +303,7 @@ public class BookingService {
             // Load Thymeleaf template
             Context context = new Context();
             context.setVariable("bookingCode", booking.getBookingId());
-            context.setVariable("movieName", showTime.getMovie().getTitle());
+            context.setVariable("movieName", showTime.get().getMovie().getTitle());
             context.setVariable("date", schedule.getDate());
             context.setVariable("startTime", schedule.getStartTime());
             context.setVariable("ticketCount", booking.getSeats().size());
@@ -392,6 +398,15 @@ public class BookingService {
                                 .build());
             }
             Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTime().getShowTimeId());
+            if (showTime.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Không tìm thấy lịch chiếu.")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
+            }
             Schedule schedule = booking.get().getSeats().get(0).getSchedule();
             TicketDetailRes ticket = new TicketDetailRes();
             ticket.setBookingId(booking.get().getBookingId());
@@ -492,8 +507,13 @@ public class BookingService {
                 Optional<User> user = userRepository.findById(item.getUserId());
                 BookingsOfStaffRes bookingRes = new BookingsOfStaffRes();
                 bookingRes.setBookingId(item.getBookingId());
-                bookingRes.setUserName(user.get().getUserName());
-                bookingRes.setFullName(user.get().getFullName());
+                if (user.isPresent()){
+                    bookingRes.setUserName(user.get().getUserName());
+                    bookingRes.setFullName(user.get().getFullName());
+                }else {
+                    bookingRes.setUserName("");
+                    bookingRes.setFullName("");
+                }
                 bookingRes.setCinemaName(item.getSeats().get(0).getShowTime().getRoom().getCinema().getCinemaName());
                 bookingRes.setMovieName(item.getSeats().get(0).getShowTime().getMovie().getTitle());
                 bookingRes.setMovieId(item.getSeats().get(0).getShowTime().getMovie().getMovieId());
@@ -600,9 +620,9 @@ public class BookingService {
                 food.setQuantity(food.getQuantity() + item.getCount());
                 foodRepository.save(food);
                 Cinema cinema = booking.get().getSeats().get(0).getShowTime().getRoom().getCinema();
-                FoodInventory foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema).get();
-                foodInventory.setQuantity(foodInventory.getQuantity() + item.getCount());
-                foodInventoryRepository.save(foodInventory);
+                Optional<FoodInventory> foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema);
+                foodInventory.ifPresent(inventory -> inventory.setQuantity(inventory.getQuantity() + item.getCount()));
+                foodInventoryRepository.save(foodInventory.get());
             }
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -690,6 +710,15 @@ public class BookingService {
                     seatRepository.save(seat.get());
                     seats.add(seat.get());
                 }
+            }
+            if (seats.isEmpty()){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Vui lòng chọn ghế muốn mua!")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
             }
             List<FoodWithCount> foods = convertToFoodWithCountList(foodIds);
 
