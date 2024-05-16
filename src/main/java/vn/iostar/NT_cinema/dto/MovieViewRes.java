@@ -17,6 +17,8 @@ public class MovieViewRes {
 
     private String poster;
 
+    private String slider;
+
     private String rating;
 
     private String director;

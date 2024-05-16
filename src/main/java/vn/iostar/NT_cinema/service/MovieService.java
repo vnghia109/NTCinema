@@ -637,6 +637,7 @@ public class MovieService {
                         showTime.getMovie().getMovieId(),
                         showTime.getMovie().getTitle(),
                         showTime.getMovie().getPoster(),
+                        showTime.getMovie().getSlider(),
                         showTime.getMovie().getRating(),
                         showTime.getMovie().getDirector(),
                         showTime.getMovie().getGenres(),
