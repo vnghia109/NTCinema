@@ -164,7 +164,7 @@ public class MovieService {
         }
     }
 
-    public ResponseEntity<GenericResponse> update(String movieId, MovieReq movieRequest) {
+    public ResponseEntity<GenericResponse> update(String movieId, UpdateMovieReq movieRequest) {
         try {
             Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
@@ -175,12 +175,20 @@ public class MovieService {
                 movie.setActor(movieRequest.getActor());
                 movie.setDesc(movieRequest.getDesc());
                 movie.setReleaseDate(movieRequest.getReleaseDate());
-                cloudinaryService.deleteImage(movie.getPoster());
-                String url = cloudinaryService.uploadImage(movieRequest.getPoster());
-                movie.setPoster(url);
-                cloudinaryService.deleteImage(movie.getSlider());
-                String url2 = cloudinaryService.uploadImage(movieRequest.getSlider());
-                movie.setSlider(url2);
+                if (movieRequest.getPoster() != null) {
+                    if (movie.getPoster() != null) {
+                        cloudinaryService.deleteImage(movie.getPoster());
+                    }
+                    String url = cloudinaryService.uploadImage(movieRequest.getPoster());
+                    movie.setPoster(url);
+                }
+                if (movieRequest.getSlider() != null) {
+                    if (movie.getSlider() != null) {
+                        cloudinaryService.deleteImage(movie.getSlider());
+                    }
+                    String url2 = cloudinaryService.uploadImage(movieRequest.getSlider());
+                    movie.setSlider(url2);
+                }
                 movie.setTrailerLink(movieRequest.getTrailerLink());
                 movie.setDuration(movieRequest.getDuration());
 
@@ -217,8 +225,12 @@ public class MovieService {
         try {
             Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
-                cloudinaryService.deleteImage(optionalMovie.get().getPoster());
-                cloudinaryService.deleteImage(optionalMovie.get().getSlider());
+                if (optionalMovie.get().getSlider() != null) {
+                    cloudinaryService.deleteImage(optionalMovie.get().getSlider());
+                }
+                if (optionalMovie.get().getPoster() != null) {
+                    cloudinaryService.deleteImage(optionalMovie.get().getPoster());
+                }
                 movieRepository.delete(optionalMovie.get());
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
@@ -625,7 +637,13 @@ public class MovieService {
                         showTime.getMovie().getMovieId(),
                         showTime.getMovie().getTitle(),
                         showTime.getMovie().getPoster(),
-                        showTime.getMovie().getRating()));
+                        showTime.getMovie().getRating(),
+                        showTime.getMovie().getDirector(),
+                        showTime.getMovie().getGenres(),
+                        showTime.getMovie().getActor(),
+                        showTime.getMovie().getDesc(),
+                        showTime.getMovie().getTrailerLink(),
+                        showTime.getMovie().getDuration()));
             }
         }
         return new ArrayList<>(uniqueMoviesMap.values());

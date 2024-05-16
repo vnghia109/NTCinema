@@ -18,4 +18,16 @@ public class MovieViewRes {
     private String poster;
 
     private String rating;
+
+    private String director;
+
+    private String genres;
+
+    private String actor;
+
+    private String desc;
+
+    private String trailerLink;
+
+    private String duration;
 }

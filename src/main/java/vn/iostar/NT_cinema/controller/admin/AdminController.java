@@ -198,8 +198,8 @@ public class AdminController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
                     false,
-                    "Dữ liệu đầu vào không đúng định dạng!",
                     Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage(),
+                    "Dữ liệu đầu vào không đúng định dạng!",
                     HttpStatus.BAD_REQUEST.value()));
         }
         return movieService.save(movie);
@@ -207,12 +207,12 @@ public class AdminController {
 
     @PutMapping("/movies/{movieId}")
     public ResponseEntity<GenericResponse> updateMovie(@PathVariable("movieId") String movieId,
-                                                       @Valid @ModelAttribute MovieReq movieRequest,
+                                                       @Valid @ModelAttribute UpdateMovieReq movieRequest,
                                                        BindingResult bindingResult) throws Exception{
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
                     false,
-                    "Invalid input data!",
+                    "Dữ liệu đầu vào không đúng định dạng!",
                     null,
                     HttpStatus.BAD_REQUEST.value()));
         }
