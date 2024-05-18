@@ -536,9 +536,13 @@ public class ShowTimeService {
         if (date != null) {
             schedules = schedules.stream()
                     .filter(schedule -> schedule.getDate().equals(date))
+                    .sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime))
+                    .toList();
+        }else {
+            schedules = schedules.stream()
+                    .sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime))
                     .toList();
         }
-        schedules.sort(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime));
         return new ShowScheduleResp(
                 showTime.getShowTimeId(),
                 showTime.getRoom(),
