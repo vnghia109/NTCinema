@@ -340,7 +340,8 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> findSpecialMovies() {
         try {
-            List<ShowTime> showTimes = showTimeRepository.findAllByIsSpecialIsTrueAndIsDeleteIsFalse();
+            List<ShowTime> showTimes = showTimeRepository.findAllByIsSpecialIsTrueAndIsDeleteIsFalse().stream()
+                    .filter(item -> !item.getStatus().equals(ShowStatus.ENDED)).toList();
 
             List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
             return ResponseEntity.status(HttpStatus.OK)
@@ -573,7 +574,8 @@ public class MovieService {
 
             List<Room> rooms = roomRepository.findAllByCinema(staff.get().getCinema());
             List<ShowTime> showTimes = showTimeRepository.findAllByStatusAndRoomInAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus.SHOWING, rooms);
-            showTimes.addAll(showTimeRepository.findAllByRoomInAndIsSpecialIsTrueAndIsDeleteIsFalse(rooms));
+            List<ShowTime> showTimes1 = showTimeRepository.findAllByRoomInAndIsSpecialIsTrueAndIsDeleteIsFalse(rooms);
+            showTimes.addAll(showTimes1.stream().filter(item -> !item.getStatus().equals(ShowStatus.ENDED)).toList());
 
             List<MovieViewRes> uniqueMovies = getUniqueMovies(showTimes);
             return ResponseEntity.status(HttpStatus.OK)

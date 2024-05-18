@@ -34,10 +34,12 @@ public class ShowTimeService {
     ScheduleRepository scheduleRepository;
 
     public ShowStatus getShowStatus(ShowTime showTime) {
-        Date now = new Date();
-        if (showTime.getTimeStart().before(now) && showTime.getTimeEnd().after(now)) {
+        LocalDate now = LocalDate.now();
+        LocalDate start = showTime.getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate end = showTime.getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        if ((start.isBefore(now)|| start.isEqual(now)) && (end.isAfter(now)|| end.isEqual(now))) {
             return ShowStatus.SHOWING;
-        } else if (showTime.getTimeStart().after(now)) {
+        } else if (start.isAfter(now)) {
             return ShowStatus.COMING_SOON;
         } else {
             return ShowStatus.ENDED;
@@ -122,10 +124,10 @@ public class ShowTimeService {
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
                 }
-                if (item.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration())).isAfter(endTime)){
+                if (item.getStartTime().isBefore(LocalTime.now())){
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
-                            .message("Thời gian chiếu phải dài hơn thời lượng phim")
+                            .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
                             .result(null)
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
@@ -419,7 +421,6 @@ public class ShowTimeService {
     public ResponseEntity<GenericResponse> getShowtime(String id) {
         try {
             Optional<ShowTime> optionalShowTime = showTimeRepository.findById(id);
-            ShowTime showTime = optionalShowTime.get();
             if (optionalShowTime.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
@@ -428,6 +429,7 @@ public class ShowTimeService {
                         .statusCode(HttpStatus.NOT_FOUND.value())
                         .build());
             }
+            ShowTime showTime = optionalShowTime.get();
             List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
                     .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
             ShowScheduleResp response = new ShowScheduleResp(
@@ -534,9 +536,9 @@ public class ShowTimeService {
         if (date != null) {
             schedules = schedules.stream()
                     .filter(schedule -> schedule.getDate().equals(date))
-                    .sorted(Comparator.comparing(Schedule::getDate).reversed().thenComparing(Schedule::getStartTime).reversed())
                     .toList();
         }
+        schedules.sort(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime));
         return new ShowScheduleResp(
                 showTime.getShowTimeId(),
                 showTime.getRoom(),
