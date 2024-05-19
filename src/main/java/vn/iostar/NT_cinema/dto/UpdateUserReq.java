@@ -32,5 +32,8 @@ public class UpdateUserReq {
     @Size(max = 10)
     private String phone;
 
-    private Address address;
+    private String street;
+    private String province;
+    private String district;
+    private String country;
 }

@@ -824,16 +824,20 @@ public class UserService {
                 if (request.getFullName() != null && !request.getFullName().isEmpty()) {
                     user.setFullName(request.getFullName());
                 }
-                if (request.getAddress() != null){
+                if (request.getCountry() != null && request.getDistrict() != null && request.getProvince() != null && request.getStreet() != null) {
                     Optional<Address> optionalAddress = addressRepository.findByStreetAndProvinceAndDistrictAndCountry(
-                            request.getAddress().getStreet(),
-                            request.getAddress().getProvince(),
-                            request.getAddress().getDistrict(),
-                            request.getAddress().getCountry());
+                            request.getStreet(),
+                            request.getProvince(),
+                            request.getDistrict(),
+                            request.getCountry());
                     if (optionalAddress.isPresent()){
                         user.setAddress(optionalAddress.get());
                     }else {
-                        Address address = addressRepository.save(request.getAddress());
+                        Address addressRq = new Address(request.getStreet(),
+                                request.getProvince(),
+                                request.getDistrict(),
+                                request.getCountry());
+                        Address address = addressRepository.save(addressRq);
                         user.setAddress(address);
                     }
                 }

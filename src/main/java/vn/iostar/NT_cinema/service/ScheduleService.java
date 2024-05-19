@@ -34,6 +34,7 @@ public class ScheduleService {
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(showTime.get().getRoom().getRoomId());
             Optional<Movie> optionalMovie = movieRepository.findById(showTime.get().getMovie().getMovieId());
             LocalTime endTime = scheduleReq.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
+            LocalDateTime start = LocalDateTime.of(scheduleReq.getDate(), scheduleReq.getStartTime());
 
             if (scheduleReq.getDate().isBefore(showTime.get().getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) || scheduleReq.getDate().isAfter(showTime.get().getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
@@ -43,7 +44,7 @@ public class ScheduleService {
                         .statusCode(HttpStatus.CONFLICT.value())
                         .build());
             }
-            if (scheduleReq.getStartTime().isBefore(LocalTime.now())){
+            if (start.isBefore(LocalDateTime.now())){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)
                         .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
