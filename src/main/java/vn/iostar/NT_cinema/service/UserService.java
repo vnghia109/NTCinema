@@ -522,10 +522,6 @@ public class UserService {
                     String image = cloudinaryService.uploadImage(request.getImage());
                     user.setAvatar(image);
                 }
-                Address addressRq = new Address(request.getStreet(),
-                                            request.getProvince(),
-                                            request.getDistrict(),
-                                            request.getCountry());
                 if (request.getCountry() != null && request.getDistrict() != null && request.getProvince() != null && request.getStreet() != null) {
                     Optional<Address> optionalAddress = addressRepository.findByStreetAndProvinceAndDistrictAndCountry(
                             request.getStreet(),
@@ -535,6 +531,10 @@ public class UserService {
                     if (optionalAddress.isPresent()){
                         user.setAddress(optionalAddress.get());
                     }else {
+                        Address addressRq = new Address(request.getStreet(),
+                                request.getProvince(),
+                                request.getDistrict(),
+                                request.getCountry());
                         Address address = addressRepository.save(addressRq);
                         user.setAddress(address);
                     }

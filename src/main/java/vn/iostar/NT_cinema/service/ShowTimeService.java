@@ -346,10 +346,10 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> getShowTimes(LocalDate date, Pageable pageable) {
         try {
-            Page<ShowTime> showTimes = showTimeRepository.findAllByIsDeleteIsFalse(pageable);
+            List<ShowTime> showTimes = showTimeRepository.findAllByIsDeleteIsFalse();
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
 
-            Map<String, Object> map = createResponseMap(responses, showTimes);
+            Map<String, Object> map = createResponseMap(responses, pageable);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get all show time success")
@@ -368,9 +368,9 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> adminGetShowTimes(LocalDate date, Pageable pageable) {
         try {
-            Page<ShowTime> showTimes = showTimeRepository.findAllByOrderByShowTimeIdDesc(pageable);
+            List<ShowTime> showTimes = showTimeRepository.findAllByOrderByShowTimeIdDesc();
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
-            Map<String, Object> map = createResponseMap(responses, showTimes);
+            Map<String, Object> map = createResponseMap(responses, pageable);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get all show time success")
@@ -399,12 +399,12 @@ public class ShowTimeService {
                         .build());
             }
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomInOrderByShowTimeIdDesc(rooms, pageable);
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoomInOrderByShowTimeIdDesc(rooms);
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
-            Map<String, Object> map = createResponseMap(responses, showTimes);
+            Map<String, Object> map = createResponseMap(responses, pageable);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
-                    .message("Get all show time success")
+                    .message("Lấy lịch chiếu thành công!")
                     .result(map)
                     .statusCode(HttpStatus.OK.value())
                     .build());
@@ -482,9 +482,9 @@ public class ShowTimeService {
     public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, LocalDate date, Pageable pageable) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomInOrderByShowTimeIdDesc(rooms, pageable);
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoomInOrderByShowTimeIdDesc(rooms);
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
-            Map<String, Object> map = createResponseMap(responses, showTimes);
+            Map<String, Object> map = createResponseMap(responses, pageable);
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
                             .success(true)
@@ -505,11 +505,11 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date, Pageable pageable) {
         try {
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomIdOrderByShowTimeIdDesc(roomId, pageable);
+            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomIdOrderByShowTimeIdDesc(roomId);
 
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
 
-            Map<String, Object> map = createResponseMap(responses, showTimes);
+            Map<String, Object> map = createResponseMap(responses, pageable);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Lấy danh sách lịch chiếu thành công!")
@@ -526,10 +526,11 @@ public class ShowTimeService {
         }
     }
 
-    private List<ShowScheduleResp> createShowScheduleResponses(Page<ShowTime> showTimes, LocalDate date) {
-        return showTimes.getContent().stream()
+    private List<ShowScheduleResp> createShowScheduleResponses(List<ShowTime> showTimes, LocalDate date) {
+        List<ShowScheduleResp> responses = showTimes.stream()
                 .map(showTime -> createShowScheduleResponse(showTime, date))
-                .collect(Collectors.toList());
+                .toList();
+        return responses.stream().filter(response -> !response.getSchedules().isEmpty()).toList();
     }
     private ShowScheduleResp createShowScheduleResponse(ShowTime showTime, LocalDate date) {
         List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
@@ -554,13 +555,13 @@ public class ShowTimeService {
                 showTime.isDelete(),
                 schedules);
     }
-    private Map<String, Object> createResponseMap(List<ShowScheduleResp> responses, Page<ShowTime> showTimes) {
+    private Map<String, Object> createResponseMap(List<ShowScheduleResp> responses, Pageable pageable) {
         Map<String, Object> map = new HashMap<>();
-        map.put("content", responses);
-        map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
-        map.put("pageSize", showTimes.getSize());
-        map.put("totalPages", showTimes.getTotalPages());
-        map.put("totalElements", showTimes.getTotalElements());
+        map.put("content", responses.stream().limit(pageable.getPageSize()).collect(Collectors.toList()));
+        map.put("pageNumber", pageable.getPageNumber() + 1);
+        map.put("pageSize", pageable.getPageSize());
+        map.put("totalPages", responses.size()%pageable.getPageSize() == 0 ? (int) responses.size() / pageable.getPageSize() : (int) responses.size() / pageable.getPageSize() + 1);
+        map.put("totalElements", responses.size());
         return map;
     }
 

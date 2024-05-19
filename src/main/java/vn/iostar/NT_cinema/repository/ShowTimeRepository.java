@@ -24,12 +24,12 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     Optional<ShowTime> findByMovieAndRoomAndIsDeleteIsFalseAndIsSpecialIsTrue (Movie movie, Room room);
     List<ShowTime> findByMovieAndIsDeleteIsFalse (Movie movie);
     Page<ShowTime> findAllByRoomInAndStatusAndIsDeleteIsFalseAndIsSpecialIsFalse(List<Room> rooms, ShowStatus status, Pageable pageable);
-    Page<ShowTime> findAllByRoomInOrderByShowTimeIdDesc(List<Room> rooms, Pageable pageable);
+    List<ShowTime> findAllByRoomInOrderByShowTimeIdDesc(List<Room> rooms);
     List<ShowTime> findAllByRoomIn(List<Room> rooms);
-    Page<ShowTime> findAllByIsDeleteIsFalse(Pageable pageable);
-    Page<ShowTime> findAllByRoom_RoomIdOrderByShowTimeIdDesc(String roomId, Pageable pageable);
+    List<ShowTime> findAllByIsDeleteIsFalse();
+    List<ShowTime> findAllByRoom_RoomIdOrderByShowTimeIdDesc(String roomId);
 
-    Page<ShowTime> findAllByOrderByShowTimeIdDesc(Pageable pageable);
+    List<ShowTime> findAllByOrderByShowTimeIdDesc();
 
     List<ShowTime> findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus status);
 
