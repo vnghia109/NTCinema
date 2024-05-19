@@ -532,10 +532,9 @@ public class ShowTimeService {
                     .filter(showTime -> isTimeInRange(showTime.getTimeStart(), showTime.getTimeEnd(), date))
                     .collect(Collectors.toList());
         }
-        List<ShowScheduleResp> responses = showTimes.stream()
+        return showTimes.stream()
                 .map(showTime -> createShowScheduleResponse(showTime, date))
                 .toList();
-        return responses.stream().filter(response -> !response.getSchedules().isEmpty()).toList();
     }
     private ShowScheduleResp createShowScheduleResponse(ShowTime showTime, LocalDate date) {
         List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId());
@@ -573,6 +572,6 @@ public class ShowTimeService {
     private boolean isTimeInRange(Date startTime, Date endTime, LocalDate date) {
         LocalDate start = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         LocalDate end = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        return !date.isBefore(start) && !date.isAfter(end);
+        return start.isBefore(date) && end.isAfter(date);
     }
 }
