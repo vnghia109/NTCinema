@@ -1,7 +1,5 @@
 package vn.iostar.NT_cinema.repository;
 
-import lombok.Data;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -12,8 +10,6 @@ import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.Room;
 import vn.iostar.NT_cinema.entity.ShowTime;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -24,12 +20,8 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     Optional<ShowTime> findByMovieAndRoomAndIsDeleteIsFalseAndIsSpecialIsTrue (Movie movie, Room room);
     List<ShowTime> findByMovieAndIsDeleteIsFalse (Movie movie);
     Page<ShowTime> findAllByRoomInAndStatusAndIsDeleteIsFalseAndIsSpecialIsFalse(List<Room> rooms, ShowStatus status, Pageable pageable);
-    List<ShowTime> findAllByRoomInOrderByShowTimeIdDesc(List<Room> rooms);
-    List<ShowTime> findAllByRoomIn(List<Room> rooms);
-    List<ShowTime> findAllByIsDeleteIsFalse();
-    List<ShowTime> findAllByRoom_RoomIdOrderByShowTimeIdDesc(String roomId);
 
-    List<ShowTime> findAllByOrderByShowTimeIdDesc();
+    List<ShowTime> findAllByRoomIn(List<Room> rooms);
 
     List<ShowTime> findAllByStatusAndIsSpecialIsFalseAndIsDeleteIsFalse(ShowStatus status);
 

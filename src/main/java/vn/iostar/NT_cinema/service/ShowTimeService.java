@@ -3,7 +3,12 @@ package vn.iostar.NT_cinema.service;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -32,6 +37,8 @@ public class ShowTimeService {
     ManagerRepository managerRepository;
     @Autowired
     ScheduleRepository scheduleRepository;
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     public ShowStatus getShowStatus(ShowTime showTime) {
         LocalDate now = LocalDate.now();
@@ -346,10 +353,23 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> getShowTimes(LocalDate date, Pageable pageable) {
         try {
-            List<ShowTime> showTimes = showTimeRepository.findAllByIsDeleteIsFalse();
-            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
+            Criteria criteria = Criteria.where("isDelete").is(false);
+            if (date != null){
+                criteria.andOperator(
+                        Criteria.where("timeStart").lte(date),
+                        Criteria.where("timeEnd").gte(date)
+                );
+            }
+            Query query = new Query(criteria)
+                    .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
+            long count = mongoTemplate.count(query, ShowTime.class);
+            query.with(pageable);
+            List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
+            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
 
-            Map<String, Object> map = createResponseMap(responses, pageable);
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
+
+            Map<String, Object> map = createResponseMap(responses, showTimePage);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get all show time success")
@@ -368,9 +388,19 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> adminGetShowTimes(LocalDate date, Pageable pageable) {
         try {
-            List<ShowTime> showTimes = showTimeRepository.findAllByOrderByShowTimeIdDesc();
-            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
-            Map<String, Object> map = createResponseMap(responses, pageable);
+            Query query = new Query();
+            if (date != null){
+                Criteria criteria = Criteria.where("timeStart").lte(date).and("timeEnd").gte(date);
+                query.addCriteria(criteria);
+            }
+            query.with(Sort.by(Sort.Direction.DESC, "showTimeId"));
+            long count = mongoTemplate.count(query, ShowTime.class);
+            query.with(pageable);
+            List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
+            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
+
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
+            Map<String, Object> map = createResponseMap(responses, showTimePage);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Get all show time success")
@@ -399,9 +429,22 @@ public class ShowTimeService {
                         .build());
             }
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(manager.get().getCinema().getCinemaId());
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoomInOrderByShowTimeIdDesc(rooms);
-            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
-            Map<String, Object> map = createResponseMap(responses, pageable);
+            Criteria criteria = Criteria.where("room").in(rooms);
+            if (date != null){
+                criteria.andOperator(
+                        Criteria.where("timeStart").lte(date),
+                        Criteria.where("timeEnd").gte(date)
+                );
+            }
+            Query query = new Query(criteria)
+                    .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
+            long count = mongoTemplate.count(query, ShowTime.class);
+            query.with(pageable);
+            List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
+
+            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
+            Map<String, Object> map = createResponseMap(responses, showTimePage);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Lấy lịch chiếu thành công!")
@@ -482,9 +525,24 @@ public class ShowTimeService {
     public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, LocalDate date, Pageable pageable) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoomInOrderByShowTimeIdDesc(rooms);
-            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
-            Map<String, Object> map = createResponseMap(responses, pageable);
+
+            Criteria criteria = Criteria.where("room").in(rooms);
+            if (date != null){
+                criteria.andOperator(
+                        Criteria.where("timeStart").lte(date),
+                        Criteria.where("timeEnd").gte(date)
+                );
+            }
+
+            Query query = new Query(criteria)
+                    .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
+            long count = mongoTemplate.count(query, ShowTime.class);
+            query.with(pageable);
+            List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
+            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
+
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
+            Map<String, Object> map = createResponseMap(responses, showTimePage);
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
                             .success(true)
@@ -505,11 +563,23 @@ public class ShowTimeService {
 
     public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date, Pageable pageable) {
         try {
-            List<ShowTime> showTimes = showTimeRepository.findAllByRoom_RoomIdOrderByShowTimeIdDesc(roomId);
+            Criteria criteria = Criteria.where("room.roomId").is(roomId);
+            if (date != null){
+                criteria.andOperator(
+                        Criteria.where("timeStart").lte(date),
+                        Criteria.where("timeEnd").gte(date)
+                );
+            }
+            Query query = new Query(criteria)
+                    .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
+            long count = mongoTemplate.count(query, ShowTime.class);
+            query.with(pageable);
+            List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
+            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
 
-            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimes, date);
+            List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
 
-            Map<String, Object> map = createResponseMap(responses, pageable);
+            Map<String, Object> map = createResponseMap(responses, showTimePage);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Lấy danh sách lịch chiếu thành công!")
@@ -526,13 +596,8 @@ public class ShowTimeService {
         }
     }
 
-    private List<ShowScheduleResp> createShowScheduleResponses(List<ShowTime> showTimes, LocalDate date) {
-        if (date != null) {
-            showTimes = showTimes.stream()
-                    .filter(showTime -> isTimeInRange(showTime.getTimeStart(), showTime.getTimeEnd(), date))
-                    .collect(Collectors.toList());
-        }
-        return showTimes.stream()
+    private List<ShowScheduleResp> createShowScheduleResponses(Page<ShowTime> showTimes, LocalDate date) {
+        return showTimes.getContent().stream()
                 .map(showTime -> createShowScheduleResponse(showTime, date))
                 .toList();
     }
@@ -559,19 +624,13 @@ public class ShowTimeService {
                 showTime.isDelete(),
                 schedules);
     }
-    private Map<String, Object> createResponseMap(List<ShowScheduleResp> responses, Pageable pageable) {
+    private Map<String, Object> createResponseMap(List<ShowScheduleResp> responses, Page<ShowTime> showTimes) {
         Map<String, Object> map = new HashMap<>();
-        map.put("content", responses.stream().limit(pageable.getPageSize()).collect(Collectors.toList()));
-        map.put("pageNumber", pageable.getPageNumber() + 1);
-        map.put("pageSize", pageable.getPageSize());
-        map.put("totalPages", responses.size()%pageable.getPageSize() == 0 ? (int) responses.size() / pageable.getPageSize() : (int) responses.size() / pageable.getPageSize() + 1);
-        map.put("totalElements", responses.size());
+        map.put("content", responses);
+        map.put("pageNumber", showTimes.getPageable().getPageNumber() + 1);
+        map.put("pageSize", showTimes.getSize());
+        map.put("totalPages", showTimes.getTotalPages());
+        map.put("totalElements", showTimes.getTotalElements());
         return map;
-    }
-
-    private boolean isTimeInRange(Date startTime, Date endTime, LocalDate date) {
-        LocalDate start = startTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate end = endTime.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        return start.isBefore(date) && end.isAfter(date);
     }
 }
