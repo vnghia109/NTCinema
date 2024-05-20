@@ -19,7 +19,7 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     Optional<ShowTime> findByMovieAndRoomAndIsDeleteIsFalseAndIsSpecialIsFalse (Movie movie, Room room);
     Optional<ShowTime> findByMovieAndRoomAndIsDeleteIsFalseAndIsSpecialIsTrue (Movie movie, Room room);
     List<ShowTime> findByMovieAndIsDeleteIsFalse (Movie movie);
-    Page<ShowTime> findAllByRoomInAndStatusInAndIsDeleteIsFalseAndIsSpecialIsFalse(List<Room> rooms, List<ShowStatus> status, Pageable pageable);
+    Page<ShowTime> findAllByRoomInAndStatusInAndIsDeleteIsFalseAndIsSpecialIsTrue(List<Room> rooms, List<ShowStatus> status, Pageable pageable);
 
     List<ShowTime> findAllByRoomIn(List<Room> rooms);
 

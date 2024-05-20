@@ -365,7 +365,7 @@ public class MovieService {
     public ResponseEntity<GenericResponse> findNowPlayingMoviesByCinema(String id, Pageable pageable) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
-            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomInAndStatusInAndIsDeleteIsFalseAndIsSpecialIsFalse(rooms, List.of(ShowStatus.SHOWING, ShowStatus.COMING_SOON), pageable);
+            Page<ShowTime> showTimes = showTimeRepository.findAllByRoomInAndStatusInAndIsDeleteIsFalseAndIsSpecialIsTrue(rooms, List.of(ShowStatus.SHOWING, ShowStatus.COMING_SOON), pageable);
             List<ShowScheduleResp> responses = new ArrayList<>();
             for (ShowTime showTime : showTimes.getContent()) {
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
