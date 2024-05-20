@@ -20,6 +20,7 @@ import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -122,6 +123,7 @@ public class ShowTimeService {
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(showTime.getRoom().getRoomId());
 
             for (TimeShow item : showTimeReq.getSchedules()) {
+                LocalDateTime start = LocalDateTime.of(item.getDate(), item.getStartTime());
                 LocalTime endTime = item.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
                 if (item.getDate().isBefore(showTime.getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) || item.getDate().isAfter(showTime.getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
@@ -131,7 +133,7 @@ public class ShowTimeService {
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
                 }
-                if (item.getStartTime().isBefore(LocalTime.now())){
+                if (start.isBefore(LocalDateTime.now())){
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
                             .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
