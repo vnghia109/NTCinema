@@ -56,19 +56,19 @@ public class ScheduleService {
                 LocalDateTime startNew = LocalDateTime.of(scheduleReq.getDate(), scheduleReq.getStartTime());
                 LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
                 LocalDateTime startOld = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
-                LocalDateTime endOld = startOld.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
-                if (startNew.isBefore(endOld.plusMinutes(15)) && (endNew.plusMinutes(15)).isAfter(startOld)) {
+                LocalDateTime endOld = LocalDateTime.of(schedule.getStartTime().isAfter(schedule.getEndTime()) ? schedule.getDate().plusDays(1) : schedule.getDate(), schedule.getEndTime());
+                if (!(endNew.isBefore(startOld) || startNew.isAfter(endOld))) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
-                            .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" và lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" phải cách nhau 15 phút.")
+                            .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime())
                             .result(null)
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
                 }
-                if (startNew.isBefore(endOld) && endNew.isAfter(startOld)) {
+                if (!(endNew.plusMinutes(15).isBefore(startOld) || startNew.isAfter(endOld.plusMinutes(15)))) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
-                            .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime())
+                            .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" và lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" phải cách nhau 15 phút.")
                             .result(null)
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());

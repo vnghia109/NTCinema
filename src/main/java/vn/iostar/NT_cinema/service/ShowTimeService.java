@@ -142,11 +142,23 @@ public class ShowTimeService {
                             .build());
                 }
                 for (Schedule schedule : schedules) {
-                    if (!(item.getStartTime().isAfter(schedule.getEndTime().plusMinutes(15)) || endTime.plusMinutes(15).isBefore(schedule.getStartTime())) && item.getDate().equals(schedule.getDate())) {
+                    LocalDateTime startNew = LocalDateTime.of(item.getDate(), item.getStartTime());
+                    LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
+                    LocalDateTime startOld = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
+                    LocalDateTime endOld = LocalDateTime.of(schedule.getStartTime().isAfter(schedule.getEndTime()) ? schedule.getDate().plusDays(1) : schedule.getDate(), schedule.getEndTime());
+                    if (!(endNew.isBefore(startOld) || startNew.isAfter(endOld))) {
                         return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                                 .success(false)
                                 .message("Lịch chiếu bắt đầu lúc "+item.getStartTime()+" ngày "+item.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime())
-                                .result(schedule.getScheduleId())
+                                .result(null)
+                                .statusCode(HttpStatus.CONFLICT.value())
+                                .build());
+                    }
+                    if (!(endNew.plusMinutes(15).isBefore(startOld) || startNew.isAfter(endOld.plusMinutes(15)))) {
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                                .success(false)
+                                .message("Lịch chiếu bắt đầu lúc "+item.getStartTime()+" ngày "+item.getDate()+" và lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" phải cách nhau 15 phút.")
+                                .result(null)
                                 .statusCode(HttpStatus.CONFLICT.value())
                                 .build());
                     }
