@@ -199,13 +199,13 @@ public class PromotionService {
         try {
             Optional<PromotionFixed> promotion = promotionFixedRepository.findById(id);
             if (promotion.isPresent()) {
-                promotion.get().setDeleted(true);
+                promotion.get().setDeleted(!promotion.get().isDeleted());
                 promotionFixedRepository.save(promotion.get());
 
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Một khuyến mãi đã được xóa!")
+                                .message(promotion.get().isDeleted() ? "Khuyến mãi đã được xóa!" : "Khuyến mãi đã được khởi động lại!")
                                 .result(null)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
@@ -354,13 +354,13 @@ public class PromotionService {
         try {
             Optional<PromotionCode> promotion = promotionCodeRepository.findById(id);
             if (promotion.isPresent()) {
-                promotion.get().setDeleted(true);
+                promotion.get().setDeleted(!promotion.get().isDeleted());
                 promotionCodeRepository.save(promotion.get());
 
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
-                                .message("Một khuyến mãi đã được xóa!")
+                                .message(promotion.get().isDeleted() ? "Khuyến mãi đã được xóa!" : "Khuyến mãi đã được khởi động lại!")
                                 .result(null)
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
