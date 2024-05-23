@@ -4,28 +4,25 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vn.iostar.NT_cinema.constant.DiscountType;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PromotionReq {
+public class PromotionFixedReq {
     private String name;
-    private String promotionType;
-    private String promotionCode;
-    private int maxUsage;
     private String description;
     private String discountType;
     private BigDecimal discountValue;
-    private int validDayOfWeek;
-    private int ageLimit;
+    private Integer validDayOfWeek;
+    private Integer ageLimit;
     private LocalTime validTimeFrameStart;
     private LocalTime validTimeFrameEnd;
-    private Date startDate;
-    private Date endDate;
-    private boolean excludeHolidays;
+    private LocalDate startDate;
+    private LocalDate endDate;
 }

@@ -441,19 +441,35 @@ public class AdminController {
         return promotionService.getAllPromotions();
     }
 
-    @PostMapping("/promotions")
-    public ResponseEntity<GenericResponse> createPromotion(@RequestBody PromotionReq promotionReq) {
-        return promotionService.createPromotion(promotionReq);
+    @PostMapping("/promotionsFixed")
+    public ResponseEntity<GenericResponse> createPromotionFixed(@RequestBody PromotionFixedReq promotionFixedReq) {
+        return promotionService.createPromotionFixed(promotionFixedReq);
     }
 
-    @PutMapping("/promotions/{id}")
-    public ResponseEntity<GenericResponse> updatePromotion(@PathVariable String id,
-                                                           @RequestBody PromotionReq promotionReq) {
-        return promotionService.updatePromotion(id, promotionReq);
+    @PostMapping("/promotionsCode")
+    public ResponseEntity<GenericResponse> createPromotionCode(@RequestBody PromotionCodeReq promotionCodeReq) {
+        return promotionService.createPromotionCode(promotionCodeReq);
     }
 
-    @PatchMapping("/promotions/{id}")
-    public ResponseEntity<GenericResponse> deletePromotion(@PathVariable String id) {
-        return promotionService.deletePromotion(id);
+    @PutMapping("/promotionsFixed/{id}")
+    public ResponseEntity<GenericResponse> updatePromotionFixed(@PathVariable String id,
+                                                           @RequestBody PromotionFixedReq promotionFixedReq) {
+        return promotionService.updatePromotionFixed(id, promotionFixedReq);
+    }
+
+    @PutMapping("/promotionsCode/{id}")
+    public ResponseEntity<GenericResponse> updatePromotionCode(@PathVariable String id,
+                                                           @RequestBody PromotionCodeReq promotionCodeReq) {
+        return promotionService.updatePromotionFixedCode(id, promotionCodeReq);
+    }
+
+    @PatchMapping("/promotionsFixed/{id}")
+    public ResponseEntity<GenericResponse> deletePromotionFixed(@PathVariable String id) {
+        return promotionService.deletePromotionFixed(id);
+    }
+
+    @PatchMapping("/promotionsCode/{id}")
+    public ResponseEntity<GenericResponse> deletePromotionCode(@PathVariable String id) {
+        return promotionService.deletePromotionCode(id);
     }
 }

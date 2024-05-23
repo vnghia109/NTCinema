@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import vn.iostar.NT_cinema.constant.DiscountType;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,6 +28,9 @@ public class PromotionCode {
     private String description;
     private DiscountType discountType;
     private BigDecimal discountValue;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private boolean isDeleted = false;
-    private Date createAt;
+    private boolean isValid = true;
+    private LocalDate createAt;
 }

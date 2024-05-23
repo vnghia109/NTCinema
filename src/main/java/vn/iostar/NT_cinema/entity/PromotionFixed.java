@@ -9,8 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import vn.iostar.NT_cinema.constant.DiscountType;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,9 +28,9 @@ public class PromotionFixed {
     private Integer ageLimit;
     private LocalTime validTimeFrameStart;
     private LocalTime validTimeFrameEnd;
-    private Date startDate;
-    private Date endDate;
-    private boolean excludeHolidays;
+    private LocalDate startDate;
+    private LocalDate endDate;
     private boolean isDeleted = false;
-    private Date createAt;
+    private boolean isValid = true;
+    private LocalDate createAt;
 }
