@@ -437,8 +437,11 @@ public class AdminController {
     }
 
     @GetMapping("/promotions")
-    public ResponseEntity<GenericResponse> getAllPromotions() {
-        return promotionService.getAllPromotions();
+    public ResponseEntity<GenericResponse> getAllPromotions(@RequestParam(defaultValue = "1") int index,
+                                                            @RequestParam(defaultValue = "10") int size,
+                                                            @RequestParam(defaultValue = "false") boolean isFixed,
+                                                            @RequestParam(required = false) String code) {
+        return promotionService.getAllPromotions(isFixed, code, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/promotionsFixed")
@@ -447,7 +450,7 @@ public class AdminController {
     }
 
     @PostMapping("/promotionsCode")
-    public ResponseEntity<GenericResponse> createPromotionCode(@RequestBody PromotionCodeReq promotionCodeReq) {
+    public ResponseEntity<GenericResponse> createPromotionCode(@Valid @RequestBody PromotionCodeReq promotionCodeReq) {
         return promotionService.createPromotionCode(promotionCodeReq);
     }
 
@@ -459,7 +462,7 @@ public class AdminController {
 
     @PutMapping("/promotionsCode/{id}")
     public ResponseEntity<GenericResponse> updatePromotionCode(@PathVariable String id,
-                                                           @RequestBody PromotionCodeReq promotionCodeReq) {
+                                                           @Valid @RequestBody PromotionCodeReq promotionCodeReq) {
         return promotionService.updatePromotionFixedCode(id, promotionCodeReq);
     }
 

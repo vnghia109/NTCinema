@@ -1,14 +1,12 @@
 package vn.iostar.NT_cinema.service;
 
-import de.jollyday.Holiday;
-import de.jollyday.HolidayManager;
-import de.jollyday.parameter.CalendarPartManagerParameter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.DiscountType;
-import vn.iostar.NT_cinema.dto.ApplyPromotion;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.PromotionCodeReq;
 import vn.iostar.NT_cinema.dto.PromotionFixedReq;
@@ -17,14 +15,8 @@ import vn.iostar.NT_cinema.repository.PromotionCodeRepository;
 import vn.iostar.NT_cinema.repository.PromotionFixedRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class PromotionService {
@@ -35,17 +27,50 @@ public class PromotionService {
     @Autowired
     UserRepository userRepository;
 
-    public ResponseEntity<GenericResponse> getAllPromotions() {
+    public ResponseEntity<GenericResponse> getAllPromotions(boolean isFixed, String code, Pageable pageable) {
         try {
-            List<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll();
+            if (isFixed) {
+                Page<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll(pageable);
+                Map<String, Object> map = new HashMap<>();
+                map.put("content", promotionFixeds.getContent());
+                map.put("pageNumber", promotionFixeds.getPageable().getPageNumber() + 1);
+                map.put("pageSize", promotionFixeds.getSize());
+                map.put("totalPages", promotionFixeds.getTotalPages());
+                map.put("totalElements", promotionFixeds.getTotalElements());
 
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Lấy danh sách khuyến mãi thành công!")
-                            .result(promotionFixeds)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
+                return ResponseEntity.ok(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Lấy danh sách khuyến mãi thành công!")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+            }else {
+                Page<PromotionCode> promotionCodes;
+                if (code != null) {
+                    promotionCodes = promotionCodeRepository.findAllByPromotionCode(code, pageable);
+                }else {
+                    promotionCodes = promotionCodeRepository.findAll(pageable);
+                }
+
+                Map<String, Object> map = new HashMap<>();
+                map.put("content", promotionCodes.getContent());
+                map.put("pageNumber", promotionCodes.getPageable().getPageNumber() + 1);
+                map.put("pageSize", promotionCodes.getSize());
+                map.put("totalPages", promotionCodes.getTotalPages());
+                map.put("totalElements", promotionCodes.getTotalElements());
+
+                return ResponseEntity.ok(
+                        GenericResponse.builder()
+                                .success(true)
+                                .message("Lấy danh sách khuyến mãi thành công!")
+                                .result(map)
+                                .statusCode(HttpStatus.OK.value())
+                                .build()
+                );
+            }
+
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
@@ -60,6 +85,42 @@ public class PromotionService {
     public ResponseEntity<GenericResponse> createPromotionFixed(PromotionFixedReq promotionFixedReq) {
         try {
             PromotionFixed promotionFixed = new PromotionFixed();
+            if (promotionFixedReq.getName() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Vui lòng nhập tên khuyến mãi!")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
+            if (promotionFixedReq.getDiscountType() == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Vui lòng chọn loại khuyến mãi!")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
+            if (promotionFixedReq.getDiscountValue() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Vui lòng nhập giá trị của khuyến mãi!")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
+            if(promotionFixedReq.getStartDate() == null){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Vui lòng chọn ngày bắt đầu của khuyến mãi!")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }
             promotionFixed.setName(promotionFixedReq.getName());
             promotionFixed.setDescription(promotionFixedReq.getDescription());
             promotionFixed.setDiscountType(DiscountType.valueOf(promotionFixedReq.getDiscountType()));
@@ -70,6 +131,7 @@ public class PromotionService {
             promotionFixed.setValidTimeFrameEnd(promotionFixedReq.getValidTimeFrameEnd());
             promotionFixed.setStartDate(promotionFixedReq.getStartDate());
             promotionFixed.setEndDate(promotionFixedReq.getEndDate());
+            promotionFixed.setCreateAt(LocalDate.now());
 
             PromotionFixed response = promotionFixedRepository.save(promotionFixed);
             return ResponseEntity.status(HttpStatus.OK)
@@ -169,26 +231,72 @@ public class PromotionService {
 
     public ResponseEntity<GenericResponse> createPromotionCode(PromotionCodeReq promotionCodeReq) {
         try {
-            PromotionCode promotionCode = new PromotionCode();
-            promotionCode.setName(promotionCodeReq.getName());
-            promotionCode.setDescription(promotionCodeReq.getDescription());
-            promotionCode.setDiscountType(DiscountType.valueOf(promotionCodeReq.getDiscountType()));
-            promotionCode.setDiscountValue(promotionCodeReq.getDiscountValue());
-            promotionCode.setPromotionCode(promotionCodeReq.getPromotionCode());
-            promotionCode.setMaxUsage(promotionCodeReq.getMaxUsage());
-            promotionCode.setUseForUserPerDay(promotionCodeReq.getUseForUserPerDay());
-            promotionCode.setStartDate(promotionCodeReq.getStartDate());
-            promotionCode.setEndDate(promotionCodeReq.getEndDate());
-            promotionCode.setCreateAt(LocalDate.now());
+            if (promotionCodeRepository.existsByPromotionCode(promotionCodeReq.getPromotionCode())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Mã khuyến mãi đã đưọc sử dụng!")
+                                .result(null)
+                                .statusCode(HttpStatus.BAD_REQUEST.value())
+                                .build());
+            }else {
+                if (promotionCodeReq.getName() == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(GenericResponse.builder()
+                                    .success(false)
+                                    .message("Vui lòng nhập tên khuyến mãi!")
+                                    .result(null)
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build());
+                }
+                if (promotionCodeReq.getDiscountType() == null){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(GenericResponse.builder()
+                                    .success(false)
+                                    .message("Vui lòng chọn loại khuyến mãi!")
+                                    .result(null)
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build());
+                }
+                if (promotionCodeReq.getDiscountValue() == null) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(GenericResponse.builder()
+                                    .success(false)
+                                    .message("Vui lòng nhập giá trị của khuyến mãi!")
+                                    .result(null)
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build());
+                }
+                if(promotionCodeReq.getStartDate() == null){
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(GenericResponse.builder()
+                                    .success(false)
+                                    .message("Vui lòng chọn ngày bắt đầu của khuyến mãi!")
+                                    .result(null)
+                                    .statusCode(HttpStatus.BAD_REQUEST.value())
+                                    .build());
+                }
+                PromotionCode promotionCode = new PromotionCode();
+                promotionCode.setName(promotionCodeReq.getName());
+                promotionCode.setDescription(promotionCodeReq.getDescription());
+                promotionCode.setDiscountType(DiscountType.valueOf(promotionCodeReq.getDiscountType()));
+                promotionCode.setDiscountValue(promotionCodeReq.getDiscountValue());
+                promotionCode.setPromotionCode(promotionCodeReq.getPromotionCode());
+                promotionCode.setMaxUsage(promotionCodeReq.getMaxUsage());
+                promotionCode.setUseForUserPerDay(promotionCodeReq.getUseForUserPerDay());
+                promotionCode.setStartDate(promotionCodeReq.getStartDate());
+                promotionCode.setEndDate(promotionCodeReq.getEndDate());
+                promotionCode.setCreateAt(LocalDate.now());
 
-            PromotionCode response = promotionCodeRepository.save(promotionCode);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Một khuyến mãi cố định đã được thêm!")
-                            .result(response)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
+                PromotionCode response = promotionCodeRepository.save(promotionCode);
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(GenericResponse.builder()
+                                .success(true)
+                                .message("Một khuyến mãi nhập code đã được thêm!")
+                                .result(response)
+                                .statusCode(HttpStatus.OK.value())
+                                .build());
+        }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()

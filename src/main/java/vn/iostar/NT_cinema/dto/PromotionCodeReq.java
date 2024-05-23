@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.dto;
 
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PromotionCodeReq {
+    @Size(min = 6, max = 8, message = "Mã phải dài từ 6 - 8 ký tự")
     private String promotionCode;
     private Integer maxUsage;
     private Integer useForUserPerDay;
