@@ -383,4 +383,42 @@ public class PromotionService {
                             .build());
         }
     }
+
+    public ResponseEntity<GenericResponse> getPromotion(String id) {
+        try {
+            Optional<PromotionCode> promotion = promotionCodeRepository.findById(id);
+            if (promotion.isPresent()) {
+                return ResponseEntity.status(HttpStatus.OK)
+                        .body(GenericResponse.builder()
+                                .success(true)
+                                .message("Lấy thông tin khuyến mãi thành công.")
+                                .result(promotion.get())
+                                .statusCode(HttpStatus.OK.value())
+                                .build());
+            } else {
+                Optional<PromotionFixed> promotionFixed = promotionFixedRepository.findById(id);
+                return promotionFixed.map(fixed -> ResponseEntity.status(HttpStatus.OK)
+                        .body(GenericResponse.builder()
+                                .success(true)
+                                .message("Lấy thông tin khuyến mãi thành công.")
+                                .result(fixed)
+                                .statusCode(HttpStatus.OK.value())
+                                .build())).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Khuyến mái không tồn tại!")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build()));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Lỗi máy chủ.")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
 }

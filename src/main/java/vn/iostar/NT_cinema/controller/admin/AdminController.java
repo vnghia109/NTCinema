@@ -444,6 +444,11 @@ public class AdminController {
         return promotionService.getAllPromotions(isFixed, code, PageRequest.of(index-1, size));
     }
 
+    @GetMapping("/promotions/{id}")
+    public ResponseEntity<GenericResponse> getPromotion(@PathVariable String id) {
+        return promotionService.getPromotion(id);
+    }
+
     @PostMapping("/promotionsFixed")
     public ResponseEntity<GenericResponse> createPromotionFixed(@RequestBody PromotionFixedReq promotionFixedReq) {
         return promotionService.createPromotionFixed(promotionFixedReq);

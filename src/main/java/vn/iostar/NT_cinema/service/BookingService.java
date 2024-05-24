@@ -744,6 +744,9 @@ public class BookingService {
                 staffStatsRepository.save(new StaffStats(staff.get(), BigDecimal.valueOf(booking.getTotal()), 1));
             }
 
+            if (bookingRes.getUserId() != null) {
+                sendEmailBookingSuccess(bookingRes);
+            }
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
