@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -39,6 +40,10 @@ public class VnPayController {
     FoodInventoryRepository foodInventoryRepository;
     @Autowired
     FoodRepository foodRepository;
+    @Autowired
+    PromotionCodeRepository promotionCodeRepository;
+    @Autowired
+    PromotionCodeUsageRepository promotionCodeUsageRepository;
 
     @GetMapping("/payment")
     public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId) throws UnsupportedEncodingException {
@@ -53,7 +58,7 @@ public class VnPayController {
                             .build());
         }
         String orderType = "other";
-        long amount = booking.get().getTotal()*100;
+        long amount = booking.get().getTotal().intValue()* 100L;
         String bankCode = "NCB";
 
         String vnp_TxnRef = VnPayConfig.getRandomNumber(8);
@@ -154,10 +159,20 @@ public class VnPayController {
                     food.setQuantity(food.getQuantity() - item.getCount());
                     foodRepository.save(food);
                     Cinema cinema = booking.get().getSeats().get(0).getShowTime().getRoom().getCinema();
-                    FoodInventory foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema).get();
-                    foodInventory.setQuantity(foodInventory.getQuantity() - item.getCount());
-                    foodInventory.setUpdateAt(new Date());
-                    foodInventoryRepository.save(foodInventory);
+                    Optional<FoodInventory> foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema);
+                    if (foodInventory.isPresent()) {
+                        foodInventory.get().setQuantity(foodInventory.get().getQuantity() - item.getCount());
+                        foodInventory.get().setUpdateAt(new Date());
+                        foodInventoryRepository.save(foodInventory.get());
+                    }
+                }
+                Optional<PromotionCode> code = promotionCodeRepository.findByPromotionCode(booking.get().getPromotionCode());
+                if (code.isPresent()) {
+                    PromotionCodeUsage usage = new PromotionCodeUsage();
+                    usage.setUserId(booking.get().getUserId());
+                    usage.setPromotionCodeId(code.get().getPromotionCodeId());
+                    usage.setDateUsed(LocalDate.now());
+                    promotionCodeUsageRepository.save(usage);
                 }
                 response.sendRedirect("http://localhost:5173/user/payment-success");
             }

@@ -4,6 +4,7 @@ import lombok.*;
 import org.springframework.scheduling.support.SimpleTriggerContext;
 import vn.iostar.NT_cinema.constant.TicketStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -19,7 +20,7 @@ public class HistoryMovieRes {
     private String cinemaName;
     private LocalDate date;
     private String startTime;
-    private int price;
+    private BigDecimal price;
     private Date createAt;
     private TicketStatus ticketStatus;
 }

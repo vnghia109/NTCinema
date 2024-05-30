@@ -28,6 +28,8 @@ public class PromotionCode {
     private String description;
     private DiscountType discountType;
     private BigDecimal discountValue;
+    private BigDecimal maxDiscountAmount;
+    private BigDecimal minOrderValue;
     private LocalDate startDate;
     private LocalDate endDate;
     private boolean isDeleted = false;

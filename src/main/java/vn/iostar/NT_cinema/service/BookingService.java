@@ -2,11 +2,15 @@ package vn.iostar.NT_cinema.service;
 
 import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletResponse;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -15,6 +19,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import vn.iostar.NT_cinema.constant.PriceType;
 import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
@@ -69,6 +74,14 @@ public class BookingService {
     StaffRepository staffRepository;
     @Autowired
     StaffStatsRepository staffStatsRepository;
+    @Autowired
+    PromotionService promotionService;
+    @Autowired
+    PromotionCodeRepository promotionCodeRepository;
+    @Autowired
+    PromotionFixedRepository promotionFixedRepository;
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     public void handleBookingChange(Booking booking) {
         if(booking.isPayment() && !booking.getTicketStatus().equals(TicketStatus.CANCELLED)) {
@@ -76,12 +89,12 @@ public class BookingService {
             if (dailyStats.isPresent()) {
                 dailyStats.get().setTotalOfTickets(dailyStats.get().getTotalOfTickets() + booking.getSeats().size());
                 dailyStats.get().setTotalOfBookings(dailyStats.get().getTotalOfBookings() + 1);
-                dailyStats.get().setRevenue(dailyStats.get().getRevenue().add(BigDecimal.valueOf(booking.getTotal())));
+                dailyStats.get().setRevenue(dailyStats.get().getRevenue().add(booking.getTotal()));
                 dailyStatsRepository.save(dailyStats.get());
             }else {
                 dailyStatsRepository.save(new DailyStats(booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(),
                         booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
-                        BigDecimal.valueOf(booking.getTotal()), booking.getSeats().size(), 1));
+                        booking.getTotal(), booking.getSeats().size(), 1));
             }
 
             LocalDate date = booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1);
@@ -89,24 +102,24 @@ public class BookingService {
             if (monthlyStats.isPresent()) {
                 monthlyStats.get().setTotalOfTickets(monthlyStats.get().getTotalOfTickets() + booking.getSeats().size());
                 monthlyStats.get().setTotalOfBookings(monthlyStats.get().getTotalOfBookings() + 1);
-                monthlyStats.get().setRevenue(monthlyStats.get().getRevenue().add(BigDecimal.valueOf(booking.getTotal())));
+                monthlyStats.get().setRevenue(monthlyStats.get().getRevenue().add(booking.getTotal()));
                 monthlyStatsRepository.save(monthlyStats.get());
             }else {
                 monthlyStatsRepository.save(new MonthlyStats(booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1),
                         booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
-                        BigDecimal.valueOf(booking.getTotal()), booking.getSeats().size(), 1));
+                        booking.getTotal(), booking.getSeats().size(), 1));
             }
 
             Optional<User> user = userRepository.findById(booking.getUserId());
             if (user.isPresent()) {
                 Optional<UserStats> userStats = userStatsRepository.findByUser_UserId(booking.getUserId());
                 if (userStats.isPresent()) {
-                    userStats.get().setTotalSpent(userStats.get().getTotalSpent().add(BigDecimal.valueOf(booking.getTotal())));
+                    userStats.get().setTotalSpent(userStats.get().getTotalSpent().add(booking.getTotal()));
                     userStats.get().setTotalOfTickets(userStats.get().getTotalOfTickets() + booking.getSeats().size());
                     userStats.get().setTotalOfBookings(userStats.get().getTotalOfBookings() + 1);
                     userStatsRepository.save(userStats.get());
                 }else {
-                    userStatsRepository.save(new UserStats(user.get(), BigDecimal.valueOf(booking.getTotal()), 1, booking.getSeats().size()));
+                    userStatsRepository.save(new UserStats(user.get(), booking.getTotal(), 1, booking.getSeats().size()));
                 }
             }
 
@@ -115,28 +128,21 @@ public class BookingService {
                     booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1)
             );
             if (financeStats.isPresent()) {
-                financeStats.get().setTotalRevenue(financeStats.get().getTotalRevenue().add(BigDecimal.valueOf(booking.getTotal())));
-                financeStats.get().setTicketRevenue(financeStats.get().getTicketRevenue().add(BigDecimal.valueOf((long) booking.getSeats().size() *booking.getSeats().get(0).getPrice().getPrice())));
-                long total = 0;
-                for (FoodWithCount item : booking.getFoods()) {
-                    total += (long) item.getFood().getPrice() * item.getCount();
-                }
-                financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().add(BigDecimal.valueOf(total)));
+                financeStats.get().setTotalRevenue(financeStats.get().getTotalRevenue().add(booking.getSeatTotalPrice().add(booking.getFoodTotalPrice())));
+                financeStats.get().setTicketRevenue(financeStats.get().getTicketRevenue().add(booking.getSeatTotalPrice()));
+                financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().add(booking.getFoodTotalPrice()));
+                financeStats.get().setOtherExpense(financeStats.get().getOtherExpense().add(booking.getDiscount()));
                 financeStats.get().setTotalOfBooking(financeStats.get().getTotalOfBooking() + 1);
                 financeStats.get().calculateProfit();
                 cinemaFinanceStatsRepository.save(financeStats.get());
             }else {
-                long total = 0;
-                for (FoodWithCount item : booking.getFoods()) {
-                    total += (long) item.getFood().getPrice() * item.getCount();
-                }
                 CinemaFinanceStats cinemaFinanceStats = new CinemaFinanceStats(
                         booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1),
                         booking.getSeats().get(0).getShowTime().getRoom().getCinema(),
-                        BigDecimal.valueOf(booking.getTotal()),
-                        BigDecimal.valueOf((long) booking.getSeats().size() *booking.getSeats().get(0).getPrice().getPrice()),
-                        BigDecimal.valueOf(total),
-                        1);
+                        booking.getSeatTotalPrice().add(booking.getFoodTotalPrice()),
+                        booking.getSeatTotalPrice(),
+                        booking.getFoodTotalPrice(),
+                        1, booking.getDiscount());
                 cinemaFinanceStats.calculateProfit();
                 cinemaFinanceStatsRepository.save(cinemaFinanceStats);
             }
@@ -146,7 +152,7 @@ public class BookingService {
             if (dailyStats.isPresent()) {
                 dailyStats.get().setTotalOfTickets(dailyStats.get().getTotalOfTickets() - booking.getSeats().size());
                 dailyStats.get().setTotalOfBookings(dailyStats.get().getTotalOfBookings() - 1);
-                dailyStats.get().setRevenue(dailyStats.get().getRevenue().subtract(BigDecimal.valueOf(booking.getTotal())));
+                dailyStats.get().setRevenue(dailyStats.get().getRevenue().subtract(booking.getTotal()));
                 dailyStatsRepository.save(dailyStats.get());
             }
             LocalDate date = booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1);
@@ -154,13 +160,13 @@ public class BookingService {
             if (monthlyStats.isPresent()) {
                 monthlyStats.get().setTotalOfTickets(monthlyStats.get().getTotalOfTickets() - booking.getSeats().size());
                 monthlyStats.get().setTotalOfBookings(monthlyStats.get().getTotalOfBookings() - 1);
-                monthlyStats.get().setRevenue(monthlyStats.get().getRevenue().subtract(BigDecimal.valueOf(booking.getTotal())));
+                monthlyStats.get().setRevenue(monthlyStats.get().getRevenue().subtract(booking.getTotal()));
                 monthlyStatsRepository.save(monthlyStats.get());
             }
 
             Optional<UserStats> userStats = userStatsRepository.findByUser_UserId(booking.getUserId());
             if (userStats.isPresent()) {
-                userStats.get().setTotalSpent(userStats.get().getTotalSpent().subtract(BigDecimal.valueOf(booking.getTotal())));
+                userStats.get().setTotalSpent(userStats.get().getTotalSpent().subtract(booking.getTotal()));
                 userStats.get().setTotalOfTickets(userStats.get().getTotalOfTickets() - booking.getSeats().size());
                 userStats.get().setTotalOfBookings(userStats.get().getTotalOfBookings() - 1);
                 userStatsRepository.save(userStats.get());
@@ -171,59 +177,50 @@ public class BookingService {
                     booking.getCreateAt().toInstant().atZone(ZoneId.systemDefault()).toLocalDate().withDayOfMonth(1)
             );
             if (financeStats.isPresent()) {
-                financeStats.get().setTotalRevenue(financeStats.get().getTotalRevenue().subtract(BigDecimal.valueOf(booking.getTotal())));
-                financeStats.get().setTicketRevenue(financeStats.get().getTicketRevenue().subtract(BigDecimal.valueOf((long) booking.getSeats().size() *booking.getSeats().get(0).getPrice().getPrice())));
-                long total = 0;
-                for (FoodWithCount item : booking.getFoods()) {
-                    total += (long) item.getFood().getPrice() * item.getCount();
-                }
-                financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().subtract(BigDecimal.valueOf(total)));
+                financeStats.get().setTotalRevenue(financeStats.get().getTotalRevenue().subtract(booking.getSeatTotalPrice().add(booking.getFoodTotalPrice())));
+                financeStats.get().setTicketRevenue(financeStats.get().getTicketRevenue().subtract(booking.getSeatTotalPrice()));
+                financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().subtract(booking.getFoodTotalPrice()));
+                financeStats.get().setOtherExpense(financeStats.get().getOtherExpense().subtract(booking.getDiscount()));
                 financeStats.get().calculateProfit();
                 cinemaFinanceStatsRepository.save(financeStats.get());
             }
         }
     }
 
-    public ResponseEntity<GenericResponse> bookTicket(String userId, BookReq bookReq) {
+    public ResponseEntity<GenericResponse> bookTicket(String bookingId) {
         try {
-            List<String> seatIds = bookReq.getSeatIds();
-            List<String> foodIds = bookReq.getFoodIds();
-            List<Seat> seats = new ArrayList<>();
-            for (String item: seatIds) {
-                Optional<Seat> seat = seatRepository.findById(item);
-                if (seat.isPresent()){
-                    if (!seat.get().isStatus()){
-                        return ResponseEntity.status(HttpStatus.CONFLICT)
-                                .body(GenericResponse.builder()
-                                        .success(false)
-                                        .message("Ghế đã được đặt trước rồi!")
-                                        .result(seat.get())
-                                        .statusCode(HttpStatus.CONFLICT.value())
-                                        .build());
-                    }
-                    seat.get().setStatus(false);
-                    seatRepository.save(seat.get());
-                    seats.add(seat.get());
-                }
+            Optional<Booking> booking = bookingRepository.findById(bookingId);
+            if (booking.isEmpty()){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(GenericResponse.builder()
+                                .success(false)
+                                .message("Quý khách vui lòng chọn lại ghế và đồ ăn!")
+                                .result(null)
+                                .statusCode(HttpStatus.NOT_FOUND.value())
+                                .build());
             }
-            List<FoodWithCount> foods = convertToFoodWithCountList(foodIds);
-
-            Booking booking = new Booking();
-            booking.setUserId(userId);
-            booking.setShowtimeId(seats.get(0).getShowTime().getShowTimeId());
-            booking.setCreateAt(new Date());
-            booking.setSeats(seats);
-            booking.setFoods(foods);
-            booking.setTotal(totalBooking(seats, foods));
-            booking.setTicketStatus(TicketStatus.UNCONFIRMED);
-
-            Booking bookingRes = bookingRepository.save(booking);
+            List<Seat> seats = booking.get().getSeats();
+            for (Seat item: seats) {
+                if (!item.isStatus()){
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(GenericResponse.builder()
+                                    .success(false)
+                                    .message("Ghế bạn muốn đặt đã bị người khác nhanh tay hơn đặt trước. Vui lòng chọn lại ghế khác!")
+                                    .result(item)
+                                    .statusCode(HttpStatus.CONFLICT.value())
+                                    .build());
+                }
+                item.setStatus(false);
+                seatRepository.save(item);
+            }
+            booking.get().setTicketStatus(TicketStatus.UNCONFIRMED);
+            bookingRepository.save(booking.get());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Đặt vé thành công. Vui lòng thanh toán!!")
-                            .result(bookingRes)
+                            .result(booking)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -237,7 +234,7 @@ public class BookingService {
         }
     }
 
-    public ResponseEntity<GenericResponse> bookingInfo(BookReq bookReq) {
+    public ResponseEntity<GenericResponse> bookingInfo(String userId, BookReq bookReq) {
         try {
             List<String> seatIds = bookReq.getSeatIds();
             List<String> foodIds = bookReq.getFoodIds();
@@ -258,18 +255,59 @@ public class BookingService {
                 }
             }
             List<FoodWithCount> foods = convertToFoodWithCountList(foodIds);
-
-            BookingInfoRes booking = new BookingInfoRes();
+            Booking booking;
+            Criteria criteria = Criteria.where("isPayment").is(false);
+            criteria.and("userId").is(userId)
+                    .and("showtimeId").is(seats.get(0).getShowTime().getShowTimeId());
+            Query query = new Query(criteria);
+            List<Booking> bookingList = mongoTemplate.find(query, Booking.class);
+            if (!bookingList.isEmpty())
+                booking = bookingList.get(0);
+            else
+                booking = new Booking();
+            booking.setUserId(userId);
+            booking.setShowtimeId(seats.get(0).getShowTime().getShowTimeId());
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
             booking.setFoods(foods);
-            booking.setTotal(totalBooking(seats, foods));
-
+            totalBooking(booking);
+            if (bookReq.getCode() != null && !bookReq.getCode().isEmpty()){
+                Optional<PromotionCode> promotionCode = promotionCodeRepository.findByPromotionCode(bookReq.getCode());
+                if (promotionCode.isEmpty()){
+                    Booking bookingRes = bookingRepository.save(booking);
+                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message("Mã khuyến mãi không tồn tại!")
+                                    .result(bookingInfoRes)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                }
+                if (!promotionService.checkPromotionCode(promotionCode.get(), booking)){
+                    Booking bookingRes = bookingRepository.save(booking);
+                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message("Mã khuyến mãi đã quá hạn hoặc hết lượt sử dụng!")
+                                    .result(bookingInfoRes)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                }else {
+                    BigDecimal totalAfDiscount = promotionService.calculateTotal(booking, promotionCode.get());
+                    booking.setDiscount(booking.getTotal().subtract(totalAfDiscount));
+                    booking.setTotal(totalAfDiscount);
+                    booking.setPromotionCode(bookReq.getCode());
+                }
+            }
+            Booking bookingRes = bookingRepository.save(booking);
+            BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Lấy thông tin đặt lịch thành công!")
-                            .result(booking)
+                            .result(bookingInfoRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -339,15 +377,32 @@ public class BookingService {
         return foodWithCounts;
     }
 
-    public int totalBooking(List<Seat> seats, List<FoodWithCount> foods){
-        int total = 0;
-        for (Seat item : seats) {
-            total += item.getPrice().getPrice();
+    public void totalBooking(Booking booking) {
+        BigDecimal total, seatTotalPrice = BigDecimal.ZERO, foodTotalPrice = BigDecimal.ZERO;
+        BigDecimal seatPrice = BigDecimal.ZERO;
+        List<PromotionFixed> promotionFixedList = promotionService.listPromotionFixedAvailable(booking);
+        for (Seat item : booking.getSeats()) {
+            seatPrice = BigDecimal.valueOf(item.getPrice().getPrice());
+            for (PromotionFixed promotion : promotionFixedList) {
+                if (item.getPrice().getType().equals(PriceType.COUPLE) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
+                    seatPrice = promotion.getCoupleValue();
+                } else if (item.getPrice().getType().equals(PriceType.VIP) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
+                    seatPrice = promotion.getVipValue();
+                } else if (item.getPrice().getType().equals(PriceType.NORMAL) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
+                    seatPrice = promotion.getNormalValue();
+                }else {
+                    break;
+                }
+            }
+            seatTotalPrice = seatTotalPrice.add(seatPrice);
         }
-        for (FoodWithCount item : foods) {
-            total += item.getFood().getPrice() * item.getCount();
+        for (FoodWithCount item : booking.getFoods()) {
+            foodTotalPrice = foodTotalPrice.add(BigDecimal.valueOf((long) item.getFood().getPrice() * item.getCount()));
         }
-        return total;
+        total = seatTotalPrice.add(foodTotalPrice);
+        booking.setSeatTotalPrice(seatTotalPrice);
+        booking.setFoodTotalPrice(foodTotalPrice);
+        booking.setTotal(total);
     }
 
     public void deleteBookingNotPay(){
@@ -435,38 +490,6 @@ public class BookingService {
                             .success(true)
                             .message("Lấy chi tiết vé thành công!")
                             .result(ticket)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
-    public int calculateTotalRevenue(List<Booking> paidBookings) {
-        int totalRevenue = 0;
-
-        for (Booking booking : paidBookings) {
-            totalRevenue += booking.getTotal();
-        }
-
-        return totalRevenue;
-    }
-
-    public ResponseEntity<?> getBookingsInDateRange(Date startDate, Date endDate) {
-        try {
-            int total = calculateTotalRevenue(bookingRepository.findAllPaidBookingsInDateRange(startDate, endDate));
-
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Lấy tổng doanh thu thành công!")
-                            .result(total)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){
@@ -728,7 +751,7 @@ public class BookingService {
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
             booking.setFoods(foods);
-            booking.setTotal(totalBooking(seats, foods));
+            totalBooking(booking);
             booking.setPayment(true);
             booking.setTicketStatus(TicketStatus.CONFIRMED);
 
@@ -737,11 +760,11 @@ public class BookingService {
             handleBookingChange(bookingRes);
             Optional<StaffStats> staffStats = staffStatsRepository.findByStaff(staff.get());
             if (staffStats.isPresent()) {
-                staffStats.get().setRevenue(staffStats.get().getRevenue().add(BigDecimal.valueOf(booking.getTotal())));
+                staffStats.get().setRevenue(staffStats.get().getRevenue().add(booking.getTotal()));
                 staffStats.get().setTotalOfTickets(staffStats.get().getTotalOfTickets() + booking.getSeats().size());
                 staffStatsRepository.save(staffStats.get());
             }else {
-                staffStatsRepository.save(new StaffStats(staff.get(), BigDecimal.valueOf(booking.getTotal()), 1));
+                staffStatsRepository.save(new StaffStats(staff.get(), booking.getTotal(), 1));
             }
 
             if (bookingRes.getUserId() != null) {

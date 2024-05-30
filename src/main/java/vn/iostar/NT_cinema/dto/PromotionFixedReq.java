@@ -17,8 +17,9 @@ import java.time.LocalTime;
 public class PromotionFixedReq {
     private String name;
     private String description;
-    private String discountType;
-    private BigDecimal discountValue;
+    private BigDecimal coupleValue;
+    private BigDecimal vipValue;
+    private BigDecimal normalValue;
     private Integer validDayOfWeek;
     private Integer ageLimit;
     private LocalTime validTimeFrameStart;

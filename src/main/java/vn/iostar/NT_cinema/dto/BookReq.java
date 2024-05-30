@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class BookReq {
+    String code;
     List<String> seatIds;
     List<String> foodIds;
 }

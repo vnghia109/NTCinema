@@ -22,8 +22,9 @@ public class PromotionFixed {
     private String promotionFixedId;
     private String name;
     private String description;
-    private DiscountType discountType;
-    private BigDecimal discountValue;
+    private BigDecimal coupleValue;
+    private BigDecimal vipValue;
+    private BigDecimal normalValue;
     private Integer validDayOfWeek;
     private Integer ageLimit;
     private LocalTime validTimeFrameStart;

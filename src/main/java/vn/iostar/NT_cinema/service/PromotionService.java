@@ -3,6 +3,9 @@ package vn.iostar.NT_cinema.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -12,10 +15,14 @@ import vn.iostar.NT_cinema.dto.PromotionCodeReq;
 import vn.iostar.NT_cinema.dto.PromotionFixedReq;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.PromotionCodeRepository;
+import vn.iostar.NT_cinema.repository.PromotionCodeUsageRepository;
 import vn.iostar.NT_cinema.repository.PromotionFixedRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -26,6 +33,10 @@ public class PromotionService {
     PromotionCodeRepository promotionCodeRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    MongoTemplate mongoTemplate;
+    @Autowired
+    PromotionCodeUsageRepository promotionCodeUsageRepository;
 
     public ResponseEntity<GenericResponse> getAllPromotions(boolean isFixed, String code, Pageable pageable) {
         try {
@@ -94,16 +105,7 @@ public class PromotionService {
                                 .statusCode(HttpStatus.BAD_REQUEST.value())
                                 .build());
             }
-            if (promotionFixedReq.getDiscountType() == null){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Vui lòng chọn loại khuyến mãi!")
-                                .result(null)
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .build());
-            }
-            if (promotionFixedReq.getDiscountValue() == null) {
+            if (promotionFixedReq.getNormalValue() == null || promotionFixedReq.getVipValue() == null || promotionFixedReq.getCoupleValue() == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(GenericResponse.builder()
                                 .success(false)
@@ -123,8 +125,9 @@ public class PromotionService {
             }
             promotionFixed.setName(promotionFixedReq.getName());
             promotionFixed.setDescription(promotionFixedReq.getDescription());
-            promotionFixed.setDiscountType(DiscountType.valueOf(promotionFixedReq.getDiscountType()));
-            promotionFixed.setDiscountValue(promotionFixedReq.getDiscountValue());
+            promotionFixed.setNormalValue(promotionFixedReq.getNormalValue());
+            promotionFixed.setVipValue(promotionFixedReq.getVipValue());
+            promotionFixed.setCoupleValue(promotionFixedReq.getCoupleValue());
             promotionFixed.setValidDayOfWeek(promotionFixedReq.getValidDayOfWeek());
             promotionFixed.setAgeLimit(promotionFixedReq.getAgeLimit());
             promotionFixed.setValidTimeFrameStart(promotionFixedReq.getValidTimeFrameStart());
@@ -158,8 +161,9 @@ public class PromotionService {
             if (promotion.isPresent()) {
                 promotion.get().setName(promotionFixedReq.getName());
                 promotion.get().setDescription(promotionFixedReq.getDescription());
-                promotion.get().setDiscountType(DiscountType.valueOf(promotionFixedReq.getDiscountType()));
-                promotion.get().setDiscountValue(promotionFixedReq.getDiscountValue());
+                promotion.get().setNormalValue(promotionFixedReq.getNormalValue());
+                promotion.get().setVipValue(promotionFixedReq.getVipValue());
+                promotion.get().setCoupleValue(promotionFixedReq.getCoupleValue());
                 promotion.get().setValidDayOfWeek(promotionFixedReq.getValidDayOfWeek());
                 promotion.get().setAgeLimit(promotionFixedReq.getAgeLimit());
                 promotion.get().setValidTimeFrameStart(promotionFixedReq.getValidTimeFrameStart());
@@ -285,6 +289,8 @@ public class PromotionService {
                 promotionCode.setMaxUsage(promotionCodeReq.getMaxUsage());
                 promotionCode.setUseForUserPerDay(promotionCodeReq.getUseForUserPerDay());
                 promotionCode.setStartDate(promotionCodeReq.getStartDate());
+                promotionCode.setMaxDiscountAmount(promotionCodeReq.getMaxDiscountAmount());
+                promotionCode.setMinOrderValue(promotionCodeReq.getMinOrderValue());
                 promotionCode.setEndDate(promotionCodeReq.getEndDate());
                 promotionCode.setCreateAt(LocalDate.now());
 
@@ -308,7 +314,7 @@ public class PromotionService {
         }
     }
 
-    public ResponseEntity<GenericResponse> updatePromotionFixedCode(String id, PromotionCodeReq promotionCodeReq) {
+    public ResponseEntity<GenericResponse> updatePromotionCode(String id, PromotionCodeReq promotionCodeReq) {
         try {
             Optional<PromotionCode> promotion = promotionCodeRepository.findById(id);
             if (promotion.isPresent()) {
@@ -319,6 +325,8 @@ public class PromotionService {
                 promotion.get().setPromotionCode(promotionCodeReq.getPromotionCode());
                 promotion.get().setMaxUsage(promotionCodeReq.getMaxUsage());
                 promotion.get().setUseForUserPerDay(promotionCodeReq.getUseForUserPerDay());
+                promotion.get().setMaxDiscountAmount(promotionCodeReq.getMaxDiscountAmount());
+                promotion.get().setMinOrderValue(promotionCodeReq.getMinOrderValue());
                 promotion.get().setStartDate(promotionCodeReq.getStartDate());
                 promotion.get().setEndDate(promotionCodeReq.getEndDate());
 
@@ -411,6 +419,92 @@ public class PromotionService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build()));
             }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result("Lỗi máy chủ.")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public List<PromotionFixed> listPromotionFixedAvailable(Booking booking) {
+        Criteria criteria = Criteria.where("isDeleted").is(false)
+                .and("isValid").is(true);
+        criteria.andOperator(
+                Criteria.where("startDate").lte(booking.getSeats().get(0).getSchedule().getDate()),
+                Criteria.where("endDate").gte(booking.getSeats().get(0).getSchedule().getDate())
+        );
+        Query query = Query.query(criteria);
+        List<PromotionFixed> promotionFixedList = mongoTemplate.find(query, PromotionFixed.class);
+        promotionFixedList.removeIf(item -> !checkPromotionFixed(item, booking));
+        return promotionFixedList;
+    }
+
+    public boolean checkPromotionFixed(PromotionFixed promotion, Booking booking) {
+        if (promotion.getValidDayOfWeek() != null && promotion.getValidDayOfWeek() != booking.getSeats().get(0).getSchedule().getDate().getDayOfWeek().getValue()) {
+            return false;
+        }
+        LocalTime localTime = booking.getSeats().get(0).getSchedule().getStartTime();
+        if (promotion.getValidTimeFrameStart() != null && promotion.getValidTimeFrameEnd() != null) {
+            return !localTime.isBefore(promotion.getValidTimeFrameStart()) && !localTime.isAfter(promotion.getValidTimeFrameEnd());
+        }
+        if (promotion.getAgeLimit() != null && booking.getUserId() != null) {
+            return promotion.getAgeLimit() >= getUserAge(booking.getUserId());
+        }
+        return true;
+    }
+
+    public int getUserAge(String userId) {
+        User user = userRepository.findById(userId).get();
+        LocalDate date = user.getDob().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        return LocalDate.now().getYear() - date.getYear();
+    }
+
+    public boolean checkPromotionCode(PromotionCode promotion, Booking booking) {
+        if (promotion.getMaxUsage() <= 0) {
+            return false;
+        }
+        if (promotion.getStartDate().isAfter(LocalDate.now()) || promotion.getEndDate().isBefore(LocalDate.now())) {
+            return false;
+        }
+        if (promotion.getMinOrderValue().compareTo(booking.getTotal()) > 0) {
+            return false;
+        }
+        List<PromotionCodeUsage> promotionCodeUsages = promotionCodeUsageRepository.findAllByUserIdAndPromotionCodeIdAndDateUsed(booking.getUserId(), promotion.getPromotionCodeId(), LocalDate.now());
+        return promotion.getUseForUserPerDay() > promotionCodeUsages.size();
+    }
+
+    public BigDecimal calculateTotal(Booking booking, PromotionCode promotion) {
+        BigDecimal total = booking.getTotal();
+        if (promotion.getDiscountType().equals(DiscountType.FIXED_AMOUNT)){
+            total = total.subtract(promotion.getDiscountValue());
+        }
+        if (promotion.getDiscountType().equals(DiscountType.PERCENTAGE)){
+            if (total.multiply(promotion.getDiscountValue()).compareTo(promotion.getMaxDiscountAmount()) > 0){
+                total = total.subtract(promotion.getMaxDiscountAmount());
+            }else
+                total = total.subtract(total.multiply(promotion.getDiscountValue()));
+        }
+        return total;
+    }
+
+    public ResponseEntity<GenericResponse> createPromotionCodeUsage() {
+        try {
+            PromotionCodeUsage usage = new PromotionCodeUsage();
+            usage.setPromotionCodeId("1");
+            usage.setUserId("1");
+            usage.setDateUsed(LocalDate.now());
+            promotionCodeUsageRepository.save(usage);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Đã tạo đơn đặt vé!")
+                            .result(null)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()

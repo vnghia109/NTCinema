@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.FoodWithCount;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -30,9 +31,15 @@ public class Booking {
 
     private List<FoodWithCount> foods;
 
-    private List<PromotionFixed> promotionFixes;
+    private BigDecimal discount = BigDecimal.ZERO;
 
-    private int total;
+    private String promotionCode;
+
+    private BigDecimal seatTotalPrice;
+
+    private BigDecimal foodTotalPrice;
+
+    private BigDecimal total;
 
     private TicketStatus ticketStatus;
 }

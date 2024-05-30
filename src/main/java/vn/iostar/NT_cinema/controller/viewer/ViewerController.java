@@ -48,17 +48,17 @@ public class ViewerController {
     }
 
     @PostMapping("/book")
-    public ResponseEntity<GenericResponse> bookTicket(@RequestHeader("Authorization") String authorizationHeader,
-                                                      @RequestBody BookReq bookReq){
-        String userId = jwtTokenProvider.getUserIdFromJwt(
-                authorizationHeader.substring(7)
-        );
-        return bookingService.bookTicket(userId, bookReq);
+    public ResponseEntity<GenericResponse> bookTicket(@RequestParam("bookingId") String bookingId){
+        return bookingService.bookTicket(bookingId);
     }
 
     @PostMapping("/book-info")
-    public ResponseEntity<GenericResponse> bookingInfo(@RequestBody BookReq bookReq){
-        return bookingService.bookingInfo(bookReq);
+    public ResponseEntity<GenericResponse> bookingInfo(@RequestHeader("Authorization") String authorizationHeader,
+                                                       @RequestBody BookReq bookReq){
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        return bookingService.bookingInfo(userId, bookReq);
     }
 
     @GetMapping("/seats/booked")

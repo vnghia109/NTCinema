@@ -468,7 +468,7 @@ public class AdminController {
     @PutMapping("/promotionsCode/{id}")
     public ResponseEntity<GenericResponse> updatePromotionCode(@PathVariable String id,
                                                            @Valid @RequestBody PromotionCodeReq promotionCodeReq) {
-        return promotionService.updatePromotionFixedCode(id, promotionCodeReq);
+        return promotionService.updatePromotionCode(id, promotionCodeReq);
     }
 
     @PatchMapping("/promotionsFixed/{id}")

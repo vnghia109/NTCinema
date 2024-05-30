@@ -22,6 +22,8 @@ public class PromotionCodeReq {
     private String description;
     private String discountType;
     private BigDecimal discountValue;
+    private BigDecimal maxDiscountAmount;
+    private BigDecimal minOrderValue;
     private LocalDate startDate;
     private LocalDate endDate;
 }
