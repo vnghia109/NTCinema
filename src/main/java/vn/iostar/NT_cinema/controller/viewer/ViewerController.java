@@ -2,23 +2,17 @@ package vn.iostar.NT_cinema.controller.viewer;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
+import vn.iostar.NT_cinema.entity.UserTokenFCM;
+import vn.iostar.NT_cinema.repository.UserTokenRepository;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.*;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -41,6 +35,8 @@ public class ViewerController {
     ReviewService reviewService;
     @Autowired
     MovieService movieService;
+    @Autowired
+    UserTokenRepository userTokenRepository;
 
     @PostMapping("/selectSeat/{showTimeId}")
     public ResponseEntity<GenericResponse> checkSeat(@PathVariable("showTimeId") String showTimeId, @RequestBody List<SeatReq> seatReqList){
@@ -126,5 +122,13 @@ public class ViewerController {
                 authorizationHeader.substring(7)
         );
         return bookingService.getTicketCanceled(userId);
+    }
+
+    @PostMapping("/save-token")
+    public void saveToken(@RequestBody UserTokenReq tokenRequest) {
+        UserTokenFCM userTokenFCM = new UserTokenFCM();
+        userTokenFCM.setUserId(tokenRequest.getUserId());
+        userTokenFCM.setToken(tokenRequest.getToken());
+        userTokenRepository.save(userTokenFCM);
     }
 }

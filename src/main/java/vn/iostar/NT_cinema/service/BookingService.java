@@ -270,6 +270,8 @@ public class BookingService {
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
             booking.setFoods(foods);
+            booking.setDiscount(BigDecimal.ZERO);
+            booking.setPromotionCode(null);
             totalBooking(booking);
             if (bookReq.getCode() != null && !bookReq.getCode().isEmpty()){
                 Optional<PromotionCode> promotionCode = promotionCodeRepository.findByPromotionCode(bookReq.getCode());
@@ -284,13 +286,14 @@ public class BookingService {
                                     .statusCode(HttpStatus.OK.value())
                                     .build());
                 }
-                if (!promotionService.checkPromotionCode(promotionCode.get(), booking)){
+                Map<Boolean, String> map = promotionService.checkPromotionCode(promotionCode.get(), booking);
+                if (map.containsKey(false)){
                     Booking bookingRes = bookingRepository.save(booking);
                     BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
                     return ResponseEntity.status(HttpStatus.OK)
                             .body(GenericResponse.builder()
                                     .success(true)
-                                    .message("Mã khuyến mãi đã quá hạn hoặc hết lượt sử dụng!")
+                                    .message(map.get(false))
                                     .result(bookingInfoRes)
                                     .statusCode(HttpStatus.OK.value())
                                     .build());
@@ -645,7 +648,7 @@ public class BookingService {
                 Cinema cinema = booking.get().getSeats().get(0).getShowTime().getRoom().getCinema();
                 Optional<FoodInventory> foodInventory = foodInventoryRepository.findByFoodAndCinema(food, cinema);
                 foodInventory.ifPresent(inventory -> inventory.setQuantity(inventory.getQuantity() + item.getCount()));
-                foodInventoryRepository.save(foodInventory.get());
+                foodInventory.ifPresent(inventory -> foodInventoryRepository.save(inventory));
             }
 
             return ResponseEntity.status(HttpStatus.OK)
@@ -751,10 +754,41 @@ public class BookingService {
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
             booking.setFoods(foods);
+            booking.setDiscount(BigDecimal.ZERO);
+            booking.setPromotionCode(null);
             totalBooking(booking);
             booking.setPayment(true);
             booking.setTicketStatus(TicketStatus.CONFIRMED);
-
+            if (request.getCode() != null && !request.getCode().isEmpty()){
+                Optional<PromotionCode> promotionCode = promotionCodeRepository.findByPromotionCode(request.getCode());
+                if (promotionCode.isEmpty()){
+                    Booking bookingRes = bookingRepository.save(booking);
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message("Mã khuyến mãi không tồn tại!")
+                                    .result(bookingRes)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                }
+                Map<Boolean, String> map = promotionService.checkPromotionCode(promotionCode.get(), booking);
+                if (map.containsKey(false)){
+                    Booking bookingRes = bookingRepository.save(booking);
+                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message(map.get(false))
+                                    .result(bookingInfoRes)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                }else {
+                    BigDecimal totalAfDiscount = promotionService.calculateTotal(booking, promotionCode.get());
+                    booking.setDiscount(booking.getTotal().subtract(totalAfDiscount));
+                    booking.setTotal(totalAfDiscount);
+                    booking.setPromotionCode(request.getCode());
+                }
+            }
             Booking bookingRes = bookingRepository.save(booking);
 
             handleBookingChange(bookingRes);

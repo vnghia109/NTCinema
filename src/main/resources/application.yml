@@ -5,15 +5,3 @@ spring:
       database: NTCinemaDB
   jackson:
     time-zone: Asia/Ho_Chi_Minh
-#
-#  mail:
-#    host: smtp.gmail.com
-#    username: vnghiahi@gmail.com
-#    password: vnghi@kng.com
-#    port: 587
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          starttls:
-#            enable: true

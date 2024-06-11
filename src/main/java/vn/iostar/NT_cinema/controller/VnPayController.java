@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.controller;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 import vn.iostar.NT_cinema.service.BookingService;
+import vn.iostar.NT_cinema.service.NotificationService;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -44,6 +46,8 @@ public class VnPayController {
     PromotionCodeRepository promotionCodeRepository;
     @Autowired
     PromotionCodeUsageRepository promotionCodeUsageRepository;
+    @Autowired
+    NotificationService notificationService;
 
     @GetMapping("/payment")
     public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId) throws UnsupportedEncodingException {
@@ -128,7 +132,7 @@ public class VnPayController {
     }
 
     @GetMapping("/callback")
-    public void updateBookingPayment(@RequestParam() String bookingId, @RequestParam() String vnp_TransactionStatus, HttpServletResponse response) throws IOException {
+    public void updateBookingPayment(@RequestParam() String bookingId, @RequestParam() String vnp_TransactionStatus, HttpServletResponse response) throws IOException, FirebaseMessagingException {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
         if (Objects.equals(vnp_TransactionStatus, "00")){
             if (booking.isPresent()) {
@@ -136,6 +140,7 @@ public class VnPayController {
                 bookingRepository.save(booking.get());
                 bookingService.sendEmailBookingSuccess(booking.get());
                 bookingService.handleBookingChange(booking.get());
+                notificationService.bookingTicketSuccessNotification(booking.get());
 
                 for (Seat item: booking.get().getSeats()) {
                     Ticket ticket = new Ticket();

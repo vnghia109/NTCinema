@@ -13,6 +13,7 @@ import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.service.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Objects;
 
 @RestController
@@ -49,6 +50,8 @@ public class AdminController {
     PromotionService promotionService;
     @Autowired
     StatsService statsService;
+    @Autowired
+    GenresService genresService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -298,6 +301,13 @@ public class AdminController {
         return scheduleService.addSchedule(scheduleReq);
     }
 
+    @GetMapping("/schedule/check")
+    public ResponseEntity<GenericResponse> checkSchedule(@RequestParam("showtimeId") String showtimeId,
+                                                         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                         @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime){
+        return scheduleService.checkSchedule(showtimeId, date, startTime);
+    }
+
     @DeleteMapping("/schedule/{id}")
     public ResponseEntity<GenericResponse> deleteSchedule(@PathVariable("id") String id){
         return scheduleService.deleteSchedule(id);
@@ -479,5 +489,15 @@ public class AdminController {
     @PatchMapping("/promotionsCode/{id}")
     public ResponseEntity<GenericResponse> deletePromotionCode(@PathVariable String id) {
         return promotionService.deletePromotionCode(id);
+    }
+
+    @PostMapping("/genres")
+    public ResponseEntity<GenericResponse> createGenres(@RequestParam String name) {
+        return genresService.createGenres(name);
+    }
+
+    @DeleteMapping("/genres/{id}")
+    public ResponseEntity<GenericResponse> deleteGenres(@PathVariable String id) {
+        return genresService.deleteGenres(id);
     }
 }

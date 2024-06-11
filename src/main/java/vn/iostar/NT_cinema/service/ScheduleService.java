@@ -31,49 +31,25 @@ public class ScheduleService {
     public ResponseEntity<GenericResponse> addSchedule(AddScheduleReq scheduleReq) {
         try {
             Optional<ShowTime> showTime = showTimeRepository.findById(scheduleReq.getShowTimeId());
-            List<Schedule> schedules = scheduleRepository.findAllByRoomId(showTime.get().getRoom().getRoomId());
+            if (showTime.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Lịch chiếu không tồn tại.")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
             Optional<Movie> optionalMovie = movieRepository.findById(showTime.get().getMovie().getMovieId());
+            if (optionalMovie.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Phim không tồn tại.")
+                        .result(null)
+                        .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
             LocalTime endTime = scheduleReq.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
-            LocalDateTime start = LocalDateTime.of(scheduleReq.getDate(), scheduleReq.getStartTime());
 
-            if (scheduleReq.getDate().isBefore(showTime.get().getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) || scheduleReq.getDate().isAfter(showTime.get().getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Giờ chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" nằm ngoài thời gian chiếu cho phép.")
-                        .result(null)
-                        .statusCode(HttpStatus.CONFLICT.value())
-                        .build());
-            }
-            if (start.isBefore(LocalDateTime.now())){
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
-                        .result(null)
-                        .statusCode(HttpStatus.CONFLICT.value())
-                        .build());
-            }
-            for (Schedule schedule : schedules) {
-                LocalDateTime startNew = LocalDateTime.of(scheduleReq.getDate(), scheduleReq.getStartTime());
-                LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
-                LocalDateTime startOld = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
-                LocalDateTime endOld = LocalDateTime.of(schedule.getStartTime().isAfter(schedule.getEndTime()) ? schedule.getDate().plusDays(1) : schedule.getDate(), schedule.getEndTime());
-                if (!(endNew.isBefore(startOld) || startNew.isAfter(endOld))) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime())
-                            .result(null)
-                            .statusCode(HttpStatus.CONFLICT.value())
-                            .build());
-                }
-                if (!(endNew.plusMinutes(15).isBefore(startOld) || startNew.isAfter(endOld.plusMinutes(15)))) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lịch chiếu bắt đầu lúc "+scheduleReq.getStartTime()+" ngày "+scheduleReq.getDate()+" và lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" phải cách nhau 15 phút.")
-                            .result(null)
-                            .statusCode(HttpStatus.CONFLICT.value())
-                            .build());
-                }
-            }
             Schedule schedule1 = new Schedule(scheduleReq.getShowTimeId(), scheduleReq.getDate(), scheduleReq.getStartTime(), endTime, showTime.get().getRoom().getRoomId());
             scheduleRepository.save(schedule1);
 
@@ -130,6 +106,67 @@ public class ScheduleService {
                     .success(false)
                     .message("Không thể xóa lịch trình.")
                     .result(null)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> checkSchedule(String showtimeId, LocalDate date, LocalTime startTime) {
+        try {
+            Optional<ShowTime> showTime = showTimeRepository.findById(showtimeId);
+            List<Schedule> schedules = scheduleRepository.findAllByRoomId(showTime.get().getRoom().getRoomId());
+            Optional<Movie> optionalMovie = movieRepository.findById(showTime.get().getMovie().getMovieId());
+            LocalDateTime start = LocalDateTime.of(date, startTime);
+
+            if (date.isBefore(showTime.get().getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) || date.isAfter(showTime.get().getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Giờ chiếu bắt đầu lúc "+startTime+" ngày "+date+" nằm ngoài thời gian chiếu cho phép.")
+                        .result(null)
+                        .statusCode(HttpStatus.CONFLICT.value())
+                        .build());
+            }
+            if (start.isBefore(LocalDateTime.now())){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
+                        .result(null)
+                        .statusCode(HttpStatus.CONFLICT.value())
+                        .build());
+            }
+            for (Schedule schedule : schedules) {
+                LocalDateTime startNew = LocalDateTime.of(date, startTime);
+                LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
+                LocalDateTime startOld = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
+                LocalDateTime endOld = LocalDateTime.of(schedule.getStartTime().isAfter(schedule.getEndTime()) ? schedule.getDate().plusDays(1) : schedule.getDate(), schedule.getEndTime());
+                if (!(endNew.isBefore(startOld) || startNew.isAfter(endOld))) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lịch chiếu bắt đầu lúc "+startTime+" ngày "+date+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" và phải cách nhau 15 phút.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+                if (!(endNew.plusMinutes(15).isBefore(startOld) || startNew.isAfter(endOld.plusMinutes(15)))) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lịch chiếu bắt đầu lúc "+startTime+" ngày "+date+" và lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" phải cách nhau 15 phút.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Giờ chiếu không bị trùng lịch!")
+                    .result(null)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message("Lỗi máy chủ.")
+                    .result(e.getMessage())
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .build());
         }

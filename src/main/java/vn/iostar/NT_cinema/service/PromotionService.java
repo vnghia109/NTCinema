@@ -463,18 +463,27 @@ public class PromotionService {
         return LocalDate.now().getYear() - date.getYear();
     }
 
-    public boolean checkPromotionCode(PromotionCode promotion, Booking booking) {
+    public Map<Boolean, String> checkPromotionCode(PromotionCode promotion, Booking booking) {
+        Map<Boolean, String> map = new HashMap<>();
         if (promotion.getMaxUsage() <= 0) {
-            return false;
+            map.put(false, "Khuyến mãi đã hết lượt sử dụng!");
+            return map;
         }
         if (promotion.getStartDate().isAfter(LocalDate.now()) || promotion.getEndDate().isBefore(LocalDate.now())) {
-            return false;
+            map.put(false, "Khuyến mãi đã hết hạn sử dụng!");
+            return map;
         }
         if (promotion.getMinOrderValue().compareTo(booking.getTotal()) > 0) {
-            return false;
+            map.put(false, "Mã khuyến mãi không áp dụng cho đơn hàng dưới "+ promotion.getMinOrderValue() +" VND.");
+            return map;
         }
         List<PromotionCodeUsage> promotionCodeUsages = promotionCodeUsageRepository.findAllByUserIdAndPromotionCodeIdAndDateUsed(booking.getUserId(), promotion.getPromotionCodeId(), LocalDate.now());
-        return promotion.getUseForUserPerDay() > promotionCodeUsages.size();
+        if (promotion.getUseForUserPerDay() < promotionCodeUsages.size()) {
+            map.put(false, "Khuyến mãi đã sử dụng quá "+ promotion.getUseForUserPerDay() +" lần trong một ngày!");
+            return map;
+        }
+        map.put(true, "Khuyến mãi đủ điểu kiện.");
+        return map;
     }
 
     public BigDecimal calculateTotal(Booking booking, PromotionCode promotion) {

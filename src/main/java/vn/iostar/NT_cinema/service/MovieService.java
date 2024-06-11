@@ -35,6 +35,8 @@ public class MovieService {
     ScheduleRepository scheduleRepository;
     @Autowired
     StaffRepository staffRepository;
+    @Autowired
+    GenresRepository genresRepository;
 
     public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
         Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalseOrderByMovieIdDesc(pageable);
@@ -127,7 +129,8 @@ public class MovieService {
     public ResponseEntity<GenericResponse> save(MovieReq req) {
         try {
             if (movieRepository.findByTitle(req.getTitle()).isEmpty()) {
-                Movie movie = new Movie(req.getTitle(), req.getDirector(), req.getGenres(), req.getActor(), req.getReleaseDate(), req.getDesc(), req.getTrailerLink(), req.getDuration());
+                List<Genres> genres = genresRepository.findAllById(req.getGenres());
+                Movie movie = new Movie(req.getTitle(), req.getDirector(), genres, req.getActor(), req.getReleaseDate(), req.getDesc(), req.getTrailerLink(), req.getDuration());
 
                 String url = cloudinaryService.uploadImage(req.getPoster());
                 movie.setPoster(url);
@@ -168,10 +171,11 @@ public class MovieService {
         try {
             Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
+                List<Genres> genres = genresRepository.findAllById(movieRequest.getGenres());
                 Movie movie = optionalMovie.get();
                 movie.setTitle(movieRequest.getTitle());
                 movie.setDirector(movieRequest.getDirector());
-                movie.setGenres(movieRequest.getGenres());
+                movie.setGenres(genres);
                 movie.setActor(movieRequest.getActor());
                 movie.setDesc(movieRequest.getDesc());
                 movie.setReleaseDate(movieRequest.getReleaseDate());

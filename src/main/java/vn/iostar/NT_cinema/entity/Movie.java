@@ -29,7 +29,8 @@ public class Movie {
 
     private String director;
 
-    private String genres;
+    @DBRef
+    private List<Genres> genres = new ArrayList<>();
 
     @NotBlank
     private String actor;
@@ -56,7 +57,7 @@ public class Movie {
     private String rating;
 
 
-    public Movie(String title, String director, String genres, String actor, Date releaseDate, String desc, String trailerLink, String duration) {
+    public Movie(String title, String director, List<Genres> genres, String actor, Date releaseDate, String desc, String trailerLink, String duration) {
         this.title = title;
         this.director = director;
         this.genres = genres;

@@ -9,6 +9,7 @@ import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
+import vn.iostar.NT_cinema.entity.Genres;
 
 import java.util.Date;
 import java.util.List;
@@ -24,7 +25,7 @@ public class MovieReq {
 
     private String director;
 
-    private String genres;
+    private List<String> genres;
 
     @NotBlank(message = "Diễn viên không được để trống")
     @NotEmpty(message = "Diễn viên không được để trống")

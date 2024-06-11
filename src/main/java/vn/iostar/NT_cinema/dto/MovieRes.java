@@ -7,8 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.Id;
+import vn.iostar.NT_cinema.entity.Genres;
 
 import java.util.Date;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,7 +25,7 @@ public class MovieRes {
 
     private String director;
 
-    private String genres;
+    private List<Genres> genres;
 
     @NotBlank
     private String actor;

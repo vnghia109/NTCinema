@@ -3,8 +3,10 @@ package vn.iostar.NT_cinema.dto;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import org.hibernate.validator.constraints.UniqueElements;
+import vn.iostar.NT_cinema.entity.Genres;
 
 import java.util.Date;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -23,7 +25,7 @@ public class MovieViewRes {
 
     private String director;
 
-    private String genres;
+    private List<Genres> genres;
 
     private String actor;
 

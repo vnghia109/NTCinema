@@ -21,7 +21,7 @@ public class UpdateMovieReq {
 
     private String director;
 
-    private String genres;
+    private List<String> genres;
 
     private String actor;
 
