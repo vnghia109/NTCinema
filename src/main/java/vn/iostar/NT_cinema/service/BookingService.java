@@ -389,12 +389,10 @@ public class BookingService {
             for (PromotionFixed promotion : promotionFixedList) {
                 if (item.getPrice().getType().equals(PriceType.COUPLE) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
                     seatPrice = promotion.getCoupleValue();
-                } else if (item.getPrice().getType().equals(PriceType.VIP) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
+                } else if (item.getPrice().getType().equals(PriceType.VIP) && seatPrice.compareTo(promotion.getVipValue()) > 0){
                     seatPrice = promotion.getVipValue();
-                } else if (item.getPrice().getType().equals(PriceType.NORMAL) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
+                } else if (item.getPrice().getType().equals(PriceType.NORMAL) && seatPrice.compareTo(promotion.getNormalValue()) > 0){
                     seatPrice = promotion.getNormalValue();
-                }else {
-                    break;
                 }
             }
             seatTotalPrice = seatTotalPrice.add(seatPrice);
