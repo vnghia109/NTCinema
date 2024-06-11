@@ -400,8 +400,6 @@ public class BookingService {
                     seatPrice = promotion.getVipValue();
                 } else if (item.getPrice().getType().equals(PriceType.NORMAL) && seatPrice.compareTo(promotion.getNormalValue()) > 0){
                     seatPrice = promotion.getNormalValue();
-                }else {
-                    break;
                 }
             }
             map.put(item.getSeatId(), seatPrice);
