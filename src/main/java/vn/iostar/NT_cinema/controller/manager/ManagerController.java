@@ -16,6 +16,7 @@ import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.*;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @RestController
 @PreAuthorize("hasRole('MANAGER')")
@@ -100,6 +101,14 @@ public class ManagerController {
     public ResponseEntity<GenericResponse> addSchedule(@RequestBody AddScheduleReq scheduleReq){
         return scheduleService.addSchedule(scheduleReq);
     }
+
+    @GetMapping("/schedule/check")
+    public ResponseEntity<GenericResponse> checkSchedule(@RequestParam("showtimeId") String showtimeId,
+                                                         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                         @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime){
+        return scheduleService.checkSchedule(showtimeId, date, startTime);
+    }
+
 
     @DeleteMapping("/schedule/{id}")
     public ResponseEntity<GenericResponse> deleteSchedule(@PathVariable("id") String id){
