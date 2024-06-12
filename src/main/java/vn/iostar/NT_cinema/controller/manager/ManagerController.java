@@ -239,6 +239,12 @@ public class ManagerController {
         return stockEntryService.importFoods(managerId, req);
     }
 
+    @GetMapping("/stockEntrys")
+    public ResponseEntity<GenericResponse> getStockEntries(@RequestParam(defaultValue = "1") int index,
+                                                           @RequestParam(defaultValue = "10") int size){
+        return stockEntryService.getStockEntries(PageRequest.of(index-1, size));
+    }
+
     @GetMapping("/seats-booked/count")
     public ResponseEntity<GenericResponse> countSeatBooked(@RequestParam("showtimeId") String showtimeId,
                                                            @RequestParam("scheduleId") String scheduleId){
