@@ -132,6 +132,7 @@ public class BookingService {
                 financeStats.get().setTicketRevenue(financeStats.get().getTicketRevenue().add(booking.getSeatTotalPrice()));
                 financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().add(booking.getFoodTotalPrice()));
                 financeStats.get().setOtherExpense(financeStats.get().getOtherExpense().add(booking.getDiscount()));
+                financeStats.get().setTotalExpense(financeStats.get().getTotalExpense().add(booking.getDiscount()));
                 financeStats.get().setTotalOfBooking(financeStats.get().getTotalOfBooking() + 1);
                 financeStats.get().calculateProfit();
                 cinemaFinanceStatsRepository.save(financeStats.get());
@@ -142,7 +143,8 @@ public class BookingService {
                         booking.getSeatTotalPrice().add(booking.getFoodTotalPrice()),
                         booking.getSeatTotalPrice(),
                         booking.getFoodTotalPrice(),
-                        1, booking.getDiscount());
+                        1, booking.getDiscount(),
+                        booking.getDiscount());
                 cinemaFinanceStats.calculateProfit();
                 cinemaFinanceStatsRepository.save(cinemaFinanceStats);
             }
@@ -181,6 +183,7 @@ public class BookingService {
                 financeStats.get().setTicketRevenue(financeStats.get().getTicketRevenue().subtract(booking.getSeatTotalPrice()));
                 financeStats.get().setFoodRevenue(financeStats.get().getFoodRevenue().subtract(booking.getFoodTotalPrice()));
                 financeStats.get().setOtherExpense(financeStats.get().getOtherExpense().subtract(booking.getDiscount()));
+                financeStats.get().setTotalExpense(financeStats.get().getTotalExpense().subtract(booking.getDiscount()));
                 financeStats.get().calculateProfit();
                 cinemaFinanceStatsRepository.save(financeStats.get());
             }

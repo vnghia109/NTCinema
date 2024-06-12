@@ -1,6 +1,9 @@
 package vn.iostar.NT_cinema.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -15,8 +18,8 @@ import java.math.BigDecimal;
 import java.security.PublicKey;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class StockEntryService {
@@ -131,6 +134,34 @@ public class StockEntryService {
                     1);
             cinemaFinanceStats.calculateProfit();
             cinemaFinanceStatsRepository.save(cinemaFinanceStats);
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getStockEntries(Pageable of) {
+        try {
+            Page<StockEntry> stockEntries = stockEntryRepository.findAll(of);
+            Map<String, Object> result = new HashMap<>();
+            result.put("content", stockEntries.getContent());
+            result.put("pageNumber", stockEntries.getPageable().getPageNumber()+1);
+            result.put("pageSize", stockEntries.getSize());
+            result.put("totalPages", stockEntries.getTotalPages());
+            result.put("totalElements", stockEntries.getTotalElements());
+
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy danh sách nhập hàng thành công.")
+                            .result(result)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lỗi máy chủ. "+e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
         }
     }
 }
