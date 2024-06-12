@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.iostar.NT_cinema.entity.Booking;
+import vn.iostar.NT_cinema.entity.PromotionFixed;
 import vn.iostar.NT_cinema.entity.Seat;
 
 import java.math.BigDecimal;
@@ -20,7 +21,7 @@ public class BookingInfoRes {
 
     private Date createAt;
 
-    private List<Seat> seats;
+    private List<SeatPromotion> seats;
 
     private List<FoodWithCount> foods;
 
@@ -32,14 +33,17 @@ public class BookingInfoRes {
 
     private BigDecimal total;
 
-    public BookingInfoRes(Booking booking) {
+    private List<PromotionFixed> promotionFixedList;
+
+    public BookingInfoRes(Booking booking, List<PromotionFixed> promotionFixedList, List<SeatPromotion> seats) {
         this.bookingId = booking.getBookingId();
         this.createAt = booking.getCreateAt();
-        this.seats = booking.getSeats();
+        this.seats = seats;
         this.foods = booking.getFoods();
         this.seatTotalPrice = booking.getSeatTotalPrice();
         this.foodTotalPrice = booking.getFoodTotalPrice();
         this.discount = booking.getDiscount();
         this.total = booking.getTotal();
+        this.promotionFixedList = promotionFixedList;
     }
 }

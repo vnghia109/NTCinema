@@ -272,12 +272,19 @@ public class BookingService {
             booking.setFoods(foods);
             booking.setDiscount(BigDecimal.ZERO);
             booking.setPromotionCode(null);
-            totalBooking(booking);
+            Map<String, BigDecimal> seatPriceMap = new HashMap<>();
+            List<PromotionFixed> promotionFixedList = totalBooking(booking, seatPriceMap);
+            List<SeatPromotion> seatPromotions = new ArrayList<>();
+            for (Seat item: seats) {
+                if (seatPriceMap.containsKey(item.getSeatId())){
+                    seatPromotions.add(new SeatPromotion(item.getSeatId(), BigDecimal.valueOf(item.getPrice().getPrice()), seatPriceMap.get(item.getSeatId()), item.getRow(), item.getColumn()));
+                }
+            }
             if (bookReq.getCode() != null && !bookReq.getCode().isEmpty()){
                 Optional<PromotionCode> promotionCode = promotionCodeRepository.findByPromotionCode(bookReq.getCode());
                 if (promotionCode.isEmpty()){
                     Booking bookingRes = bookingRepository.save(booking);
-                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
+                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes, promotionFixedList, seatPromotions);
                     return ResponseEntity.status(HttpStatus.OK)
                             .body(GenericResponse.builder()
                                     .success(true)
@@ -289,7 +296,7 @@ public class BookingService {
                 Map<Boolean, String> map = promotionService.checkPromotionCode(promotionCode.get(), booking);
                 if (map.containsKey(false)){
                     Booking bookingRes = bookingRepository.save(booking);
-                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
+                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes, promotionFixedList, seatPromotions);
                     return ResponseEntity.status(HttpStatus.OK)
                             .body(GenericResponse.builder()
                                     .success(true)
@@ -305,7 +312,7 @@ public class BookingService {
                 }
             }
             Booking bookingRes = bookingRepository.save(booking);
-            BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
+            BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes, promotionFixedList, seatPromotions);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -380,7 +387,7 @@ public class BookingService {
         return foodWithCounts;
     }
 
-    public void totalBooking(Booking booking) {
+    public List<PromotionFixed> totalBooking(Booking booking, Map<String, BigDecimal> map) {
         BigDecimal total, seatTotalPrice = BigDecimal.ZERO, foodTotalPrice = BigDecimal.ZERO;
         BigDecimal seatPrice = BigDecimal.ZERO;
         List<PromotionFixed> promotionFixedList = promotionService.listPromotionFixedAvailable(booking);
@@ -389,14 +396,15 @@ public class BookingService {
             for (PromotionFixed promotion : promotionFixedList) {
                 if (item.getPrice().getType().equals(PriceType.COUPLE) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
                     seatPrice = promotion.getCoupleValue();
-                } else if (item.getPrice().getType().equals(PriceType.VIP) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
+                } else if (item.getPrice().getType().equals(PriceType.VIP) && seatPrice.compareTo(promotion.getVipValue()) > 0){
                     seatPrice = promotion.getVipValue();
-                } else if (item.getPrice().getType().equals(PriceType.NORMAL) && seatPrice.compareTo(promotion.getCoupleValue()) > 0){
+                } else if (item.getPrice().getType().equals(PriceType.NORMAL) && seatPrice.compareTo(promotion.getNormalValue()) > 0){
                     seatPrice = promotion.getNormalValue();
                 }else {
                     break;
                 }
             }
+            map.put(item.getSeatId(), seatPrice);
             seatTotalPrice = seatTotalPrice.add(seatPrice);
         }
         for (FoodWithCount item : booking.getFoods()) {
@@ -406,6 +414,7 @@ public class BookingService {
         booking.setSeatTotalPrice(seatTotalPrice);
         booking.setFoodTotalPrice(foodTotalPrice);
         booking.setTotal(total);
+        return promotionFixedList;
     }
 
     public void deleteBookingNotPay(){
@@ -756,7 +765,14 @@ public class BookingService {
             booking.setFoods(foods);
             booking.setDiscount(BigDecimal.ZERO);
             booking.setPromotionCode(null);
-            totalBooking(booking);
+            Map<String, BigDecimal> seatPriceMap = new HashMap<>();
+            List<PromotionFixed> promotionFixedList = totalBooking(booking, seatPriceMap);
+            List<SeatPromotion> seatPromotions = new ArrayList<>();
+            for (Seat item: seats) {
+                if (seatPriceMap.containsKey(item.getSeatId())){
+                    seatPromotions.add(new SeatPromotion(item.getSeatId(), BigDecimal.valueOf(item.getPrice().getPrice()), seatPriceMap.get(item.getSeatId()), item.getRow(), item.getColumn()));
+                }
+            }
             booking.setPayment(true);
             booking.setTicketStatus(TicketStatus.CONFIRMED);
             if (request.getCode() != null && !request.getCode().isEmpty()){
@@ -774,7 +790,7 @@ public class BookingService {
                 Map<Boolean, String> map = promotionService.checkPromotionCode(promotionCode.get(), booking);
                 if (map.containsKey(false)){
                     Booking bookingRes = bookingRepository.save(booking);
-                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes);
+                    BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes, promotionFixedList, seatPromotions);
                     return ResponseEntity.status(HttpStatus.OK)
                             .body(GenericResponse.builder()
                                     .success(true)
