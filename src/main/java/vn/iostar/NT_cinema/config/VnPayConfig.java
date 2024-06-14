@@ -1,6 +1,7 @@
 package vn.iostar.NT_cinema.config;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -13,7 +14,8 @@ import java.util.*;
 public class VnPayConfig {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_ReturnUrl = "http://localhost:8080/api/v1/vnpay/callback";
+    @Value("${VNP_RETURN_URL}")
+    public static String vnp_ReturnUrl;
     public static String vnp_TmnCode = "C8YZQRFI";
     public static String secretKey = "SBYQCUFBMPWNVYWXEXYQZXWXZRTRCOZN";
     public static String vnp_Version = "2.1.0";
