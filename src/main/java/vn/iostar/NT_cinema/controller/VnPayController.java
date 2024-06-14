@@ -1,7 +1,6 @@
 package vn.iostar.NT_cinema.controller;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,10 +16,12 @@ import vn.iostar.NT_cinema.service.BookingService;
 import vn.iostar.NT_cinema.service.NotificationService;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -49,7 +50,7 @@ public class VnPayController {
     NotificationService notificationService;
 
     @GetMapping("/payment")
-    public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId, HttpServletRequest request) {
+    public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId) {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
         if (booking.isEmpty())
             throw new NotFoundException("Không tìm thấy đơn đặt.");
@@ -67,7 +68,7 @@ public class VnPayController {
         String bankCode = "NCB";
 
         String vnp_TxnRef = VnPayConfig.getRandomNumber(8);
-        String vnp_IpAddr = VnPayConfig.getIpAddress(request);
+        String vnp_IpAddr = "127.0.0.1";
 
         String vnp_TmnCode = VnPayConfig.vnp_TmnCode;
 
@@ -86,12 +87,12 @@ public class VnPayController {
         vnp_Params.put("vnp_ReturnUrl", VnPayConfig.vnp_ReturnUrl+"?bookingId="+bookingId);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
-        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.of("Asia/Singapore")));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 
-        cld.add(Calendar.MINUTE, 75);
+        cld.add(Calendar.MINUTE, 10);
         String vnp_ExpireDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
@@ -101,8 +102,8 @@ public class VnPayController {
         StringBuilder query = new StringBuilder();
         Iterator<String> itr = fieldNames.iterator();
         while (itr.hasNext()) {
-            String fieldName = itr.next();
-            String fieldValue = vnp_Params.get(fieldName);
+            String fieldName = (String) itr.next();
+            String fieldValue = (String) vnp_Params.get(fieldName);
             if ((fieldValue != null) && (!fieldValue.isEmpty())) {
                 //Build hash data
                 hashData.append(fieldName);
