@@ -87,7 +87,7 @@ public class VnPayController {
         vnp_Params.put("vnp_ReturnUrl", VnPayConfig.vnp_ReturnUrl+"?bookingId="+bookingId);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
-        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.systemDefault()));
+        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone(ZoneId.of("Asia/Singapore")));
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         String vnp_CreateDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
