@@ -239,7 +239,7 @@ public class ManagerController {
         return stockEntryService.importFoods(managerId, req);
     }
 
-    @GetMapping("/stockEntrys")
+    @GetMapping("/stockEntries")
     public ResponseEntity<GenericResponse> getStockEntries(@RequestParam(defaultValue = "1") int index,
                                                            @RequestParam(defaultValue = "10") int size){
         return stockEntryService.getStockEntries(PageRequest.of(index-1, size));

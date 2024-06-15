@@ -142,7 +142,7 @@ public class ScheduleService {
                 if (!(endNew.isBefore(startOld) || startNew.isAfter(endOld))) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
-                            .message("Lịch chiếu bắt đầu lúc "+startTime+" ngày "+date+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" và phải cách nhau 15 phút.")
+                            .message("Lịch chiếu bắt đầu lúc "+startTime+" ngày "+date+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" (Lưu ý: các lịch chiếu cách nhau 15 phút).")
                             .result(null)
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());

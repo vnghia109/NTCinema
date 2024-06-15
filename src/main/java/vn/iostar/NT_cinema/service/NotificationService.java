@@ -75,7 +75,7 @@ public class NotificationService {
         }
         LocalDateTime start = LocalDateTime.of(booking.getSeats().get(0).getSchedule().getDate(), booking.getSeats().get(0).getSchedule().getStartTime());
         LocalDateTime end = start.plusMinutes(Long.parseLong(booking.getSeats().get(0).getShowTime().getMovie().getDuration()));
-        message.append("cho phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle())
+        message.append("của phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle())
                 .append(" bắt đầu chiếu lúc ").append(start)
                 .append(" kết thúc vào ").append(end);
         createNotification(NotiType.TICKET_CONFIRM,
@@ -87,16 +87,45 @@ public class NotificationService {
             fcmService.sendNotification(token.get().getToken(), "ĐẶT VÉ THÀNH CÔNG", message.toString());
     }
 
+    public void ticketStatusNotification(Booking booking) throws FirebaseMessagingException {
+        StringBuilder message = new StringBuilder("Bạn vừa ");
+        if(booking.getTicketStatus().equals(TicketStatus.CANCELLED)) {
+            message.append("hủy vé xem phim cho " + booking.getSeats().size() + " ghế: ");
+            for (Seat seat : booking.getSeats()) {
+                message.append(seat.convertToUnicode()).append(seat.getColumn()).append(", ");
+            }
+            message.append("của phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle());
+            createNotification(NotiType.TICKET_STATUS,
+                    "HỦY VÉ",
+                    message.toString(),
+                    NotiTarget.USER);
+            Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
+            if (token.isPresent())
+                fcmService.sendNotification(token.get().getToken(), "ĐẶT VÉ THÀNH CÔNG", message.toString());
+        } else if(booking.getTicketStatus().equals(TicketStatus.CONFIRMED)) {
+            message.append("xác thực vé vào cửa thành công cho " + booking.getSeats().size() + " ghế: ");
+            for (Seat seat : booking.getSeats()) {
+                message.append(seat.convertToUnicode()).append(seat.getColumn()).append(", ");
+            }
+            LocalDateTime start = LocalDateTime.of(booking.getSeats().get(0).getSchedule().getDate(), booking.getSeats().get(0).getSchedule().getStartTime());
+            LocalDateTime end = start.plusMinutes(Long.parseLong(booking.getSeats().get(0).getShowTime().getMovie().getDuration()));
+            message.append("của phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle())
+                    .append(" bắt đầu chiếu lúc ").append(start)
+                    .append(" kết thúc vào ").append(end);
+            createNotification(NotiType.TICKET_STATUS,
+                    "XÁC THỰC VÉ VÀO CỬA",
+                    message.toString(),
+                    NotiTarget.USER);
+            Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
+            if (token.isPresent())
+                fcmService.sendNotification(token.get().getToken(), "ĐẶT VÉ THÀNH CÔNG", message.toString());
+        }
+    }
+
     @Scheduled(fixedDelay = 60000) //1 minutes
     public void checkShowtimeReminders() throws FirebaseMessagingException {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime oneHourLater = now.plusHours(1);
-//        Criteria criteria = Criteria.where("isPayment").is(true)
-//                .and("ticketStatus").ne(TicketStatus.CANCELLED)
-//                .and("seats.0.schedule.date").is(now.toLocalDate())
-//                .and("seats.0.schedule.startTime").gte(oneHourLater.minusMinutes(1).toLocalTime()).lt(oneHourLater.toLocalTime());
-//        Query query = Query.query(criteria);
-//        List<Booking> bookings = mongoTemplate.find(query, Booking.class);
         // Bước 1: Lookup để join với collection 'schedules'
         LookupOperation lookupSchedules = LookupOperation.newLookup()
                 .from("schedules")

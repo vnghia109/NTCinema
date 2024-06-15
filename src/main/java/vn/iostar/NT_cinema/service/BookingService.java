@@ -82,6 +82,8 @@ public class BookingService {
     PromotionFixedRepository promotionFixedRepository;
     @Autowired
     MongoTemplate mongoTemplate;
+    @Autowired
+    NotificationService notificationService;
 
     public void handleBookingChange(Booking booking) {
         if(booking.isPayment() && !booking.getTicketStatus().equals(TicketStatus.CANCELLED)) {
@@ -645,6 +647,7 @@ public class BookingService {
             booking.get().setTicketStatus(TicketStatus.CANCELLED);
             bookingRepository.save(booking.get());
             handleBookingChange(booking.get());
+            notificationService.ticketStatusNotification(booking.get());
 
             for (Seat seat: booking.get().getSeats()) {
                 seat.setStatus(true);

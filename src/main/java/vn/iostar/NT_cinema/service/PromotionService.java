@@ -451,16 +451,14 @@ public class PromotionService {
         if (promotion.getValidTimeFrameStart() != null && promotion.getValidTimeFrameEnd() != null) {
             return !localTime.isBefore(promotion.getValidTimeFrameStart()) && !localTime.isAfter(promotion.getValidTimeFrameEnd());
         }
-        if (promotion.getAgeLimit() != null && booking.getUserId() != null) {
-            return promotion.getAgeLimit() >= getUserAge(booking.getUserId());
+        Optional<User> user = userRepository.findById(booking.getUserId());
+        if (user.isPresent()) {
+            if (user.get().getDob() != null) {
+                LocalDate date = user.get().getDob().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                return promotion.getAgeLimit() >= LocalDate.now().getYear() - date.getYear() + 1;
+            }
         }
         return true;
-    }
-
-    public int getUserAge(String userId) {
-        User user = userRepository.findById(userId).get();
-        LocalDate date = user.getDob().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        return LocalDate.now().getYear() - date.getYear();
     }
 
     public Map<Boolean, String> checkPromotionCode(PromotionCode promotion, Booking booking) {
