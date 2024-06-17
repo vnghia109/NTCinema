@@ -116,7 +116,8 @@ public class ScheduleService {
             Optional<ShowTime> showTime = showTimeRepository.findById(showtimeId);
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(showTime.get().getRoom().getRoomId());
             Optional<Movie> optionalMovie = movieRepository.findById(showTime.get().getMovie().getMovieId());
-            LocalDateTime start = LocalDateTime.of(date, startTime);
+            LocalDateTime startNew = LocalDateTime.of(date, startTime);
+            LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
 
             if (date.isBefore(showTime.get().getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) || date.isAfter(showTime.get().getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
@@ -126,7 +127,7 @@ public class ScheduleService {
                         .statusCode(HttpStatus.CONFLICT.value())
                         .build());
             }
-            if (start.isBefore(LocalDateTime.now())){
+            if (startNew.isBefore(LocalDateTime.now())){
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)
                         .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
@@ -135,8 +136,57 @@ public class ScheduleService {
                         .build());
             }
             for (Schedule schedule : schedules) {
-                LocalDateTime startNew = LocalDateTime.of(date, startTime);
-                LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
+                LocalDateTime startOld = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
+                LocalDateTime endOld = LocalDateTime.of(schedule.getStartTime().isAfter(schedule.getEndTime()) ? schedule.getDate().plusDays(1) : schedule.getDate(), schedule.getEndTime());
+                if (!(endNew.isBefore(startOld) || startNew.isAfter(endOld))) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lịch chiếu bắt đầu lúc "+startTime+" ngày "+date+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" (Lưu ý: các lịch chiếu cách nhau 15 phút).")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+                if (!(endNew.plusMinutes(15).isBefore(startOld) || startNew.isAfter(endOld.plusMinutes(15)))) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lịch chiếu bắt đầu lúc "+startTime+" ngày "+date+" và lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" phải cách nhau 15 phút.")
+                            .result(null)
+                            .statusCode(HttpStatus.CONFLICT.value())
+                            .build());
+                }
+            }
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Giờ chiếu không bị trùng lịch!")
+                    .result(null)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
+                    .success(false)
+                    .message("Lỗi máy chủ.")
+                    .result(e.getMessage())
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> checkScheduleBeforeAddShowtime(String roomId, String movieId, LocalDate date, LocalTime startTime) {
+        try {
+            List<Schedule> schedules = scheduleRepository.findAllByRoomId(roomId);
+            Optional<Movie> optionalMovie = movieRepository.findById(movieId);
+            LocalDateTime startNew = LocalDateTime.of(date, startTime);
+            LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
+
+            if (startNew.isBefore(LocalDateTime.now())){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
+                        .result(null)
+                        .statusCode(HttpStatus.CONFLICT.value())
+                        .build());
+            }
+            for (Schedule schedule : schedules) {
                 LocalDateTime startOld = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
                 LocalDateTime endOld = LocalDateTime.of(schedule.getStartTime().isAfter(schedule.getEndTime()) ? schedule.getDate().plusDays(1) : schedule.getDate(), schedule.getEndTime());
                 if (!(endNew.isBefore(startOld) || startNew.isAfter(endOld))) {

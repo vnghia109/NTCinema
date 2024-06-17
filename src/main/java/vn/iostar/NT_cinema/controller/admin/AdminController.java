@@ -280,6 +280,14 @@ public class AdminController {
         return showTimeService.adminGetShowTimes(date, PageRequest.of(index-1, size));
     }
 
+    @GetMapping("/showtimes/schedule/check")
+    public ResponseEntity<GenericResponse> checkScheduleBeforeAddShowtime(@RequestParam("roomId") String roomId,
+                                                         @RequestParam("movieId") String movieId,
+                                                         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                         @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime){
+        return scheduleService.checkScheduleBeforeAddShowtime(roomId, movieId, date, startTime);
+    }
+
     @PostMapping("/showtimes/showtime")
     public ResponseEntity<GenericResponse> addShowTime(@RequestBody ShowTimeReq showTimeReq){
         return showTimeService.addShowTime(showTimeReq);
@@ -489,6 +497,11 @@ public class AdminController {
     @PatchMapping("/promotionsCode/{id}")
     public ResponseEntity<GenericResponse> deletePromotionCode(@PathVariable String id) {
         return promotionService.deletePromotionCode(id);
+    }
+
+    @GetMapping("/genres")
+    public ResponseEntity<GenericResponse> getGenres() {
+        return genresService.getGenres();
     }
 
     @PostMapping("/genres")

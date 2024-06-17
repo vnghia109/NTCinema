@@ -8,6 +8,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Genres;
 import vn.iostar.NT_cinema.repository.GenresRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -64,6 +65,27 @@ public class GenresService {
                             .success(false)
                             .message(e.getMessage())
                             .result("Lỗi máy chủ. Xóa thất bại.")
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> getGenres() {
+        try{
+            List<Genres> genresList = genresRepository.findAll();
+            return ResponseEntity.ok()
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy danh sách thể loại phim thành công.")
+                            .result(genresList)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lỗi máy chủ.")
+                            .result(e.getMessage())
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }

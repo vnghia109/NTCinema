@@ -123,8 +123,8 @@ public class ShowTimeService {
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(showTime.getRoom().getRoomId());
 
             for (TimeShow item : showTimeReq.getSchedules()) {
-                LocalDateTime start = LocalDateTime.of(item.getDate(), item.getStartTime());
-                LocalTime endTime = item.getStartTime().plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
+                LocalDateTime startNew = LocalDateTime.of(item.getDate(), item.getStartTime());
+                LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
                 if (item.getDate().isBefore(showTime.getTimeStart().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()) || item.getDate().isAfter(showTime.getTimeEnd().toInstant().atZone(ZoneId.systemDefault()).toLocalDate())) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
@@ -133,7 +133,7 @@ public class ShowTimeService {
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
                 }
-                if (start.isBefore(LocalDateTime.now())){
+                if (startNew.isBefore(LocalDateTime.now())){
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
                             .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
@@ -142,14 +142,12 @@ public class ShowTimeService {
                             .build());
                 }
                 for (Schedule schedule : schedules) {
-                    LocalDateTime startNew = LocalDateTime.of(item.getDate(), item.getStartTime());
-                    LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
                     LocalDateTime startOld = LocalDateTime.of(schedule.getDate(), schedule.getStartTime());
                     LocalDateTime endOld = LocalDateTime.of(schedule.getStartTime().isAfter(schedule.getEndTime()) ? schedule.getDate().plusDays(1) : schedule.getDate(), schedule.getEndTime());
                     if (!(endNew.isBefore(startOld) || startNew.isAfter(endOld))) {
                         return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                                 .success(false)
-                                .message("Lịch chiếu bắt đầu lúc "+item.getStartTime()+" ngày "+item.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime())
+                                .message("Lịch chiếu bắt đầu lúc "+item.getStartTime()+" ngày "+item.getDate()+" bị trùng với lịch chiếu từ "+ schedule.getStartTime()+" đến "+schedule.getEndTime()+" (Lưu ý: các lịch chiếu cách nhau 15 phút).")
                                 .result(null)
                                 .statusCode(HttpStatus.CONFLICT.value())
                                 .build());
@@ -191,34 +189,6 @@ public class ShowTimeService {
                     .statusCode(HttpStatus.OK.value())
                     .build());
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
-        }
-    }
-
-    public ResponseEntity<GenericResponse> deleteShowTime(String id) {
-        try {
-            Optional<ShowTime> optionalShowTime = showTimeRepository.findById(id);
-            if (optionalShowTime.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Showtime not found")
-                        .result(null)
-                        .statusCode(HttpStatus.NOT_FOUND.value())
-                        .build());
-            }
-            showTimeRepository.delete(optionalShowTime.get());
-            return ResponseEntity.ok().body(GenericResponse.builder()
-                    .success(true)
-                    .message("Delete Showtime success")
-                    .result(null)
-                    .statusCode(HttpStatus.OK.value())
-                    .build());
-        } catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
                     .success(false)
                     .message(e.getMessage())
