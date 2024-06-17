@@ -2,11 +2,13 @@ package vn.iostar.NT_cinema.entity;
 
 import lombok.*;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.FoodWithCount;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -33,7 +35,11 @@ public class Booking {
 
     private BigDecimal discount = BigDecimal.ZERO;
 
-    private String promotionCode;
+    @DBRef
+    private PromotionCode promotionCode;
+
+    @DBRef
+    private List<PromotionFixed> promotionFixeds;
 
     private BigDecimal seatTotalPrice;
 
@@ -42,4 +48,6 @@ public class Booking {
     private BigDecimal total;
 
     private TicketStatus ticketStatus;
+
+    private LocalDateTime cancelTime;
 }

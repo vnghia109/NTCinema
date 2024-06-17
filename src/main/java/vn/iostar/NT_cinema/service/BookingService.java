@@ -285,8 +285,9 @@ public class BookingService {
                     seatPromotions.add(new SeatPromotion(item.getSeatId(), BigDecimal.valueOf(item.getPrice().getPrice()), seatPriceMap.get(item.getSeatId()), item.getRow(), item.getColumn()));
                 }
             }
+            Optional<PromotionCode> promotionCode = Optional.empty();
             if (bookReq.getCode() != null && !bookReq.getCode().isEmpty()){
-                Optional<PromotionCode> promotionCode = promotionCodeRepository.findByPromotionCode(bookReq.getCode());
+                promotionCode = promotionCodeRepository.findByPromotionCode(bookReq.getCode());
                 if (promotionCode.isEmpty()){
                     Booking bookingRes = bookingRepository.save(booking);
                     BookingInfoRes bookingInfoRes = new BookingInfoRes(bookingRes, promotionFixedList, seatPromotions);
@@ -313,7 +314,7 @@ public class BookingService {
                     BigDecimal totalAfDiscount = promotionService.calculateTotal(booking, promotionCode.get());
                     booking.setDiscount(booking.getTotal().subtract(totalAfDiscount));
                     booking.setTotal(totalAfDiscount);
-                    booking.setPromotionCode(bookReq.getCode());
+                    booking.setPromotionCode(promotionCode.get());
                 }
             }
             Booking bookingRes = bookingRepository.save(booking);
@@ -467,29 +468,20 @@ public class BookingService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
             }
-            Optional<ShowTime> showTime = showTimeRepository.findById(booking.get().getSeats().get(0).getShowTime().getShowTimeId());
-            if (showTime.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Không tìm thấy lịch chiếu.")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
-            }
+            ShowTime showTime = booking.get().getSeats().get(0).getShowTime();
             Schedule schedule = booking.get().getSeats().get(0).getSchedule();
             TicketDetailRes ticket = new TicketDetailRes();
             ticket.setBookingId(booking.get().getBookingId());
-            ticket.setMovieId(showTime.get().getMovie().getMovieId());
-            ticket.setMovieName(showTime.get().getMovie().getTitle());
+            ticket.setMovieId(showTime.getMovie().getMovieId());
+            ticket.setMovieName(showTime.getMovie().getTitle());
             ticket.setUserName(user.get().getUserName());
             ticket.setFullName(user.get().getFullName());
             ticket.setDate(schedule.getDate());
             ticket.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
             ticket.setEndTime(schedule.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-            ticket.setCinemaName(showTime.get().getRoom().getCinema().getCinemaName());
-            ticket.setDuration(Integer.parseInt(showTime.get().getMovie().getDuration()));
-            ticket.setRoomName(showTime.get().getRoom().getRoomName());
+            ticket.setCinemaName(showTime.getRoom().getCinema().getCinemaName());
+            ticket.setDuration(Integer.parseInt(showTime.getMovie().getDuration()));
+            ticket.setRoomName(showTime.getRoom().getRoomName());
             List<SeatBookedRes> seats = new ArrayList<>();
             for (Seat seat : booking.get().getSeats()) {
                 seats.add(new SeatBookedRes(seat.getRow(), seat.getColumn()));
@@ -497,8 +489,11 @@ public class BookingService {
             ticket.setSeats(seats);
             ticket.setFoods(booking.get().getFoods().stream().map(FoodWithCount::getFood).map(Food::getName).collect(Collectors.toList()));
             ticket.setPrice(booking.get().getTotal());
+            ticket.setPromotionCode(booking.get().getPromotionCode());
+            ticket.setPromotionFixeds(booking.get().getPromotionFixeds());
             ticket.setStatus(booking.get().getTicketStatus());
             ticket.setCreateAt(booking.get().getCreateAt());
+            ticket.setCancelTime(booking.get().getCancelTime());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -645,6 +640,7 @@ public class BookingService {
                                 .build());
             }
             booking.get().setTicketStatus(TicketStatus.CANCELLED);
+            booking.get().setCancelTime(LocalDateTime.now());
             bookingRepository.save(booking.get());
             handleBookingChange(booking.get());
             notificationService.ticketStatusNotification(booking.get());
@@ -806,7 +802,7 @@ public class BookingService {
                     BigDecimal totalAfDiscount = promotionService.calculateTotal(booking, promotionCode.get());
                     booking.setDiscount(booking.getTotal().subtract(totalAfDiscount));
                     booking.setTotal(totalAfDiscount);
-                    booking.setPromotionCode(request.getCode());
+                    booking.setPromotionCode(promotionCode.get());
                 }
             }
             Booking bookingRes = bookingRepository.save(booking);

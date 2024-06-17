@@ -171,11 +171,10 @@ public class VnPayController {
                         foodInventoryRepository.save(foodInventory.get());
                     }
                 }
-                Optional<PromotionCode> code = promotionCodeRepository.findByPromotionCode(booking.get().getPromotionCode());
-                if (code.isPresent()) {
+                if (booking.get().getPromotionCode() != null) {
                     PromotionCodeUsage usage = new PromotionCodeUsage();
                     usage.setUserId(booking.get().getUserId());
-                    usage.setPromotionCodeId(code.get().getPromotionCodeId());
+                    usage.setPromotionCodeId(booking.get().getPromotionCode().getPromotionCodeId());
                     usage.setDateUsed(LocalDate.now());
                     promotionCodeUsageRepository.save(usage);
                 }

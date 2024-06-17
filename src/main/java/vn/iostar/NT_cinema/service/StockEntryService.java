@@ -141,7 +141,7 @@ public class StockEntryService {
         try {
             Page<StockEntry> stockEntries = stockEntryRepository.findAll(of);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", stockEntries.getContent());
+            result.put("content", stockEntries.getContent().stream().sorted(Comparator.comparing(StockEntry::getStockEntryId).reversed()).collect(Collectors.toList()));
             result.put("pageNumber", stockEntries.getPageable().getPageNumber()+1);
             result.put("pageSize", stockEntries.getSize());
             result.put("totalPages", stockEntries.getTotalPages());

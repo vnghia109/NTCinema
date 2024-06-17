@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.iostar.NT_cinema.entity.Booking;
+import vn.iostar.NT_cinema.entity.PromotionCode;
 import vn.iostar.NT_cinema.entity.PromotionFixed;
 import vn.iostar.NT_cinema.entity.Seat;
 
@@ -35,7 +36,10 @@ public class BookingInfoRes {
 
     private List<PromotionFixed> promotionFixedList;
 
+    private PromotionCode promotionCode;
+
     public BookingInfoRes(Booking booking, List<PromotionFixed> promotionFixedList, List<SeatPromotion> seats) {
+        this.promotionCode = booking.getPromotionCode();
         this.bookingId = booking.getBookingId();
         this.createAt = booking.getCreateAt();
         this.seats = seats;

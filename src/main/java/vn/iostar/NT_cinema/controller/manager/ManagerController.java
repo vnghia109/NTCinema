@@ -81,6 +81,14 @@ public class ManagerController {
         return roomService.getRoom(id);
     }
 
+    @GetMapping("/showtimes/schedule/check")
+    public ResponseEntity<GenericResponse> checkScheduleBeforeAddShowtime(@RequestParam("roomId") String roomId,
+                                                                          @RequestParam("movieId") String movieId,
+                                                                          @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                                          @RequestParam("startTime") @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime startTime){
+        return scheduleService.checkScheduleBeforeAddShowtime(roomId, movieId, date, startTime);
+    }
+
     @PostMapping("/showtimes/showtime")
     public ResponseEntity<GenericResponse> addShowTime(@RequestBody ShowTimeReq showTimeReq){
         return showTimeService.addShowTime(showTimeReq);

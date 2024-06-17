@@ -370,16 +370,6 @@ public class AdminController {
         return managerService.updateCinemaManager(userId, cinemaId);
     }
 
-//    @PostMapping("/total-revenue")
-//    public ResponseEntity<?> getTotalRevenueDay(@RequestBody TotalRevenueReq req) {
-//        return bookingService.getBookingsInDateRange(req.getStartDate(), req.getEndDate());
-//    }
-//
-//    @GetMapping("/total-revenue")
-//    public ResponseEntity<?> getTotalRevenue() {
-//        return bookingService.getTotalRevenue();
-//    }
-
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
                                                     @RequestParam(defaultValue = "10") int size){
