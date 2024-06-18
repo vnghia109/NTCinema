@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.GenresReq;
 import vn.iostar.NT_cinema.entity.Genres;
 import vn.iostar.NT_cinema.repository.GenresRepository;
 
@@ -16,9 +17,9 @@ public class GenresService {
     @Autowired
     GenresRepository genresRepository;
 
-    public ResponseEntity<GenericResponse> createGenres(String name) {
+    public ResponseEntity<GenericResponse> createGenres(GenresReq genresReq) {
         try {
-            Optional<Genres> optionalGenres = genresRepository.findByName(name);
+            Optional<Genres> optionalGenres = genresRepository.findByName(genresReq.getName());
             if (optionalGenres.isPresent()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(GenericResponse.builder()
@@ -29,7 +30,7 @@ public class GenresService {
                                 .build());
             }
             Genres genres = new Genres();
-            genres.setName(name);
+            genres.setName(genresReq.getName());
             Genres genresRes = genresRepository.save(genres);
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()

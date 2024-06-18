@@ -495,8 +495,8 @@ public class AdminController {
     }
 
     @PostMapping("/genres")
-    public ResponseEntity<GenericResponse> createGenres(@RequestParam String name) {
-        return genresService.createGenres(name);
+    public ResponseEntity<GenericResponse> createGenres(@RequestBody GenresReq genres) {
+        return genresService.createGenres(genres);
     }
 
     @DeleteMapping("/genres/{id}")
