@@ -37,6 +37,8 @@ public class ViewerController {
     MovieService movieService;
     @Autowired
     UserTokenRepository userTokenRepository;
+    @Autowired
+    GenresService genresService;
 
     @PostMapping("/selectSeat/{showTimeId}")
     public ResponseEntity<GenericResponse> checkSeat(@PathVariable("showTimeId") String showTimeId, @RequestBody List<SeatReq> seatReqList){
@@ -130,5 +132,10 @@ public class ViewerController {
         userTokenFCM.setUserId(tokenRequest.getUserId());
         userTokenFCM.setToken(tokenRequest.getToken());
         userTokenRepository.save(userTokenFCM);
+    }
+
+    @GetMapping("/genres")
+    public ResponseEntity<GenericResponse> getGenres() {
+        return genresService.getGenres();
     }
 }
