@@ -1,8 +1,10 @@
 package vn.iostar.NT_cinema.service;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.PriceType;
 import vn.iostar.NT_cinema.dto.GenericResponse;
@@ -33,6 +35,9 @@ public class SeatService {
 
     @Autowired
     ScheduleRepository scheduleRepository;
+
+    @Autowired
+    BookingService bookingService;
 
     public ResponseEntity<GenericResponse> checkSeat(String showtimeId, List<SeatReq> seatReq){
         try {
@@ -154,6 +159,18 @@ public class SeatService {
                             .result(null)
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
+        }
+    }
+
+    @Scheduled(fixedDelay = 6000)
+    @PostConstruct
+    public void resetSeatStatus(){
+        List<Seat> seats = seatRepository.findAllByStatusIsFalse();
+        for (Seat seat : seats) {
+            if (bookingService.findBySeat(seat).isEmpty()){
+                seat.setStatus(true);
+                seatRepository.save(seat);
+            }
         }
     }
 }

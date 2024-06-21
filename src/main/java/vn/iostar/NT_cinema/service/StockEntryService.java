@@ -137,9 +137,14 @@ public class StockEntryService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getStockEntries(Pageable of) {
+    public ResponseEntity<GenericResponse> getStockEntries(Pageable pageable, String managerId) {
         try {
-            Page<StockEntry> stockEntries = stockEntryRepository.findAll(of);
+            Optional<Manager> manager = managerRepository.findById(managerId);
+            Page<StockEntry> stockEntries;
+            if (manager.isEmpty())
+                stockEntries = stockEntryRepository.findAll(pageable);
+            else
+                stockEntries = stockEntryRepository.findAllByManager(manager.get(), pageable);
             Map<String, Object> result = new HashMap<>();
             result.put("content", stockEntries.getContent().stream().sorted(Comparator.comparing(StockEntry::getStockEntryId).reversed()).collect(Collectors.toList()));
             result.put("pageNumber", stockEntries.getPageable().getPageNumber()+1);

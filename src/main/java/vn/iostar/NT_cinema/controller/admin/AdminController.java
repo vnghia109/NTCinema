@@ -52,6 +52,8 @@ public class AdminController {
     StatsService statsService;
     @Autowired
     GenresService genresService;
+    @Autowired
+    StockEntryService stockEntryService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -502,5 +504,12 @@ public class AdminController {
     @DeleteMapping("/genres/{id}")
     public ResponseEntity<GenericResponse> deleteGenres(@PathVariable String id) {
         return genresService.deleteGenres(id);
+    }
+
+    @GetMapping("/stockEntries")
+    public ResponseEntity<GenericResponse> getStockEntries(@RequestParam(required = false) String managerId,
+                                                           @RequestParam(defaultValue = "1") int index,
+                                                           @RequestParam(defaultValue = "10") int size){
+        return stockEntryService.getStockEntries(PageRequest.of(index-1, size), managerId);
     }
 }

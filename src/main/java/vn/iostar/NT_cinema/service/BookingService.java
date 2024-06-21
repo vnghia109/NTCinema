@@ -838,4 +838,10 @@ public class BookingService {
                             .build());
         }
     }
+
+    public List<Booking> findBySeat(Seat seat){
+        Criteria criteria = Criteria.where("seats").elemMatch(Criteria.where("seatId").is(seat.getSeatId()));
+        Query query = new Query(criteria);
+        return mongoTemplate.find(query, Booking.class);
+    }
 }

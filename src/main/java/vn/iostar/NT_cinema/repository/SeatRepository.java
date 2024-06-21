@@ -16,4 +16,6 @@ public interface SeatRepository extends MongoRepository<Seat, String> {
     List<Seat> findAllByShowTimeAndScheduleAndStatusIsFalse(ShowTime showtime, Schedule schedule);
 
     List<Seat> findAllByShowTimeIn(List<ShowTime> showTimes);
+
+    List<Seat> findAllByStatusIsFalse();
 }

@@ -248,9 +248,12 @@ public class ManagerController {
     }
 
     @GetMapping("/stockEntries")
-    public ResponseEntity<GenericResponse> getStockEntries(@RequestParam(defaultValue = "1") int index,
+    public ResponseEntity<GenericResponse> getStockEntries(@RequestHeader("Authorization") String authorizationHeader,
+                                                           @RequestParam(defaultValue = "1") int index,
                                                            @RequestParam(defaultValue = "10") int size){
-        return stockEntryService.getStockEntries(PageRequest.of(index-1, size));
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return stockEntryService.getStockEntries(PageRequest.of(index-1, size), managerId);
     }
 
     @GetMapping("/seats-booked/count")
