@@ -11,6 +11,7 @@ import vn.iostar.NT_cinema.dto.ReviewReq;
 import vn.iostar.NT_cinema.dto.ReviewRes;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.Review;
+import vn.iostar.NT_cinema.entity.User;
 import vn.iostar.NT_cinema.repository.MovieRepository;
 import vn.iostar.NT_cinema.repository.ReviewRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
@@ -28,6 +29,8 @@ public class ReviewService {
     UserRepository userRepository;
     @Autowired
     MovieRepository movieRepository;
+    @Autowired
+    NotificationService notificationService;
 
     public ResponseEntity<?> reviewMovie(ReviewReq req, String userId, String movieId) {
             try {
@@ -44,14 +47,25 @@ public class ReviewService {
                 Review review =new Review();
                 review.setComment(req.getComment());
                 review.setRating(req.getRating());
-                review.setUserName(userRepository.findById(userId).get().getUserName());
+                Optional<User> user = userRepository.findById(userId);
+                if (user.isEmpty()){
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(GenericResponse.builder()
+                                    .success(false)
+                                    .message("Không tìm thấy người dùng.")
+                                    .result(null)
+                                    .statusCode(HttpStatus.NOT_FOUND.value())
+                                    .build());
+                }
+                review.setUserName(user.get().getUserName());
                 review.setMovieId(movieId);
-                review.setMovieName(movieRepository.findById(movieId).get().getTitle());
+                review.setMovieName(movieOptional.get().getTitle());
                 review.setCreateAt(new Date());
 
                 Review reviewRes = reviewRepository.save(review);
                 movieOptional.get().addReview(reviewRes);
                 movieRepository.save(movieOptional.get());
+                notificationService.reviewNotification(reviewRes, user.get());
 
                 ReviewRes reviewRes1 = new ReviewRes(reviewRes.getMovieName(), reviewRes.getUserName(), reviewRes.getComment(), reviewRes.getRating());
                 return ResponseEntity.status(HttpStatus.OK)

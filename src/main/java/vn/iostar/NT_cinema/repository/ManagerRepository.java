@@ -17,4 +17,6 @@ public interface ManagerRepository extends MongoRepository<Manager, String> {
     Optional<Manager> findByCinemaAndRole(Cinema cinema, Role role);
 
     Page<Manager> findAllByRole(Role Role, Pageable pageable);
+
+    List<Manager> findAllByCinema(Cinema cinema);
 }

@@ -25,4 +25,12 @@ public class NotificationUser {
     private boolean read;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public NotificationUser(User user, Notification notification) {
+        this.user = user;
+        this.notification = notification;
+        this.read = false;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
 }

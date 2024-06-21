@@ -279,6 +279,7 @@ public class BookingService {
             booking.setPromotionCode(null);
             Map<String, BigDecimal> seatPriceMap = new HashMap<>();
             List<PromotionFixed> promotionFixedList = totalBooking(booking, seatPriceMap);
+            booking.setPromotionFixeds(promotionFixedList);
             List<SeatPromotion> seatPromotions = new ArrayList<>();
             for (Seat item: seats) {
                 if (seatPriceMap.containsKey(item.getSeatId())){
@@ -459,23 +460,20 @@ public class BookingService {
                                 .build());
             }
             Optional<User> user = userRepository.findById(booking.get().getUserId());
-            if (user.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Người dùng không tông tại.")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
-            }
+
             ShowTime showTime = booking.get().getSeats().get(0).getShowTime();
             Schedule schedule = booking.get().getSeats().get(0).getSchedule();
             TicketDetailRes ticket = new TicketDetailRes();
             ticket.setBookingId(booking.get().getBookingId());
             ticket.setMovieId(showTime.getMovie().getMovieId());
             ticket.setMovieName(showTime.getMovie().getTitle());
-            ticket.setUserName(user.get().getUserName());
-            ticket.setFullName(user.get().getFullName());
+            if (user.isPresent()) {
+                ticket.setUserName(user.get().getUserName());
+                ticket.setFullName(user.get().getFullName());
+            }else {
+                ticket.setUserName(null);
+                ticket.setFullName(null);
+            }
             ticket.setDate(schedule.getDate());
             ticket.setStartTime(schedule.getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
             ticket.setEndTime(schedule.getEndTime().format(DateTimeFormatter.ofPattern("HH:mm")));
@@ -597,6 +595,7 @@ public class BookingService {
             }
             booking.get().setTicketStatus(TicketStatus.CONFIRMED);
             bookingRepository.save(booking.get());
+            notificationService.ticketStatusNotification(booking.get());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -767,6 +766,7 @@ public class BookingService {
             booking.setPromotionCode(null);
             Map<String, BigDecimal> seatPriceMap = new HashMap<>();
             List<PromotionFixed> promotionFixedList = totalBooking(booking, seatPriceMap);
+            booking.setPromotionFixeds(promotionFixedList);
             List<SeatPromotion> seatPromotions = new ArrayList<>();
             for (Seat item: seats) {
                 if (seatPriceMap.containsKey(item.getSeatId())){
@@ -820,6 +820,7 @@ public class BookingService {
             if (bookingRes.getUserId() != null) {
                 sendEmailBookingSuccess(bookingRes);
             }
+            notificationService.bookingTicketSuccessNotification(bookingRes);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
