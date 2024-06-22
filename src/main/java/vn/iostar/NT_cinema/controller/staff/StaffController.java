@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import vn.iostar.NT_cinema.dto.BookReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.SellTicketReq;
 import vn.iostar.NT_cinema.dto.ViewerReq;
@@ -82,5 +83,10 @@ public class StaffController {
         String token = authorizationHeader.substring(7);
         String staffId = jwtTokenProvider.getUserIdFromJwt(token);
         return bookingService.sellTicket(staffId, request);
+    }
+
+    @PostMapping("/sell-info")
+    public ResponseEntity<GenericResponse> sellTicketInfo(@RequestBody SellTicketReq request){
+        return bookingService.sellTicketInfo(request);
     }
 }

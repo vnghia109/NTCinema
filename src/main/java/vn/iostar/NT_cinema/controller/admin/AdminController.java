@@ -507,9 +507,9 @@ public class AdminController {
     }
 
     @GetMapping("/stockEntries")
-    public ResponseEntity<GenericResponse> getStockEntries(@RequestParam(required = false) String managerId,
+    public ResponseEntity<GenericResponse> getStockEntries(@RequestParam(required = false) String cinemaId,
                                                            @RequestParam(defaultValue = "1") int index,
                                                            @RequestParam(defaultValue = "10") int size){
-        return stockEntryService.getStockEntries(PageRequest.of(index-1, size), managerId);
+        return stockEntryService.getStockEntriesByCinema(PageRequest.of(index-1, size), cinemaId);
     }
 }

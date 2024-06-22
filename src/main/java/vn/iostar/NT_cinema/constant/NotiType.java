@@ -1,12 +1,11 @@
 package vn.iostar.NT_cinema.constant;
 
 public enum NotiType {
-    TICKET_CONFIRM,
+    BOOKING_SUCCESS,
     TICKET_REMINDER,
     TICKET_STATUS,
     PROMOTION,
-    BOOKING_STATUS,
     REVIEW,
-    REVENUE;
+    LOW_STOCK;
 
 }

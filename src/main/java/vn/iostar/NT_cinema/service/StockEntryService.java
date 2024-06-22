@@ -33,6 +33,10 @@ public class StockEntryService {
     FoodInventoryRepository foodInventoryRepository;
     @Autowired
     CinemaFinanceStatsRepository cinemaFinanceStatsRepository;
+    @Autowired
+    CinemaRepository cinemaRepository;
+    @Autowired
+    RoleRepository roleRepository;
 
     public ResponseEntity<GenericResponse> importFoods(String managerId, StockEntryReq req) {
         try {
@@ -135,6 +139,31 @@ public class StockEntryService {
             cinemaFinanceStats.calculateProfit();
             cinemaFinanceStatsRepository.save(cinemaFinanceStats);
         }
+    }
+
+    public ResponseEntity<GenericResponse> getStockEntriesByCinema(Pageable pageable, String cinemaId){
+        Optional<Cinema> cinema = cinemaRepository.findById(cinemaId);
+        Role role = roleRepository.findByRoleName("MANAGER");
+        if (cinema.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Rạp phim không tìm thấy.")
+                            .result(null)
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .build());
+        }
+        Optional<Manager> manager = managerRepository.findByCinemaAndRole(cinema.get(), role);
+        if (manager.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Mặt quản trị không tìm thấy.")
+                            .result(null)
+                            .statusCode(HttpStatus.NOT_FOUND.value())
+                            .build());
+        }
+        return getStockEntries(pageable, manager.get().getUserId());
     }
 
     public ResponseEntity<GenericResponse> getStockEntries(Pageable pageable, String managerId) {

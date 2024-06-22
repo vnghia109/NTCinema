@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.controller;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -12,6 +13,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.PasswordResetRequest;
 import vn.iostar.NT_cinema.dto.UserReq;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
+import vn.iostar.NT_cinema.service.NotificationService;
 import vn.iostar.NT_cinema.service.UserService;
 
 import java.io.UnsupportedEncodingException;
@@ -25,6 +27,8 @@ public class UserController {
 
     @Autowired
     UserService userService;
+    @Autowired
+    NotificationService notificationService;
 
     @GetMapping("/profile")
     public ResponseEntity<GenericResponse> getInformation(
@@ -88,4 +92,19 @@ public class UserController {
         return userService.validateOtp(token);
     }
 
+
+    @GetMapping("/notifications")
+    public ResponseEntity<GenericResponse> getNotifications(@RequestHeader("Authorization") String authorizationHeader,
+                                                            @RequestParam(defaultValue = "1") int index,
+                                                            @RequestParam(defaultValue = "10") int size) {
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        return notificationService.getNotifications(userId, PageRequest.of(index-1, size));
+    }
+
+    @GetMapping("/notification/{notificationUserId}")
+    public ResponseEntity<GenericResponse> getNotification(@PathVariable("notificationUserId") String notificationUserId) {
+        return notificationService.getNotification(notificationUserId);
+    }
 }

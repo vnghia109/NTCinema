@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Manager;
+import vn.iostar.NT_cinema.entity.Role;
 import vn.iostar.NT_cinema.entity.User;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.ManagerRepository;
@@ -26,6 +27,9 @@ public class ManagerService {
 
     @Autowired
     RoleRepository roleRepository;
+
+    @Autowired
+    RoleService roleService;
     public ResponseEntity<GenericResponse> getAllManager(Pageable pageable) {
         try {
             Page<Manager> managers = managerRepository.findAllByRole( roleRepository.findByRoleName("MANAGER"), pageable);
@@ -126,9 +130,9 @@ public class ManagerService {
         }
     }
 
-    public List<User> getManagerByCinema(Cinema cinema) {
-        List<Manager> managers = managerRepository.findAllByCinema(cinema);
-        return new ArrayList<>(managers);
+    public Optional<Manager> getManagerByCinema(Cinema cinema) {
+        return managerRepository.findByCinemaAndRole(cinema, roleService.findByRoleName("MANAGER"));
+
     }
 
     public List<Manager> findAll() {

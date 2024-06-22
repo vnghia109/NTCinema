@@ -286,7 +286,7 @@ public class BookingService {
                     seatPromotions.add(new SeatPromotion(item.getSeatId(), BigDecimal.valueOf(item.getPrice().getPrice()), seatPriceMap.get(item.getSeatId()), item.getRow(), item.getColumn()));
                 }
             }
-            Optional<PromotionCode> promotionCode = Optional.empty();
+            Optional<PromotionCode> promotionCode;
             if (bookReq.getCode() != null && !bookReq.getCode().isEmpty()){
                 promotionCode = promotionCodeRepository.findByPromotionCode(bookReq.getCode());
                 if (promotionCode.isEmpty()){
@@ -826,6 +826,93 @@ public class BookingService {
                             .success(true)
                             .message("Đặt vé thành công!!")
                             .result(bookingRes)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message(e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> sellTicketInfo(SellTicketReq req) {
+        try {
+            List<String> seatIds = req.getSeatIds();
+            List<String> foodIds = req.getFoodIds();
+            List<Seat> seats = new ArrayList<>();
+            for (String item: seatIds) {
+                Optional<Seat> seat = seatRepository.findById(item);
+                if (seat.isPresent()){
+                    if (!seat.get().isStatus()){
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(GenericResponse.builder()
+                                        .success(false)
+                                        .message("Ghế đã được đặt trước rồi!")
+                                        .result(seat.get())
+                                        .statusCode(HttpStatus.CONFLICT.value())
+                                        .build());
+                    }
+                    seats.add(seat.get());
+                }
+            }
+            List<FoodWithCount> foods = convertToFoodWithCountList(foodIds);
+            Booking booking = new Booking();
+            booking.setUserId(req.getUserId());
+            booking.setShowtimeId(seats.get(0).getShowTime().getShowTimeId());
+            booking.setCreateAt(new Date());
+            booking.setSeats(seats);
+            booking.setFoods(foods);
+            booking.setDiscount(BigDecimal.ZERO);
+            booking.setPromotionCode(null);
+            Map<String, BigDecimal> seatPriceMap = new HashMap<>();
+            List<PromotionFixed> promotionFixedList = totalBooking(booking, seatPriceMap);
+            booking.setPromotionFixeds(promotionFixedList);
+            List<SeatPromotion> seatPromotions = new ArrayList<>();
+            for (Seat item: seats) {
+                if (seatPriceMap.containsKey(item.getSeatId())){
+                    seatPromotions.add(new SeatPromotion(item.getSeatId(), BigDecimal.valueOf(item.getPrice().getPrice()), seatPriceMap.get(item.getSeatId()), item.getRow(), item.getColumn()));
+                }
+            }
+            Optional<PromotionCode> promotionCode;
+            if (req.getCode() != null && !req.getCode().isEmpty()){
+                promotionCode = promotionCodeRepository.findByPromotionCode(req.getCode());
+                if (promotionCode.isEmpty()){
+                    BookingInfoRes bookingInfoRes = new BookingInfoRes(booking, promotionFixedList, seatPromotions);
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message("Mã khuyến mãi không tồn tại!")
+                                    .result(bookingInfoRes)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                }
+                Map<Boolean, String> map = promotionService.checkPromotionCode(promotionCode.get(), booking);
+                if (map.containsKey(false)){
+                    BookingInfoRes bookingInfoRes = new BookingInfoRes(booking, promotionFixedList, seatPromotions);
+                    return ResponseEntity.status(HttpStatus.OK)
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message(map.get(false))
+                                    .result(bookingInfoRes)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                }else {
+                    BigDecimal totalAfDiscount = promotionService.calculateTotal(booking, promotionCode.get());
+                    booking.setDiscount(booking.getTotal().subtract(totalAfDiscount));
+                    booking.setTotal(totalAfDiscount);
+                    booking.setPromotionCode(promotionCode.get());
+                }
+            }
+            BookingInfoRes bookingInfoRes = new BookingInfoRes(booking, promotionFixedList, seatPromotions);
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy thông tin đặt lịch thành công!")
+                            .result(bookingInfoRes)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         }catch (Exception e){

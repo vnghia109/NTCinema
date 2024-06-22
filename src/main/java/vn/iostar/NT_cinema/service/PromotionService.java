@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.service;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.DiscountType;
 import vn.iostar.NT_cinema.dto.GenericResponse;
@@ -37,6 +39,8 @@ public class PromotionService {
     MongoTemplate mongoTemplate;
     @Autowired
     PromotionCodeUsageRepository promotionCodeUsageRepository;
+    @Autowired
+    NotificationService notificationService;
 
     public ResponseEntity<GenericResponse> getAllPromotions(boolean isFixed, String code, Pageable pageable) {
         try {
@@ -137,6 +141,7 @@ public class PromotionService {
             promotionFixed.setCreateAt(LocalDate.now());
 
             PromotionFixed response = promotionFixedRepository.save(promotionFixed);
+            notificationService.promotionNotification(response);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
@@ -465,6 +470,14 @@ public class PromotionService {
 
     public Map<Boolean, String> checkPromotionCode(PromotionCode promotion, Booking booking) {
         Map<Boolean, String> map = new HashMap<>();
+        if (promotion.isDeleted()){
+            map.put(false, "Khuyến mãi đá xóa!");
+            return map;
+        }
+        if (!promotion.isValid()) {
+            map.put(false, "Khuyến mãi đã hết hạn sử dụng!");
+            return map;
+        }
         if (promotion.getMaxUsage() <= 0) {
             map.put(false, "Khuyến mãi đã hết lượt sử dụng!");
             return map;
@@ -522,6 +535,25 @@ public class PromotionService {
                             .result("Lỗi máy chủ.")
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
+        }
+    }
+
+    @Scheduled(cron = "0 0 5 * * *", zone = "GMT+7")
+    @PostConstruct
+    private void changeValidPromotion(){
+        List<PromotionCode> promotionCodes = promotionCodeRepository.findAll();
+        for (PromotionCode item : promotionCodes) {
+            if (item.getEndDate().isBefore(LocalDate.now()) || item.getStartDate().isAfter(LocalDate.now())) {
+                item.setValid(false);
+                promotionCodeRepository.save(item);
+            }
+        }
+        List<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll();
+        for (PromotionFixed item : promotionFixeds) {
+            if (item.getEndDate().isBefore(LocalDate.now()) || item.getStartDate().isAfter(LocalDate.now())) {
+                item.setValid(false);
+                promotionFixedRepository.save(item);
+            }
         }
     }
 }
