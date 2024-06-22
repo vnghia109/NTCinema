@@ -21,6 +21,7 @@ import vn.iostar.NT_cinema.repository.*;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
@@ -309,7 +310,7 @@ public class NotificationService {
         try {
             Page<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", notifications.getContent());
+            result.put("content", notifications.getContent().stream().map(NotificationUser::getNotification).collect(Collectors.toList()));
             result.put("pageNumber", notifications.getPageable().getPageNumber()+1);
             result.put("pageSize", notifications.getSize());
             result.put("totalPages", notifications.getTotalPages());
@@ -342,7 +343,7 @@ public class NotificationService {
                         .body(GenericResponse.builder()
                                 .success(true)
                                 .message("Lấy thông báo thành công!")
-                                .result(notification.get().getNotification())
+                                .result(notification.get())
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } else {
