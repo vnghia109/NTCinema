@@ -77,7 +77,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Người dùng không tồn tại!")
+                .message("Sai tên người dùng!")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
@@ -88,7 +88,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleUserNotFoundException(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Sai tên người dùng!")
+                .message("Người dùng không tồn tại!Vui lòng đăng nhập lại")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();

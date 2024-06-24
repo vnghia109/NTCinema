@@ -8,7 +8,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -54,6 +57,8 @@ public class UserService {
     ManagerRepository managerRepository;
     @Autowired
     StaffRepository staffRepository;
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     public Optional<User> findByUserName(String userName) {
         Optional<User> user = userRepository.findByUserName(userName);

@@ -46,6 +46,8 @@ public class ManagerController {
     SeatService seatService;
     @Autowired
     StatsService statsService;
+    @Autowired
+    NotificationService notificationService;
 
     @PostMapping("/rooms")
     public ResponseEntity<GenericResponse> addRoom(@RequestHeader("Authorization") String authorizationHeader,
@@ -260,5 +262,14 @@ public class ManagerController {
     public ResponseEntity<GenericResponse> countSeatBooked(@RequestParam("showtimeId") String showtimeId,
                                                            @RequestParam("scheduleId") String scheduleId){
         return seatService.countSeatBooked(showtimeId, scheduleId);
+    }
+
+
+    @PostMapping("/notification/send")
+    public ResponseEntity<GenericResponse> sendNotification(@RequestHeader("Authorization") String authorizationHeader,
+                                                            @RequestBody NotificationReq notificationReq) {
+        String token = authorizationHeader.substring(7);
+        String managerId = jwtTokenProvider.getUserIdFromJwt(token);
+        return notificationService.managerSendNotification(notificationReq, managerId);
     }
 }

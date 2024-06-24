@@ -6,6 +6,6 @@ public enum NotiType {
     TICKET_STATUS,
     PROMOTION,
     REVIEW,
-    LOW_STOCK;
-
+    LOW_STOCK,
+    OTHER
 }

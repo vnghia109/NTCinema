@@ -16,7 +16,9 @@ import vn.iostar.NT_cinema.constant.NotiType;
 import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.NotificationReq;
+import vn.iostar.NT_cinema.dto.NotificationsRes;
 import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.repository.*;
 
 import java.io.IOException;
@@ -50,6 +52,10 @@ public class NotificationService {
     FoodInventoryRepository foodInventoryRepository;
     @Autowired
     CinemaRepository cinemaRepository;
+    @Autowired
+    StaffRepository staffRepository;
+    @Autowired
+    ManagerRepository managerRepository;
 
     public Notification createNotification(NotiType type, String title, String message, NotiTarget target) {
         Notification notification = new Notification();
@@ -313,7 +319,7 @@ public class NotificationService {
         try {
             Page<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", notifications.getContent());
+            result.put("content", notifications.getContent().stream().map(NotificationsRes::new).collect(Collectors.toList()));
             result.put("pageNumber", notifications.getPageable().getPageNumber()+1);
             result.put("pageSize", notifications.getSize());
             result.put("totalPages", notifications.getTotalPages());
@@ -346,7 +352,7 @@ public class NotificationService {
                         .body(GenericResponse.builder()
                                 .success(true)
                                 .message("Lấy thông báo thành công!")
-                                .result(notification.get())
+                                .result(new NotificationsRes(notification.get()))
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } else {
@@ -377,16 +383,16 @@ public class NotificationService {
                 case "ALL":
                     notification = switch (notificationReq.getRole()) {
                         case "MANAGER" -> {
-                            usersToNotify = userRepository.findAllByRole_RoleName("MANAGER");
-                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.ADMIN_MANAGER, usersToNotify);
+                            usersToNotify = userRepository.findAllByRole(roleService.findByRoleName("MANAGER"));
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.ADMIN_MANAGER, usersToNotify);
                         }
                         case "VIEWER" -> {
-                            usersToNotify = userRepository.findAllByRole_RoleName("VIEWER");
-                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.VIEWER, usersToNotify);
+                            usersToNotify = userRepository.findAllByRole(roleService.findByRoleName("VIEWER"));
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.VIEWER, usersToNotify);
                         }
                         case "STAFF" -> {
-                            usersToNotify = userRepository.findAllByRole_RoleName("STAFF");
-                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.STAFF, usersToNotify);
+                            usersToNotify = userRepository.findAllByRole(roleService.findByRoleName("STAFF"));
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.STAFF, usersToNotify);
                         }
                         default -> throw new IllegalArgumentException("Đối tượng gửi thông báo không hợp lệ.");
                     };
@@ -401,15 +407,76 @@ public class NotificationService {
                     notification = switch (notificationReq.getRole()) {
                         case "MANAGER" -> {
                             usersToNotify = userRepository.findAllByUserIdIn(notificationReq.getUserIds());
-                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.ADMIN_MANAGER, usersToNotify);
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.ADMIN_MANAGER, usersToNotify);
                         }
                         case "VIEWER" -> {
                             usersToNotify = userRepository.findAllByUserIdIn(notificationReq.getUserIds());
-                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.VIEWER, usersToNotify);
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.VIEWER, usersToNotify);
                         }
                         case "STAFF" -> {
                             usersToNotify = userRepository.findAllByUserIdIn(notificationReq.getUserIds());
-                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.STAFF, usersToNotify);
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.STAFF, usersToNotify);
+                        }
+                        default -> throw new IllegalArgumentException("Đối tượng gửi thông báo không hợp lệ.");
+                    };
+                    return ResponseEntity.ok()
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message("Gửi thông báo thành công!")
+                                    .result(notification)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                default:
+                    throw new IllegalArgumentException("Đối tượng gửi thông báo không hợp lệ.");
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lỗi máy chủ. " + e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public ResponseEntity<GenericResponse> managerSendNotification(NotificationReq notificationReq, String managerId) {
+        try {
+            List<User> usersToNotify;
+            Notification notification;
+            switch (notificationReq.getSendTo()) {
+                case "ALL":
+                    notification = switch (notificationReq.getRole()) {
+                        case "VIEWER" -> {
+                            usersToNotify = userRepository.findAllByRole(roleService.findByRoleName("VIEWER"));
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.VIEWER, usersToNotify);
+                        }
+                        case "STAFF" -> {
+                            Optional<Manager> manager = managerRepository.findById(managerId);
+                            if (manager.isEmpty())
+                                throw new UserNotFoundException("Không tìm thấy quản lý. Vui lòng đăng nhập lại!");
+                            usersToNotify = new ArrayList<>(staffRepository.findAllByRoleAndCinema(roleService.findByRoleName("STAFF"), manager.get().getCinema()));
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.STAFF, usersToNotify);
+                        }
+                        default -> throw new IllegalArgumentException("Đối tượng gửi thông báo không hợp lệ.");
+                    };
+                    return ResponseEntity.ok()
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message("Gửi thông báo thành công!")
+                                    .result(notification)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                case "SPECIFIC":
+                    notification = switch (notificationReq.getRole()) {
+                        case "VIEWER" -> {
+                            usersToNotify = userRepository.findAllByUserIdIn(notificationReq.getUserIds());
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.VIEWER, usersToNotify);
+                        }
+                        case "STAFF" -> {
+                            usersToNotify = userRepository.findAllByUserIdIn(notificationReq.getUserIds());
+                            yield sendNotificationToUsers(NotiType.valueOf(notificationReq.getType()), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.STAFF, usersToNotify);
                         }
                         default -> throw new IllegalArgumentException("Đối tượng gửi thông báo không hợp lệ.");
                     };

@@ -298,7 +298,7 @@ public class StatsService {
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
             }
-            List<Staff> staffs = staffRepository.findAllByCinema(manager.get().getCinema());
+            List<Staff> staffs = staffRepository.findAllByRoleAndCinema(roleRepository.findByRoleName("STAFF"), manager.get().getCinema());
 
             List<BigDecimal> money = new ArrayList<>();
             List<Integer> ticket = new ArrayList<>();

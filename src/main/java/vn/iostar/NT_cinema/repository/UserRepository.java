@@ -35,7 +35,7 @@ public interface UserRepository extends MongoRepository<User, String> {
     Page<User> findAllByRoleIn(List<Role> roles, @NotNull Pageable pageable);
     List<User> findAllByRoleIn(List<Role> roles);
 
-    List<User> findAllByRole_RoleName(String roleName);
+    List<User> findAllByRole(Role role);
 
     List<User> findAllByUserIdIn(List<String> userIds);
 

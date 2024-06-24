@@ -19,5 +19,5 @@ public class NotificationReq {
     private String sendTo;
     private String role;
     private List<String> userIds;
-    private NotiType type;
+    private String type;
 }
