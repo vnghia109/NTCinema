@@ -16,6 +16,7 @@ import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.NotificationService;
 import vn.iostar.NT_cinema.service.UserService;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Objects;
 

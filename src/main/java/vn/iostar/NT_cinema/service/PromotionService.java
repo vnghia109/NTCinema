@@ -461,8 +461,11 @@ public class PromotionService {
             if (user.isPresent()) {
                 if (user.get().getDob() != null) {
                     LocalDate date = user.get().getDob().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                    System.out.println(user.get().getUserId() + " " + date);
                     return promotion.getAgeLimit() >= LocalDate.now().getYear() - date.getYear() + 1;
                 }
+            }else {
+                return false;
             }
         }
         return true;

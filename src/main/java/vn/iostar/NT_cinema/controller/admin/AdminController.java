@@ -54,6 +54,8 @@ public class AdminController {
     GenresService genresService;
     @Autowired
     StockEntryService stockEntryService;
+    @Autowired
+    NotificationService notificationService;
 
     @PostMapping("/managers")
     public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
@@ -511,5 +513,10 @@ public class AdminController {
                                                            @RequestParam(defaultValue = "1") int index,
                                                            @RequestParam(defaultValue = "10") int size){
         return stockEntryService.getStockEntriesByCinema(PageRequest.of(index-1, size), cinemaId);
+    }
+
+    @PostMapping("/notification/send")
+    public ResponseEntity<GenericResponse> sendNotification(@RequestBody NotificationReq notificationReq) {
+        return notificationService.adminSendNotification(notificationReq);
     }
 }

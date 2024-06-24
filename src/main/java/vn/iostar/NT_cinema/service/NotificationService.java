@@ -1,7 +1,6 @@
 package vn.iostar.NT_cinema.service;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +15,11 @@ import vn.iostar.NT_cinema.constant.NotiTarget;
 import vn.iostar.NT_cinema.constant.NotiType;
 import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.GenericResponse;
+import vn.iostar.NT_cinema.dto.NotificationReq;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,9 +61,11 @@ public class NotificationService {
         notification.setUpdatedAt(LocalDateTime.now());
         return notificationRepository.save(notification);
     }
-    public void sendNotificationToAllUsers(String type, String title, String message) throws FirebaseMessagingException {
-        Notification notification = createNotification(NotiType.valueOf(type), title, message, NotiTarget.ALL);
-        List<User> users = userRepository.findAll();
+    public void sendNotificationToAllViewer(String type, String title, String message) throws FirebaseMessagingException {
+        Notification notification = createNotification(NotiType.valueOf(type), title, message, NotiTarget.VIEWER);
+        List<Role> roles = new ArrayList<>();
+        roles.add(roleService.findByRoleName("VIEWER"));
+        List<User> users = userRepository.findAllByRoleIn(roles);
 
         List<NotificationUser> notificationsUsers = new ArrayList<>();
         for (User user : users) {
@@ -99,7 +102,7 @@ public class NotificationService {
             Notification notification = createNotification(NotiType.BOOKING_SUCCESS,
                     "ĐẶT VÉ THÀNH CÔNG",
                     message1.toString(),
-                    NotiTarget.USER);
+                    NotiTarget.VIEWER);
             notificationUserRepository.save(new NotificationUser(user.get(), notification));
             Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
             if (token.isPresent())
@@ -117,7 +120,7 @@ public class NotificationService {
         Notification notification = createNotification(NotiType.BOOKING_SUCCESS,
                 "MỘT VÉ VỪA BÁN",
                 message2.toString(),
-                NotiTarget.ADMIN);
+                NotiTarget.ADMIN_MANAGER);
         List<Role> roles = new ArrayList<>();
         roles.add(roleService.findByRoleName("ADMIN"));
         List<User> users = userRepository.findAllByRoleIn(roles);
@@ -149,7 +152,7 @@ public class NotificationService {
                 Notification notification = createNotification(NotiType.TICKET_STATUS,
                         "HỦY VÉ",
                         message.toString(),
-                        NotiTarget.USER);
+                        NotiTarget.VIEWER);
                 notificationUserRepository.save(new NotificationUser(user.get(), notification));
                 Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
                 if (token.isPresent())
@@ -169,7 +172,7 @@ public class NotificationService {
                 Notification notification1 = createNotification(NotiType.TICKET_STATUS,
                         "MỘT VÉ ĐÃ BỊ HỦY",
                         message2.toString(),
-                        NotiTarget.ADMIN);
+                        NotiTarget.ADMIN_MANAGER);
                 List<Role> roles = new ArrayList<>();
                 roles.add(roleService.findByRoleName("ADMIN"));
                 List<User> users = userRepository.findAllByRoleIn(roles);
@@ -199,7 +202,7 @@ public class NotificationService {
                 Notification notification = createNotification(NotiType.TICKET_STATUS,
                         "XÁC THỰC VÉ VÀO CỬA",
                         message.toString(),
-                        NotiTarget.USER);
+                        NotiTarget.VIEWER);
                 notificationUserRepository.save(new NotificationUser(user.get(), notification));
                 Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
                 if (token.isPresent())
@@ -214,7 +217,7 @@ public class NotificationService {
         Notification notification = createNotification(NotiType.REVIEW,
                 "ĐÁNH GIÁ MỚI",
                 message,
-                NotiTarget.ADMIN);
+                NotiTarget.ADMIN_MANAGER);
         List<Role> roles = new ArrayList<>();
         roles.add(roleService.findByRoleName("ADMIN"));
         List<User> users = userRepository.findAllByRoleIn(roles);
@@ -233,7 +236,7 @@ public class NotificationService {
     }
 
     public void promotionNotification(PromotionFixed promotion) throws FirebaseMessagingException {
-        sendNotificationToAllUsers("PROMOTION", promotion.getName(), promotion.getDescription());
+        sendNotificationToAllViewer("PROMOTION", promotion.getName(), promotion.getDescription());
     }
 
     @Scheduled(cron = "0 0 5 * * *", zone = "GMT+7")
@@ -251,7 +254,7 @@ public class NotificationService {
                         Notification notification = createNotification(NotiType.LOW_STOCK,
                                 "SẢN PHẨM SẮP HẾT HÀNG",
                                 message.toString(),
-                                NotiTarget.ADMIN);
+                                NotiTarget.ADMIN_MANAGER);
                             notificationUserRepository.save(new NotificationUser(manager.get(), notification));
                             Optional<UserTokenFCM> token = userTokenRepository.findByUserId(manager.get().getUserId());
                             if (token.isPresent())
@@ -299,7 +302,7 @@ public class NotificationService {
             createNotification(NotiType.TICKET_REMINDER,
                     booking.getSeats().get(0).getShowTime().getMovie().getTitle()+" sắp chiếu!(còn 1 tiếng nữa)",
                     message.toString(),
-                    NotiTarget.USER);
+                    NotiTarget.VIEWER);
             Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
             if (token.isPresent())
                 fcmService.sendNotification(token.get().getToken(), "PHIM CỦA BẠN SẮP ĐẾN GIỜ CHIẾU", message.toString());
@@ -364,5 +367,96 @@ public class NotificationService {
                             .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                             .build());
         }
+    }
+
+    public ResponseEntity<GenericResponse> adminSendNotification(NotificationReq notificationReq) {
+        try {
+            List<User> usersToNotify;
+            Notification notification;
+            switch (notificationReq.getSendTo()) {
+                case "ALL":
+                    notification = switch (notificationReq.getRole()) {
+                        case "MANAGER" -> {
+                            usersToNotify = userRepository.findAllByRole_RoleName("MANAGER");
+                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.ADMIN_MANAGER, usersToNotify);
+                        }
+                        case "VIEWER" -> {
+                            usersToNotify = userRepository.findAllByRole_RoleName("VIEWER");
+                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.VIEWER, usersToNotify);
+                        }
+                        case "STAFF" -> {
+                            usersToNotify = userRepository.findAllByRole_RoleName("STAFF");
+                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.STAFF, usersToNotify);
+                        }
+                        default -> throw new IllegalArgumentException("Đối tượng gửi thông báo không hợp lệ.");
+                    };
+                    return ResponseEntity.ok()
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message("Gửi thông báo thành công!")
+                                    .result(notification)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                case "SPECIFIC":
+                    notification = switch (notificationReq.getRole()) {
+                        case "MANAGER" -> {
+                            usersToNotify = userRepository.findAllByUserIdIn(notificationReq.getUserIds());
+                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.ADMIN_MANAGER, usersToNotify);
+                        }
+                        case "VIEWER" -> {
+                            usersToNotify = userRepository.findAllByUserIdIn(notificationReq.getUserIds());
+                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.VIEWER, usersToNotify);
+                        }
+                        case "STAFF" -> {
+                            usersToNotify = userRepository.findAllByUserIdIn(notificationReq.getUserIds());
+                            yield sendNotificationToUsers(notificationReq.getType(), notificationReq.getTitle(), notificationReq.getMessage(), NotiTarget.STAFF, usersToNotify);
+                        }
+                        default -> throw new IllegalArgumentException("Đối tượng gửi thông báo không hợp lệ.");
+                    };
+                    return ResponseEntity.ok()
+                            .body(GenericResponse.builder()
+                                    .success(true)
+                                    .message("Gửi thông báo thành công!")
+                                    .result(notification)
+                                    .statusCode(HttpStatus.OK.value())
+                                    .build());
+                default:
+                    throw new IllegalArgumentException("Đối tượng gửi thông báo không hợp lệ.");
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lỗi máy chủ. " + e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
+    }
+
+    public Notification sendNotificationToUsers(NotiType type, String title, String message, NotiTarget notiTarget, List<User> users) throws FirebaseMessagingException {
+        Notification notification = createNotification(type, title, message, notiTarget);
+
+        List<NotificationUser> notificationsUsers = new ArrayList<>();
+        for (User user : users) {
+            NotificationUser notificationUser = new NotificationUser();
+            notificationUser.setUser(user);
+            notificationUser.setNotification(notification);
+            notificationUser.setRead(false);
+            notificationUser.setCreatedAt(LocalDateTime.now());
+            notificationUser.setUpdatedAt(LocalDateTime.now());
+            notificationsUsers.add(notificationUser);
+        }
+
+        notificationUserRepository.saveAll(notificationsUsers);
+
+        for (User user : users) {
+            Optional<UserTokenFCM> token = userTokenRepository.findByUserId(user.getUserId());
+            if (token.isPresent())
+                fcmService.sendNotification(token.get().getToken(), title, message);
+        }
+
+        return notification;
     }
 }

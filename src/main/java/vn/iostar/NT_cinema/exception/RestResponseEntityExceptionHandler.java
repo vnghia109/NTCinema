@@ -1,5 +1,6 @@
 package vn.iostar.NT_cinema.exception;
 
+import com.google.firebase.messaging.FirebaseMessagingException;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -43,7 +44,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         });
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Validation failed for argument")
+                .message("Xác thực không thành công!")
                 .result(errors)
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .build();
@@ -55,6 +56,17 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
                 .message(ex.getMessage())
+                .result(null)
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .build();
+        return new ResponseEntity<>(genericResponse,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(FirebaseMessagingException.class)
+    public ResponseEntity<?> handleFirebaseMessagingException(FirebaseMessagingException ex) {
+        GenericResponse genericResponse = GenericResponse.builder()
+                .success(false)
+                .message("Gửi thông báo đẩy thất bại."+ex.getMessage())
                 .result(null)
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .build();
@@ -160,13 +172,11 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         return new ResponseEntity<>(genericResponse,HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-
-
     @ExceptionHandler({ RuntimeException.class })
     public ResponseEntity<Object> handleInternal(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message(ex.getMessage())
+                .message("Lỗi máy chủ. "+ex.getMessage())
                 .result("InternalError")
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .build();
