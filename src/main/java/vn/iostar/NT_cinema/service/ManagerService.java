@@ -132,10 +132,9 @@ public class ManagerService {
 
     public Optional<Manager> getManagerByCinema(Cinema cinema) {
         return managerRepository.findByCinemaAndRole(cinema, roleService.findByRoleName("MANAGER"));
-
     }
 
     public List<Manager> findAll() {
-        return managerRepository.findAll();
+        return managerRepository.findAllByRole( roleRepository.findByRoleName("MANAGER"));
     }
 }
