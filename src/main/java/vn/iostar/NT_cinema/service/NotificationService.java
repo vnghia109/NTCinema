@@ -313,7 +313,7 @@ public class NotificationService {
         try {
             Page<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", notifications.getContent().stream().map(NotificationUser::getNotification).collect(Collectors.toList()));
+            result.put("content", notifications.getContent());
             result.put("pageNumber", notifications.getPageable().getPageNumber()+1);
             result.put("pageSize", notifications.getSize());
             result.put("totalPages", notifications.getTotalPages());
