@@ -1,6 +1,5 @@
 package vn.iostar.NT_cinema.controller;
 
-import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -16,8 +15,6 @@ import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.NotificationService;
 import vn.iostar.NT_cinema.service.UserService;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Objects;
 
 @RestController
@@ -107,5 +104,13 @@ public class UserController {
     @GetMapping("/notification/{notificationUserId}")
     public ResponseEntity<GenericResponse> getNotification(@PathVariable("notificationUserId") String notificationUserId) {
         return notificationService.getNotification(notificationUserId);
+    }
+
+    @GetMapping("/notifications/notRead")
+    public ResponseEntity<GenericResponse> notReadCount(@RequestHeader("Authorization") String authorizationHeader) {
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        return notificationService.notReadCount(userId);
     }
 }

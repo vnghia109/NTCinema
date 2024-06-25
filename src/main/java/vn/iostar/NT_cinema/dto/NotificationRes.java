@@ -4,10 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import vn.iostar.NT_cinema.entity.Notification;
 import vn.iostar.NT_cinema.entity.NotificationUser;
-import vn.iostar.NT_cinema.entity.User;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Setter
-public class NotificationsRes {
+public class NotificationRes {
     private String notificationUserId;
     private String userId;
     private Notification notification;
@@ -23,7 +21,7 @@ public class NotificationsRes {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public NotificationsRes(NotificationUser notificationUser) {
+    public NotificationRes(NotificationUser notificationUser) {
         this.notificationUserId = notificationUser.getNotificationUserId();
         this.userId = notificationUser.getUser().getUserId();
         this.notification = notificationUser.getNotification();

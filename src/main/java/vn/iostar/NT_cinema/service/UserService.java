@@ -59,6 +59,8 @@ public class UserService {
     StaffRepository staffRepository;
     @Autowired
     MongoTemplate mongoTemplate;
+    @Autowired
+    ManagerService managerService;
 
     public Optional<User> findByUserName(String userName) {
         Optional<User> user = userRepository.findByUserName(userName);
@@ -194,6 +196,15 @@ public class UserService {
                         .message("Rạp phim không tồn tại.")
                         .result(null)
                         .statusCode(HttpStatus.NOT_FOUND.value())
+                        .build());
+            }
+            Optional<Manager> managerByCinema = managerService.getManagerByCinema(cinema.get());
+            if (managerByCinema.isPresent()){
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
+                        .success(false)
+                        .message("Rạp phim đã có quản lý. Vui lòng chon rạp khác.")
+                        .result(null)
+                        .statusCode(HttpStatus.CONFLICT.value())
                         .build());
             }
 
@@ -736,12 +747,36 @@ public class UserService {
         return null;
     }
 
-    public ResponseEntity<GenericResponse> getAllUser(PageRequest pageRequest) {
+    public Page<User> findAllByRole(String roleName, Pageable pageable) {
+        Role role = roleService.findByRoleName(roleName);
+        return userRepository.findAllByRole(role, pageable);
+    }
+
+    public ResponseEntity<GenericResponse> getAllUser(String role, Pageable pageable) {
         try {
-            Page<User> users = userRepository.findAllByOrderByLastLoginAtDesc(pageRequest);
+            Page<User> users;
+            switch (role) {
+                case "ALL":
+                    users = userRepository.findAllByOrderByLastLoginAtDesc(pageable);
+                    break;
+                case "MANAGER":
+                    users = findAllByRole("MANAGER", pageable);
+                    break;
+                case "STAFF":
+                    users = findAllByRole("STAFF", pageable);
+                    break;
+                case "ADMIN":
+                    users = findAllByRole("ADMIN", pageable);
+                    break;
+                case "VIEWER":
+                    users = findAllByRole("VIEWER", pageable);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Role không hợp lệ.");
+            }
 
             Map<String, Object> map = new HashMap<>();
-            map.put("content", users.getContent());
+            map.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getLastLoginAt)).toList());
             map.put("pageNumber", users.getPageable().getPageNumber() + 1);
             map.put("pageSize", users.getSize());
             map.put("totalPages", users.getTotalPages());

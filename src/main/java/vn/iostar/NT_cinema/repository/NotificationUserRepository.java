@@ -6,7 +6,10 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import vn.iostar.NT_cinema.entity.NotificationUser;
 
+import java.util.List;
+
 @Repository
 public interface NotificationUserRepository extends MongoRepository<NotificationUser, String> {
     Page<NotificationUser> findAllByUser_UserId(String userId, Pageable pageable);
+    List<NotificationUser> findAllByUser_UserId(String userId);
 }

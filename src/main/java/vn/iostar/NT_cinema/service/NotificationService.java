@@ -5,8 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,19 +12,16 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.NotiTarget;
 import vn.iostar.NT_cinema.constant.NotiType;
 import vn.iostar.NT_cinema.constant.TicketStatus;
-import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.dto.NotificationReq;
-import vn.iostar.NT_cinema.dto.NotificationsRes;
+import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.repository.*;
 
-import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 @Service
 public class NotificationService {
@@ -56,8 +51,10 @@ public class NotificationService {
     StaffRepository staffRepository;
     @Autowired
     ManagerRepository managerRepository;
+    @Autowired
+    BookingRepository bookingRepository;
 
-    public Notification createNotification(NotiType type, String title, String message, NotiTarget target) {
+    public Notification createNotification(NotiType type, String title, String message, NotiTarget target, Object detailData) {
         Notification notification = new Notification();
         notification.setType(type);
         notification.setTitle(title);
@@ -65,10 +62,11 @@ public class NotificationService {
         notification.setTarget(target);
         notification.setCreatedAt(LocalDateTime.now());
         notification.setUpdatedAt(LocalDateTime.now());
+        notification.setDetailData(detailData);
         return notificationRepository.save(notification);
     }
-    public void sendNotificationToAllViewer(String type, String title, String message) throws FirebaseMessagingException {
-        Notification notification = createNotification(NotiType.valueOf(type), title, message, NotiTarget.VIEWER);
+    public void sendNotificationToAllViewer(String type, String title, String message, Object detailData) throws FirebaseMessagingException {
+        Notification notification = createNotification(NotiType.valueOf(type), title, message, NotiTarget.VIEWER, detailData);
         List<Role> roles = new ArrayList<>();
         roles.add(roleService.findByRoleName("VIEWER"));
         List<User> users = userRepository.findAllByRoleIn(roles);
@@ -96,153 +94,160 @@ public class NotificationService {
     public void bookingTicketSuccessNotification(Booking booking) throws FirebaseMessagingException {
         Optional<User> user = userRepository.findById(booking.getUserId());
         if (user.isPresent()) {
-            StringBuilder message1 = new StringBuilder("Bạn vừa đặt vé thành công cho " + booking.getSeats().size() + " ghế: ");
-            for (Seat seat : booking.getSeats()) {
-                message1.append(seat.convertToUnicode()).append(seat.getColumn()).append(", ");
-            }
-            LocalDateTime start = LocalDateTime.of(booking.getSeats().get(0).getSchedule().getDate(), booking.getSeats().get(0).getSchedule().getStartTime());
-            LocalDateTime end = start.plusMinutes(Long.parseLong(booking.getSeats().get(0).getShowTime().getMovie().getDuration()));
-            message1.append("của phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle())
-                    .append(" bắt đầu chiếu lúc ").append(start)
-                    .append(" kết thúc vào ").append(end);
+            sendNotiForBookingSuccessToUser(booking, user.get());
+
+            String message2 = "Khách hàng " + user.get().getFullName() + " vừa đặt vé thành công.";
+
             Notification notification = createNotification(NotiType.BOOKING_SUCCESS,
-                    "ĐẶT VÉ THÀNH CÔNG",
-                    message1.toString(),
-                    NotiTarget.VIEWER);
-            notificationUserRepository.save(new NotificationUser(user.get(), notification));
-            Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
-            if (token.isPresent())
-                fcmService.sendNotification(token.get().getToken(), "ĐẶT VÉ THÀNH CÔNG", message1.toString());
+                    "Giao dịch mới: Đặt vé.",
+                    message2,
+                    NotiTarget.ADMIN_MANAGER,
+                    new TicketDetailRes(booking, user.get()));
+
+            List<User> users = userRepository.findAllByRole(roleService.findByRoleName("ADMIN"));
+            for (User item : users) {
+                notificationUserRepository.save(new NotificationUser(item, notification));
+                Optional<UserTokenFCM> tokenAdmin = userTokenRepository.findByUserId(item.getUserId());
+                if (tokenAdmin.isPresent())
+                    fcmService.sendNotification(tokenAdmin.get().getToken(), "Giao dịch mới: Đặt vé.", message2);
+            }
+            Optional<Manager> manager = managerService.getManagerByCinema(booking.getSeats().get(0).getShowTime().getRoom().getCinema());
+            if (manager.isPresent()) {
+                notificationUserRepository.save(new NotificationUser(manager.get(), notification));
+                Optional<UserTokenFCM> tokenManager = userTokenRepository.findByUserId(manager.get().getUserId());
+                if (tokenManager.isPresent())
+                    fcmService.sendNotification(tokenManager.get().getToken(), "Giao dịch mới: Đặt vé.", message2);
+            }
         }
-        StringBuilder message2 = new StringBuilder("Vừa bán một vé thành công cho " + booking.getSeats().size() + " ghế: ");
-        for (Seat seat : booking.getSeats()) {
-            message2.append(seat.convertToUnicode()).append(seat.getColumn()).append(" ");
+    }
+
+    public void sellTicketSuccessNotification(Booking booking, User staff) throws FirebaseMessagingException {
+        Optional<User> user = userRepository.findById(booking.getUserId());
+        if (user.isPresent()) {
+            sendNotiForBookingSuccessToUser(booking, user.get());
         }
-        LocalDateTime start = LocalDateTime.of(booking.getSeats().get(0).getSchedule().getDate(), booking.getSeats().get(0).getSchedule().getStartTime());
-        LocalDateTime end = start.plusMinutes(Long.parseLong(booking.getSeats().get(0).getShowTime().getMovie().getDuration()));
-        message2.append("của phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle())
-                .append(", suất chiếu ").append(start)
-                .append(" - ").append(end);
+
+        String message2 = "Nhân viên "+staff.getFullName()+" bán vé cho phim "+booking.getSeats().get(0).getShowTime().getMovie().getTitle()+" thành công";
+
         Notification notification = createNotification(NotiType.BOOKING_SUCCESS,
-                "MỘT VÉ VỪA BÁN",
-                message2.toString(),
-                NotiTarget.ADMIN_MANAGER);
-        List<Role> roles = new ArrayList<>();
-        roles.add(roleService.findByRoleName("ADMIN"));
-        List<User> users = userRepository.findAllByRoleIn(roles);
+                "Giao dịch mới: Bán vé.",
+                message2,
+                NotiTarget.ADMIN_MANAGER,
+                new TicketDetailRes(booking, user.orElse(null)));
+        //Gửi thông báo cho staff
+        notificationUserRepository.save(new NotificationUser(staff, notification));
+        Optional<UserTokenFCM> tokenStaff = userTokenRepository.findByUserId(staff.getUserId());
+        if (tokenStaff.isPresent())
+            fcmService.sendNotification(tokenStaff.get().getToken(), "Giao dịch mới: Bán vé.", message2);
+        //Gửi thông báo cho admin
+        List<User> users = userRepository.findAllByRole(roleService.findByRoleName("ADMIN"));
         for (User item : users) {
             notificationUserRepository.save(new NotificationUser(item, notification));
-            Optional<UserTokenFCM> token = userTokenRepository.findByUserId(item.getUserId());
-            if (token.isPresent())
-                fcmService.sendNotification(token.get().getToken(), "MỘT VÉ VỪA BÁN", message2.toString());
+            Optional<UserTokenFCM> tokenAdmin = userTokenRepository.findByUserId(item.getUserId());
+            if (tokenAdmin.isPresent())
+                fcmService.sendNotification(tokenAdmin.get().getToken(), "Giao dịch mới: Bán vé.", message2);
         }
+        //Gửi thông báo cho manager
         Optional<Manager> manager = managerService.getManagerByCinema(booking.getSeats().get(0).getShowTime().getRoom().getCinema());
         if (manager.isPresent()) {
             notificationUserRepository.save(new NotificationUser(manager.get(), notification));
-            Optional<UserTokenFCM> token = userTokenRepository.findByUserId(manager.get().getUserId());
-            if (token.isPresent())
-                fcmService.sendNotification(token.get().getToken(), "MỘT VÉ VỪA BÁN", message2.toString());
+            Optional<UserTokenFCM> tokenManager = userTokenRepository.findByUserId(manager.get().getUserId());
+            if (tokenManager.isPresent())
+                fcmService.sendNotification(tokenManager.get().getToken(), "Giao dịch mới: Bán vé.", message2);
         }
+    }
+
+    public void sendNotiForBookingSuccessToUser(Booking booking, User user) throws FirebaseMessagingException {
+        String message1 = "Bạn vừa đặt vé thành công cho phim " + booking.getSeats().get(0).getShowTime().getMovie().getTitle() + ". ";
+
+        Notification notificationUser = createNotification(NotiType.BOOKING_SUCCESS,
+                "Thông báo đặt vé.",
+                message1,
+                NotiTarget.VIEWER,
+                new TicketDetailRes(booking, user));
+        notificationUserRepository.save(new NotificationUser(user, notificationUser));
+        Optional<UserTokenFCM> tokenUser = userTokenRepository.findByUserId(booking.getUserId());
+        if (tokenUser.isPresent())
+            fcmService.sendNotification(tokenUser.get().getToken(), "Thông báo đặt vé", message1);
     }
 
     public void ticketStatusNotification(Booking booking) throws FirebaseMessagingException {
         Optional<User> user = userRepository.findById(booking.getUserId());
         if (user.isPresent()) {
-            StringBuilder message = new StringBuilder("Bạn vừa ");
+            StringBuilder messageUser = new StringBuilder("Bạn vừa ");
             if(booking.getTicketStatus().equals(TicketStatus.CANCELLED)) {
-                message.append("hủy vé xem phim cho ").append(booking.getSeats().size()).append(" ghế: ");
-                for (Seat seat : booking.getSeats()) {
-                    message.append(seat.convertToUnicode()).append(seat.getColumn()).append(", ");
-                }
-                message.append("của phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle());
-                Notification notification = createNotification(NotiType.TICKET_STATUS,
-                        "HỦY VÉ",
-                        message.toString(),
-                        NotiTarget.VIEWER);
-                notificationUserRepository.save(new NotificationUser(user.get(), notification));
+                messageUser.append("hủy vé thành công.");
+                Notification notificationUser = createNotification(NotiType.TICKET_STATUS,
+                        "Thông báo hủy vé.",
+                        messageUser.toString(),
+                        NotiTarget.VIEWER,
+                        new TicketDetailRes(booking, user.get()));
+                notificationUserRepository.save(new NotificationUser(user.get(), notificationUser));
                 Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
                 if (token.isPresent())
-                    fcmService.sendNotification(token.get().getToken(), "ĐẶT VÉ THÀNH CÔNG", message.toString());
+                    fcmService.sendNotification(token.get().getToken(), "Thông báo hủy vé.", messageUser.toString());
 
-                StringBuilder message2 = new StringBuilder("Một vé xem phim đã bị hủy. Thông tin chi tiết: Khách hàng "+ user.get().getFullName());
-                message2.append(", ").append(booking.getSeats().size()).append(" ghế: ");
-                for (Seat seat : booking.getSeats()) {
-                    message2.append(seat.convertToUnicode()).append(seat.getColumn()).append(" ");
-                }
-                message2.deleteCharAt(message2.length() - 1);
-                LocalDateTime start = LocalDateTime.of(booking.getSeats().get(0).getSchedule().getDate(), booking.getSeats().get(0).getSchedule().getStartTime());
-                LocalDateTime end = start.plusMinutes(Long.parseLong(booking.getSeats().get(0).getShowTime().getMovie().getDuration()));
-                message2.append(", phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle())
-                        .append(", suất chiếu ").append(start)
-                        .append(" - ").append(end);
-                Notification notification1 = createNotification(NotiType.TICKET_STATUS,
-                        "MỘT VÉ ĐÃ BỊ HỦY",
-                        message2.toString(),
-                        NotiTarget.ADMIN_MANAGER);
-                List<Role> roles = new ArrayList<>();
-                roles.add(roleService.findByRoleName("ADMIN"));
-                List<User> users = userRepository.findAllByRoleIn(roles);
+                //Gửi cho admin, manager
+                String message = "Khách hàng "+ user.get().getFullName()+" vừa hủy vé.";
+                Notification notification = createNotification(NotiType.TICKET_STATUS,
+                        "Giao dịch mới: Hủy vé.",
+                        message,
+                        NotiTarget.ADMIN_MANAGER,
+                        new TicketDetailRes(booking, user.get()));
+
+                List<User> users = userRepository.findAllByRole(roleService.findByRoleName("ADMIN"));
                 for (User item : users) {
-                    notificationUserRepository.save(new NotificationUser(item, notification1));
+                    notificationUserRepository.save(new NotificationUser(item, notification));
                     Optional<UserTokenFCM> tokenAdmin = userTokenRepository.findByUserId(item.getUserId());
                     if (tokenAdmin.isPresent())
-                        fcmService.sendNotification(tokenAdmin.get().getToken(), "MỘT VÉ ĐÃ BỊ HỦY", message2.toString());
+                        fcmService.sendNotification(tokenAdmin.get().getToken(), "Giao dịch mới: Hủy vé.", message);
                 }
                 Optional<Manager> manager = managerService.getManagerByCinema(booking.getSeats().get(0).getShowTime().getRoom().getCinema());
                 if (manager.isPresent()){
-                    notificationUserRepository.save(new NotificationUser(manager.get(), notification1));
+                    notificationUserRepository.save(new NotificationUser(manager.get(), notification));
                     Optional<UserTokenFCM> tokenManager = userTokenRepository.findByUserId(manager.get().getUserId());
                     if (tokenManager.isPresent())
-                        fcmService.sendNotification(tokenManager.get().getToken(), "MỘT VÉ ĐÃ BỊ HỦY", message2.toString());
+                        fcmService.sendNotification(tokenManager.get().getToken(), "Giao dịch mới: Hủy vé.", message);
                 }
             } else if(booking.getTicketStatus().equals(TicketStatus.CONFIRMED)) {
-                message.append("xác thực vé vào cửa thành công cho ").append(booking.getSeats().size()).append(" ghế: ");
-                for (Seat seat : booking.getSeats()) {
-                    message.append(seat.convertToUnicode()).append(seat.getColumn()).append(", ");
-                }
-                LocalDateTime start = LocalDateTime.of(booking.getSeats().get(0).getSchedule().getDate(), booking.getSeats().get(0).getSchedule().getStartTime());
-                LocalDateTime end = start.plusMinutes(Long.parseLong(booking.getSeats().get(0).getShowTime().getMovie().getDuration()));
-                message.append("của phim ").append(booking.getSeats().get(0).getShowTime().getMovie().getTitle())
-                        .append(" bắt đầu chiếu lúc ").append(start)
-                        .append(" kết thúc vào ").append(end);
+                messageUser.append("xác thực vé vào cửa thành công.");
                 Notification notification = createNotification(NotiType.TICKET_STATUS,
-                        "XÁC THỰC VÉ VÀO CỬA",
-                        message.toString(),
-                        NotiTarget.VIEWER);
+                        "Thông báo xác thực vé.",
+                        messageUser.toString(),
+                        NotiTarget.VIEWER,
+                        new TicketDetailRes(booking, user.get()));
                 notificationUserRepository.save(new NotificationUser(user.get(), notification));
                 Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
                 if (token.isPresent())
-                    fcmService.sendNotification(token.get().getToken(), "ĐẶT VÉ THÀNH CÔNG", message.toString());
+                    fcmService.sendNotification(token.get().getToken(), "Thông báo xác thực vé.", messageUser.toString());
             }
         }
     }
 
     public void reviewNotification(Review review, User user) throws FirebaseMessagingException {
-        String message = "Người dùng " + user.getFullName() + " đã thêm một đánh giá mới cho phim " + review.getMovieName() + ". Nội dung đánh giá: " + review.getComment() +
-                ", số sao: " + review.getRating()+".";
+        String message = "Khách hàng " + user.getFullName() + " đã thêm một đánh giá mới cho phim " + review.getMovieName() + ".";
         Notification notification = createNotification(NotiType.REVIEW,
-                "ĐÁNH GIÁ MỚI",
+                "Đánh giá mới.",
                 message,
-                NotiTarget.ADMIN_MANAGER);
-        List<Role> roles = new ArrayList<>();
-        roles.add(roleService.findByRoleName("ADMIN"));
-        List<User> users = userRepository.findAllByRoleIn(roles);
+                NotiTarget.ADMIN_MANAGER,
+                review);
+        List<User> users = userRepository.findAllByRole(roleService.findByRoleName("ADMIN"));
         for (User item : users) {
             notificationUserRepository.save(new NotificationUser(item, notification));
             Optional<UserTokenFCM> token = userTokenRepository.findByUserId(item.getUserId());
             if (token.isPresent())
-                fcmService.sendNotification(token.get().getToken(), "ĐÁNH GIÁ MỚI", message);
+                fcmService.sendNotification(token.get().getToken(), "Đánh giá mới.", message);
         }
         for (User item : managerService.findAll()) {
             notificationUserRepository.save(new NotificationUser(item, notification));
             Optional<UserTokenFCM> token = userTokenRepository.findByUserId(item.getUserId());
             if (token.isPresent())
-                fcmService.sendNotification(token.get().getToken(), "ĐÁNH GIÁ MỚI", message);
+                fcmService.sendNotification(token.get().getToken(), "Đánh giá mới.", message);
         }
     }
 
     public void promotionNotification(PromotionFixed promotion) throws FirebaseMessagingException {
-        sendNotificationToAllViewer("PROMOTION", promotion.getName(), promotion.getDescription());
+        sendNotificationToAllViewer("PROMOTION", promotion.getName(), promotion.getDescription(), promotion);
     }
 
     @Scheduled(cron = "0 0 5 * * *", zone = "GMT+7")
@@ -255,63 +260,44 @@ public class NotificationService {
                 if (manager.isPresent()){
                     Optional<FoodInventory> inventory = foodInventoryRepository.findByFoodAndCinema(food, cinema);
                     if ((inventory.isPresent() && inventory.get().getQuantity() <= 100) || inventory.isEmpty()) {
-                        StringBuilder message = new StringBuilder("Sản phầm " + food.getName() + " sắp hết hàng. ")
-                                .append("Số lượng còn lại: ").append(inventory.map(FoodInventory::getQuantity).orElse(0));
+                        String message = "Sản phầm " + food.getName() + (inventory.isEmpty()?" chưa nhập hàng về.":" còn lại rất ít.");
                         Notification notification = createNotification(NotiType.LOW_STOCK,
-                                "SẢN PHẨM SẮP HẾT HÀNG",
-                                message.toString(),
-                                NotiTarget.ADMIN_MANAGER);
-                            notificationUserRepository.save(new NotificationUser(manager.get(), notification));
-                            Optional<UserTokenFCM> token = userTokenRepository.findByUserId(manager.get().getUserId());
-                            if (token.isPresent())
-                                fcmService.sendNotification(token.get().getToken(), "SẢN PHẨM SẮP HẾT HÀNG", message.toString());
+                                "Thông báo sản phẩm.",
+                                message,
+                                NotiTarget.ADMIN_MANAGER,
+                                inventory.orElse(null));
+                        notificationUserRepository.save(new NotificationUser(manager.get(), notification));
+                        Optional<UserTokenFCM> token = userTokenRepository.findByUserId(manager.get().getUserId());
+                        if (token.isPresent())
+                            fcmService.sendNotification(token.get().getToken(), "Thông báo sản phẩm.", message);
                     }
                 }
             }
         }
     }
 
-    @Scheduled(fixedDelay = 60000) //1 minutes
+    @Scheduled(fixedDelay = 120000) // 2 phut
     public void checkShowtimeReminders() throws FirebaseMessagingException {
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourLater = now.plusHours(1);
-        // Bước 1: Lookup để join với collection 'schedules'
-        LookupOperation lookupSchedules = LookupOperation.newLookup()
-                .from("schedules")
-                .localField("seats.schedule._id")
-                .foreignField("_id")
-                .as("scheduleInfo");
-
-        // Bước 2: Unwind để làm phẳng mảng scheduleInfo
-        UnwindOperation unwindScheduleInfo = unwind("scheduleInfo");
-
-        // Bước 3: Match để lọc các điều kiện
-        MatchOperation matchCriteria = match(new Criteria()
-                .andOperator(
-                        Criteria.where("isPayment").is(true),
-                        Criteria.where("ticketStatus").ne(TicketStatus.CANCELLED),
-                        Criteria.where("scheduleInfo.date").is(now.toLocalDate()),
-                        Criteria.where("scheduleInfo.startTime").gte(oneHourLater.minusMinutes(5).toLocalTime()), // Bắt đầu từ bây giờ
-                        Criteria.where("scheduleInfo.startTime").lte(oneHourLater.toLocalTime()) // Đến 1 tiếng sau
-                ));
-
-        // Bước 4: Project để chỉ lấy các trường cần thiết (userId, showtimeId, ...)
-        ProjectionOperation projectFields = project("userId", "seats", "seats.schedule.startTime"); // Lấy giờ bắt đầu
-
-        Aggregation aggregation = newAggregation(lookupSchedules, unwindScheduleInfo, matchCriteria, projectFields);
-
-        List<Booking> bookings = mongoTemplate.aggregate(aggregation, Booking.class, Booking.class).getMappedResults();
-
-        for (Booking booking : bookings) {
-            StringBuilder message = new StringBuilder("Chỉ dưới 1 tiếng nữa là bộ phim " + booking.getSeats().get(0).getShowTime().getMovie().getTitle() + " bạn mong chờ sẽ bắt đầu tại rạp "+booking.getSeats().get(0).getShowTime().getRoom().getCinema().getCinemaName()+". ");
-            message.append("Đừng quên chuẩn bị tinh thần để thưởng thức những thước phim hấp dẫn nhé! Hẹn gặp bạn tại rạp!");
-            createNotification(NotiType.TICKET_REMINDER,
-                    booking.getSeats().get(0).getShowTime().getMovie().getTitle()+" sắp chiếu!(còn 1 tiếng nữa)",
-                    message.toString(),
-                    NotiTarget.VIEWER);
-            Optional<UserTokenFCM> token = userTokenRepository.findByUserId(booking.getUserId());
-            if (token.isPresent())
-                fcmService.sendNotification(token.get().getToken(), "PHIM CỦA BẠN SẮP ĐẾN GIỜ CHIẾU", message.toString());
+        List<Booking> bookings = bookingRepository.findAllByIsPaymentIsTrue();
+        List<BookingSchedule> bookingSchedules = bookings.stream().map(BookingSchedule::new).toList();
+        LocalTime oneHour = LocalTime.now().plusHours(1);
+        for (BookingSchedule item : bookingSchedules) {
+            if (item.getSchedule().getDate().equals(LocalDate.now()) && !item.getSchedule().getStartTime().isAfter(oneHour) && item.getSchedule().getStartTime().isAfter(oneHour.minusMinutes(3))) {
+                Optional<User> user = userRepository.findById(item.getBooking().getUserId());
+                if (user.isPresent()) {
+                    StringBuilder message = new StringBuilder("Chỉ dưới 1 tiếng nữa là bộ phim " + item.getBooking().getSeats().get(0).getShowTime().getMovie().getTitle() + " bạn mong chờ sẽ bắt đầu tại rạp "+item.getBooking().getSeats().get(0).getShowTime().getRoom().getCinema().getCinemaName()+". ");
+                    message.append("Đừng quên chuẩn bị tinh thần để thưởng thức những thước phim hấp dẫn nhé! Hẹn gặp bạn tại rạp!");
+                    Notification notification = createNotification(NotiType.TICKET_REMINDER,
+                            item.getBooking().getSeats().get(0).getShowTime().getMovie().getTitle()+" sắp chiếu!(chưa đầy 1 tiếng nữa)",
+                            message.toString(),
+                            NotiTarget.VIEWER,
+                            new TicketDetailRes(item.getBooking(), user.get()));
+                    notificationUserRepository.save(new NotificationUser(user.get(), notification));
+                    Optional<UserTokenFCM> token = userTokenRepository.findByUserId(item.getBooking().getUserId());
+                    if (token.isPresent())
+                        fcmService.sendNotification(token.get().getToken(), "Phim sắp chiếu.", message.toString());
+                }
+            }
         }
     }
 
@@ -319,7 +305,7 @@ public class NotificationService {
         try {
             Page<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId, pageable);
             Map<String, Object> result = new HashMap<>();
-            result.put("content", notifications.getContent().stream().map(NotificationsRes::new).collect(Collectors.toList()));
+            result.put("content", notifications.getContent().stream().map(NotificationRes::new).collect(Collectors.toList()));
             result.put("pageNumber", notifications.getPageable().getPageNumber()+1);
             result.put("pageSize", notifications.getSize());
             result.put("totalPages", notifications.getTotalPages());
@@ -352,7 +338,7 @@ public class NotificationService {
                         .body(GenericResponse.builder()
                                 .success(true)
                                 .message("Lấy thông báo thành công!")
-                                .result(new NotificationsRes(notification.get()))
+                                .result(new NotificationRes(notification.get()))
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } else {
@@ -503,7 +489,7 @@ public class NotificationService {
     }
 
     public Notification sendNotificationToUsers(NotiType type, String title, String message, NotiTarget notiTarget, List<User> users) throws FirebaseMessagingException {
-        Notification notification = createNotification(type, title, message, notiTarget);
+        Notification notification = createNotification(type, title, message, notiTarget, null);
 
         List<NotificationUser> notificationsUsers = new ArrayList<>();
         for (User user : users) {
@@ -525,5 +511,28 @@ public class NotificationService {
         }
 
         return notification;
+    }
+
+    public ResponseEntity<GenericResponse> notReadCount(String userId) {
+        try {
+            List<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId);
+            long count = notifications.stream().filter(item -> !item.isRead()).count();
+
+            return ResponseEntity.ok()
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy số lượng thông báo chưa đọc thành công!")
+                            .result(count)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(GenericResponse.builder()
+                            .success(false)
+                            .message("Lỗi máy chủ. " + e.getMessage())
+                            .result(null)
+                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                            .build());
+        }
     }
 }

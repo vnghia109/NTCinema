@@ -109,8 +109,9 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<GenericResponse> getUsers(@RequestParam(defaultValue = "1") int index,
-                                                    @RequestParam(defaultValue = "10") int size){
-        return userService.getAllUser(PageRequest.of(index-1, size));
+                                                    @RequestParam(defaultValue = "10") int size,
+                                                    @RequestParam(defaultValue = "ALL") String role){
+        return userService.getAllUser(role, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/users/{userId}")

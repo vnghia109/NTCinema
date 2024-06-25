@@ -28,4 +28,5 @@ public class Notification {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private NotiTarget target;
+    private Object detailData;
 }

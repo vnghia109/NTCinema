@@ -713,7 +713,6 @@ public class BookingService {
 
     public ResponseEntity<GenericResponse> sellTicket(String staffId, SellTicketReq request) {
         try {
-
             Optional<Staff> staff = staffRepository.findById(staffId);
             if (staff.isEmpty()){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -820,7 +819,7 @@ public class BookingService {
             if (bookingRes.getUserId() != null) {
                 sendEmailBookingSuccess(bookingRes);
             }
-            notificationService.bookingTicketSuccessNotification(bookingRes);
+            notificationService.sellTicketSuccessNotification(bookingRes, staff.get());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
