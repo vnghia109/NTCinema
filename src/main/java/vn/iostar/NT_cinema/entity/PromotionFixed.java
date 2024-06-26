@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import vn.iostar.NT_cinema.constant.DiscountType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

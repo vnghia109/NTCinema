@@ -3,7 +3,6 @@ package vn.iostar.NT_cinema.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.PriceType;
 import vn.iostar.NT_cinema.dto.GenericResponse;

@@ -216,7 +216,7 @@ public class AdminController {
     @PutMapping("/movies/{movieId}")
     public ResponseEntity<GenericResponse> updateMovie(@PathVariable("movieId") String movieId,
                                                        @Valid @ModelAttribute UpdateMovieReq movieRequest,
-                                                       BindingResult bindingResult) throws Exception{
+                                                       BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
                     false,
@@ -228,12 +228,12 @@ public class AdminController {
     }
 
     @DeleteMapping("/movies/{movieId}")
-    public ResponseEntity<GenericResponse> deleteMovie(@PathVariable("movieId") String movieId) throws Exception{
+    public ResponseEntity<GenericResponse> deleteMovie(@PathVariable("movieId") String movieId){
         return movieService.delete(movieId);
     }
 
     @PatchMapping("/movies/{movieId}")
-    public ResponseEntity<GenericResponse> updateIsDeleteMovie(@PathVariable("movieId") String movieId) throws Exception{
+    public ResponseEntity<GenericResponse> updateIsDeleteMovie(@PathVariable("movieId") String movieId){
         return movieService.updateIsDelete(movieId);
     }
 

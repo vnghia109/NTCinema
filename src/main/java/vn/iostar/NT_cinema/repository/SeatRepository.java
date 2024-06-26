@@ -6,7 +6,6 @@ import vn.iostar.NT_cinema.entity.Schedule;
 import vn.iostar.NT_cinema.entity.Seat;
 import vn.iostar.NT_cinema.entity.ShowTime;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 

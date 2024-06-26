@@ -5,10 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import vn.iostar.NT_cinema.constant.ShowStatus;
-import vn.iostar.NT_cinema.constant.TimeShow;
 
 import java.util.Date;
-import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor

@@ -4,10 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import vn.iostar.NT_cinema.entity.Food;
-import vn.iostar.NT_cinema.entity.User;
-import java.util.Date;
 
 @Getter
 @Setter

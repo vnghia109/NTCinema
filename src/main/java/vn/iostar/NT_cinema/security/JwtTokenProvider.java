@@ -1,26 +1,17 @@
 package vn.iostar.NT_cinema.security;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import vn.iostar.NT_cinema.entity.User;
-import vn.iostar.NT_cinema.repository.UserRepository;
 
 import java.security.Key;
 import javax.crypto.SecretKey;
 import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Component
 @Log4j2
 public class JwtTokenProvider {
-    @Autowired
-    private UserRepository userRepository;
 
     private final Long JWT_ACCESS_EXPIRATION = 3600000L;
     private final Long JWT_REFRESH_EXPIRATION = 86400000L;
@@ -29,8 +20,6 @@ public class JwtTokenProvider {
     private final String issuer = "Nhom 4";
 
     private Key getSigningKey() {
-//        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-//        return Keys.hmacShaKeyFor(keyBytes);
         return secretKey;
     }
 

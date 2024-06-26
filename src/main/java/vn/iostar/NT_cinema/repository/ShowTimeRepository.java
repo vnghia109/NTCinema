@@ -5,7 +5,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import vn.iostar.NT_cinema.constant.ShowStatus;
-import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.Room;
 import vn.iostar.NT_cinema.entity.ShowTime;
@@ -30,8 +29,6 @@ public interface ShowTimeRepository extends MongoRepository<ShowTime, String> {
     List<ShowTime> findAllByIsSpecialIsTrueAndIsDeleteIsFalse();
 
     List<ShowTime> findAllByRoomInAndIsSpecialIsTrueAndIsDeleteIsFalse(List<Room> rooms);
-
-    List<ShowTime> findAllByRoom_Cinema(Cinema cinema);
 
     List<ShowTime> findByTimeStartBetween(Date timeStart, Date timeStart2);
 }

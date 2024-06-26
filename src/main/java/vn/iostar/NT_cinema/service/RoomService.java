@@ -3,7 +3,6 @@ package vn.iostar.NT_cinema.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -11,6 +10,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.RoomReq;
 import vn.iostar.NT_cinema.dto.UpdateRoomReq;
 import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.repository.*;
 
 import java.util.*;
@@ -32,6 +32,8 @@ public class RoomService {
     public ResponseEntity<GenericResponse> addRoomByManager(RoomReq roomReq, String managerId) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
+            if (manager.isEmpty())
+                throw new UserNotFoundException("Không tìm thấy quản lý");
             Optional<Cinema> optionalCinema = cinemaRepository.findById(manager.get().getCinema().getCinemaId());
             if (optionalCinema.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
@@ -187,6 +189,8 @@ public class RoomService {
     public ResponseEntity<GenericResponse> getRoomsOfManager(boolean isDelete, String id, Pageable pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(id);
+            if (manager.isEmpty())
+                throw new UserNotFoundException("Không tìm thấy quản lý");
             Page<Room> rooms = roomRepository.findAllByCinemaAndIsDeleteOrderByRoomIdDesc(manager.get().getCinema(), isDelete, pageable);
 
             Map<String, Object> map = new HashMap<>();

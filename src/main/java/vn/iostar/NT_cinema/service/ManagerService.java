@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Manager;
-import vn.iostar.NT_cinema.entity.Role;
-import vn.iostar.NT_cinema.entity.User;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.ManagerRepository;
 import vn.iostar.NT_cinema.repository.RoleRepository;

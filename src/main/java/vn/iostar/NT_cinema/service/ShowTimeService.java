@@ -57,7 +57,6 @@ public class ShowTimeService {
     @PostConstruct
     @Scheduled(cron = "0 0 0 * * *")
     public void updateShowTimeStatus() {
-        Date now = new Date();
         // Lấy tất cả các ShowTime có startDate và endDate trong khoảng thời gian hiện tại
         List<ShowTime> showTimes = showTimeRepository.findAll();
 

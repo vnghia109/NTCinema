@@ -17,13 +17,13 @@ public class UserDetailServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = (User) userRepository.findByUserNameAndIsActiveIsTrue(username)
-                    .orElseThrow(() -> new UsernameNotFoundException("user is not found"));
+                    .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng."));
         return new UserDetail(user);
     }
 
     public UserDetails loadUserByUserId(String id) {
         User user = (User) userRepository.findByUserIdAndIsActiveIsTrue(id)
-                .orElseThrow(() -> new UsernameNotFoundException("user is not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng."));
         return new UserDetail(user);
     }
 }

@@ -3,7 +3,6 @@ package vn.iostar.NT_cinema.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.io.Serializable;
 import java.util.Calendar;
@@ -32,7 +31,7 @@ public class PasswordResetOtp implements Serializable {
         super();
 
         this.otp = otp;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
+        this.expiryDate = calculateExpiryDate();
     }
 
     public PasswordResetOtp(final String otp, final User user) {
@@ -40,20 +39,20 @@ public class PasswordResetOtp implements Serializable {
 
         this.otp = otp;
         this.user = user;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
+        this.expiryDate = calculateExpiryDate();
     }
 
 
-    private Date calculateExpiryDate(final int expiryTimeInMinutes) {
+    private Date calculateExpiryDate() {
         final Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(new Date().getTime());
-        cal.add(Calendar.MINUTE, expiryTimeInMinutes);
+        cal.add(Calendar.MINUTE, PasswordResetOtp.EXPIRATION);
         return new Date(cal.getTime().getTime());
     }
 
     public void updateOtp(final String otp) {
         this.otp = otp;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
+        this.expiryDate = calculateExpiryDate();
     }
 
 }

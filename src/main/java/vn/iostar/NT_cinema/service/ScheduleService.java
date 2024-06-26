@@ -4,12 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import vn.iostar.NT_cinema.constant.TimeShow;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.AddScheduleReq;
 import vn.iostar.NT_cinema.entity.Movie;
 import vn.iostar.NT_cinema.entity.Schedule;
 import vn.iostar.NT_cinema.entity.ShowTime;
+import vn.iostar.NT_cinema.exception.NotFoundException;
 import vn.iostar.NT_cinema.repository.MovieRepository;
 import vn.iostar.NT_cinema.repository.ScheduleRepository;
 import vn.iostar.NT_cinema.repository.ShowTimeRepository;
@@ -114,8 +114,12 @@ public class ScheduleService {
     public ResponseEntity<GenericResponse> checkSchedule(String showtimeId, LocalDate date, LocalTime startTime) {
         try {
             Optional<ShowTime> showTime = showTimeRepository.findById(showtimeId);
+            if (showTime.isEmpty())
+                throw new NotFoundException("Lịch chiếu không tồn tại.");
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(showTime.get().getRoom().getRoomId());
             Optional<Movie> optionalMovie = movieRepository.findById(showTime.get().getMovie().getMovieId());
+            if (optionalMovie.isEmpty())
+                throw new NotFoundException("Phim không tồn tại.");
             LocalDateTime startNew = LocalDateTime.of(date, startTime);
             LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
 
@@ -175,6 +179,8 @@ public class ScheduleService {
         try {
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(roomId);
             Optional<Movie> optionalMovie = movieRepository.findById(movieId);
+            if (optionalMovie.isEmpty())
+                throw new NotFoundException("Phim không tồn tại.");
             LocalDateTime startNew = LocalDateTime.of(date, startTime);
             LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
 

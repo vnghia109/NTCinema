@@ -67,7 +67,6 @@ public class EmailVerificationService {
 
             emailVerificationRepository.save(emailVerification);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

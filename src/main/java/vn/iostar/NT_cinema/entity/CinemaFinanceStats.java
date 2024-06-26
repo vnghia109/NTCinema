@@ -10,7 +10,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Month;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -32,11 +31,6 @@ public class CinemaFinanceStats {
     private BigDecimal otherExpense = BigDecimal.ZERO;
     private Integer totalOfOrder = 0;
     private BigDecimal profit = totalRevenue.subtract(totalExpense);
-
-    public CinemaFinanceStats(LocalDate localDate, Cinema cinema) {
-        this.month = localDate;
-        this.cinema = cinema;
-    }
 
     public void calculateProfit() {
         profit = totalRevenue.subtract(totalExpense);

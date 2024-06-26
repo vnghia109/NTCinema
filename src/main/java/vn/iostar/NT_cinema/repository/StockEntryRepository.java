@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 import vn.iostar.NT_cinema.entity.StockEntry;
 import vn.iostar.NT_cinema.entity.User;
 
-import java.util.List;
-
 @Repository
 public interface StockEntryRepository extends MongoRepository<StockEntry, String> {
     Page<StockEntry> findAllByManager(User manager, Pageable pageable);

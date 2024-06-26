@@ -7,10 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.config.VnPayConfig;
-import vn.iostar.NT_cinema.constant.TicketStatus;
 import vn.iostar.NT_cinema.dto.FoodWithCount;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.exception.NotFoundException;
 import vn.iostar.NT_cinema.repository.*;
 import vn.iostar.NT_cinema.service.BookingService;
 import vn.iostar.NT_cinema.service.NotificationService;
@@ -50,8 +50,10 @@ public class VnPayController {
     NotificationService notificationService;
 
     @GetMapping("/payment")
-    public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId) throws UnsupportedEncodingException {
+    public ResponseEntity<GenericResponse> createPayment(@RequestParam() String bookingId) {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
+        if (booking.isEmpty())
+            throw new NotFoundException("Không tìm thấy đơn đặt.");
         if (booking.get().isPayment()){
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(GenericResponse.builder()
@@ -94,23 +96,23 @@ public class VnPayController {
         String vnp_ExpireDate = formatter.format(cld.getTime());
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
 
-        List fieldNames = new ArrayList(vnp_Params.keySet());
+        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
         StringBuilder query = new StringBuilder();
-        Iterator itr = fieldNames.iterator();
+        Iterator<String> itr = fieldNames.iterator();
         while (itr.hasNext()) {
             String fieldName = (String) itr.next();
             String fieldValue = (String) vnp_Params.get(fieldName);
-            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+            if ((fieldValue != null) && (!fieldValue.isEmpty())) {
                 //Build hash data
                 hashData.append(fieldName);
                 hashData.append('=');
-                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
                 //Build query
-                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII));
                 query.append('=');
-                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
+                query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII));
                 if (itr.hasNext()) {
                     query.append('&');
                     hashData.append('&');

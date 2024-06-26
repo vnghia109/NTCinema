@@ -14,6 +14,7 @@ import vn.iostar.NT_cinema.entity.Price;
 import vn.iostar.NT_cinema.entity.Schedule;
 import vn.iostar.NT_cinema.entity.Seat;
 import vn.iostar.NT_cinema.entity.ShowTime;
+import vn.iostar.NT_cinema.exception.NotFoundException;
 import vn.iostar.NT_cinema.repository.PriceRepository;
 import vn.iostar.NT_cinema.repository.ScheduleRepository;
 import vn.iostar.NT_cinema.repository.SeatRepository;
@@ -54,8 +55,10 @@ public class SeatService {
             List<Seat> seats = new ArrayList<>();
             List<String> seatIds = new ArrayList<>();
             for (SeatReq item : seatReq) {
-                Schedule schedule = scheduleRepository.findById(item.getScheduleId()).get();
-                Optional<Seat> optionalSeat = seatRepository.findByColumnAndRowAndShowTimeAndScheduleAndStatusIsTrue(item.getColumn(), item.getRow(), showTime.get(), schedule);
+                Optional<Schedule> schedule = scheduleRepository.findById(item.getScheduleId());
+                if (schedule.isEmpty())
+                    throw new NotFoundException("Giờ chiếu không tồn tại.");
+                Optional<Seat> optionalSeat = seatRepository.findByColumnAndRowAndShowTimeAndScheduleAndStatusIsTrue(item.getColumn(), item.getRow(), showTime.get(), schedule.get());
                 if (optionalSeat.isPresent()){
                     seatIds.add(optionalSeat.get().getSeatId());
                     continue;
@@ -76,7 +79,7 @@ public class SeatService {
                 seat.setColumn(item.getColumn());
                 seat.setRow(item.getRow());
                 seat.setStatus(true);
-                seat.setSchedule(schedule);
+                seat.setSchedule(schedule.get());
 
                 seats.add(seat);
             }
@@ -108,9 +111,13 @@ public class SeatService {
 
     public ResponseEntity<GenericResponse> getSeatBooked(String showtimeId, String scheduleId){
         try {
-            ShowTime showTime = showTimeRepository.findById(showtimeId).get();
-            Schedule schedule = scheduleRepository.findById(scheduleId).get();
-            List<Seat> seats = seatRepository.findAllByShowTimeAndScheduleAndStatusIsFalse(showTime, schedule);
+            Optional<ShowTime> showTime = showTimeRepository.findById(showtimeId);
+            if (showTime.isEmpty())
+                throw new NotFoundException("Lịch chiếu không tồn tại.");
+            Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
+            if (schedule.isEmpty())
+                throw new NotFoundException("Giờ chiếu không tồn tại.");
+            List<Seat> seats = seatRepository.findAllByShowTimeAndScheduleAndStatusIsFalse(showTime.get(), schedule.get());
             List<SeatBookedRes> seatBookedRes = seats.stream()
                     .map(item -> new SeatBookedRes(item.getRow(), item.getColumn()))
                     .collect(Collectors.toList());
@@ -135,10 +142,14 @@ public class SeatService {
 
     public ResponseEntity<GenericResponse> countSeatBooked(String showtimeId, String scheduleId){
         try {
-            ShowTime showTime = showTimeRepository.findById(showtimeId).get();
-            Schedule schedule = scheduleRepository.findById(scheduleId).get();
-            List<Seat> seats = seatRepository.findAllByShowTimeAndScheduleAndStatusIsFalse(showTime, schedule);
-            int SeatAvailable = showTime.getRoom().getColSeat()*showTime.getRoom().getRowSeat() - seats.size();
+            Optional<ShowTime> showTime = showTimeRepository.findById(showtimeId);
+            if (showTime.isEmpty())
+                throw new NotFoundException("Lịch chiếu không tồn tại.");
+            Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
+            if (schedule.isEmpty())
+                throw new NotFoundException("Giờ chiếu không tồn tại.");
+            List<Seat> seats = seatRepository.findAllByShowTimeAndScheduleAndStatusIsFalse(showTime.get(), schedule.get());
+            int SeatAvailable = showTime.get().getRoom().getColSeat()*showTime.get().getRoom().getRowSeat() - seats.size();
 
             Map<Object, Object> map = new HashMap<>();
             map.put("SeatBooked", seats.size());

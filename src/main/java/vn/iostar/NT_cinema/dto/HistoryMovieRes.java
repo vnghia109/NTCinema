@@ -1,7 +1,6 @@
 package vn.iostar.NT_cinema.dto;
 
 import lombok.*;
-import org.springframework.scheduling.support.SimpleTriggerContext;
 import vn.iostar.NT_cinema.constant.TicketStatus;
 
 import java.math.BigDecimal;

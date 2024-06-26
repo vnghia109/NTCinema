@@ -516,31 +516,6 @@ public class PromotionService {
         return total;
     }
 
-    public ResponseEntity<GenericResponse> createPromotionCodeUsage() {
-        try {
-            PromotionCodeUsage usage = new PromotionCodeUsage();
-            usage.setPromotionCodeId("1");
-            usage.setUserId("1");
-            usage.setDateUsed(LocalDate.now());
-            promotionCodeUsageRepository.save(usage);
-            return ResponseEntity.status(HttpStatus.OK)
-                    .body(GenericResponse.builder()
-                            .success(true)
-                            .message("Đã tạo đơn đặt vé!")
-                            .result(null)
-                            .statusCode(HttpStatus.OK.value())
-                            .build());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result("Lỗi máy chủ.")
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
-        }
-    }
-
     @Scheduled(cron = "0 0 5 * * *", zone = "GMT+7")
     @PostConstruct
     private void changeValidPromotion(){

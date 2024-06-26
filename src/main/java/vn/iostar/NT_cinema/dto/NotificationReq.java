@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import vn.iostar.NT_cinema.constant.NotiType;
-
 import java.util.List;
 
 @AllArgsConstructor

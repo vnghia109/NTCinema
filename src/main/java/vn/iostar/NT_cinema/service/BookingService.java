@@ -1,12 +1,9 @@
 package vn.iostar.NT_cinema.service;
 
 import jakarta.mail.internet.MimeMessage;
-import jakarta.servlet.http.HttpServletResponse;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -28,7 +25,6 @@ import vn.iostar.NT_cinema.repository.*;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -373,7 +369,6 @@ public class BookingService {
             mailSender.send(message);
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -387,7 +382,7 @@ public class BookingService {
 
         List<FoodWithCount> foodWithCounts = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : foodCountMap.entrySet()) {
-            FoodWithCount foodWithCount = new FoodWithCount(foodRepository.findById(entry.getKey()).get(), entry.getValue());
+            FoodWithCount foodWithCount = new FoodWithCount(foodRepository.findById(entry.getKey()).orElse(null), entry.getValue());
             foodWithCounts.add(foodWithCount);
         }
 

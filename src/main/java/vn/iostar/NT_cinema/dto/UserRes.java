@@ -1,18 +1,11 @@
 package vn.iostar.NT_cinema.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.validator.constraints.UniqueElements;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.format.annotation.DateTimeFormat;
-import vn.iostar.NT_cinema.entity.Address;
-import vn.iostar.NT_cinema.entity.Role;
 import vn.iostar.NT_cinema.entity.User;
 
 import java.util.Date;

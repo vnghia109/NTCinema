@@ -1,12 +1,10 @@
 package vn.iostar.NT_cinema.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
-import vn.iostar.NT_cinema.entity.Address;
 
 import java.util.Date;
 import java.util.List;

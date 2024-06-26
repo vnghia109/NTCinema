@@ -10,8 +10,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
-import vn.iostar.NT_cinema.entity.StockEntry;
-import vn.iostar.NT_cinema.repository.StockEntryRepository;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.*;
 

@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.config.annotation.web.oauth2.resourceserver.OAuth2ResourceServerSecurityMarker;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.dto.CinemaReq;
 import vn.iostar.NT_cinema.dto.GenericResponse;

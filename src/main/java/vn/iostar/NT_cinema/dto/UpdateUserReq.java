@@ -5,9 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import org.hibernate.validator.constraints.UniqueElements;
-import vn.iostar.NT_cinema.entity.Address;
-import vn.iostar.NT_cinema.entity.Role;
 
 import java.util.Date;
 

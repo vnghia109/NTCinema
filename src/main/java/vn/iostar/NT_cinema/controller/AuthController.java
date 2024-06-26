@@ -3,10 +3,9 @@ package vn.iostar.NT_cinema.controller;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.thymeleaf.TemplateEngine;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.RefreshToken;
 import vn.iostar.NT_cinema.entity.User;
@@ -41,7 +39,6 @@ public class AuthController {
     RefreshTokenService refreshTokenService;
     @Autowired
     EmailVerificationService emailVerificationService;
-    TemplateEngine templateEngine;
 
 
     @PostMapping("/login")
@@ -52,12 +49,7 @@ public class AuthController {
             throw new UserNotFoundException("Tài khoản không tồn tại");
         }
         if (!optionalUser.get().isActive()) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Tài khoản của bạn chưa được xác minh!")
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new DisabledException("Tài khoản của bạn chưa xác minh.");
         }
 
         Authentication authentication = authenticationManager.authenticate(
@@ -99,13 +91,7 @@ public class AuthController {
             String errorMessage = Objects.requireNonNull(
                     bindingResult.getFieldError()).getDefaultMessage();
 
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(errorMessage)
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(errorMessage);
         }
         return userService.userRegister(registerRequest);
     }
@@ -120,8 +106,8 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(GenericResponse.builder()
                         .success(false)
-                        .message("Logout failed!")
-                        .result("Please login before logout!")
+                        .message("Đăng xuất thất bại!")
+                        .result("Vui lòng đăng nhập trước khi có thể đăng xuất!")
                         .statusCode(HttpStatus.UNAUTHORIZED.value())
                         .build());
     }
@@ -137,15 +123,15 @@ public class AuthController {
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
                     .message("Đăng xuất thành công!")
-                    .result("")
+                    .result(null)
                     .statusCode(HttpStatus.OK.value())
                     .build());
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(GenericResponse.builder()
                         .success(false)
-                        .message("Logout failed!")
-                        .result("Please login before logout!")
+                        .message("Đăng xuất thất bại!")
+                        .result("Vui lòng đăng nhập trước khi có thể đăng xuất!")
                         .statusCode(HttpStatus.UNAUTHORIZED.value())
                         .build());
     }
@@ -155,15 +141,6 @@ public class AuthController {
         String refreshToken = tokenRequest.getRefreshToken();
         return refreshTokenService.refreshAccessToken(refreshToken);
     }
-
-//    @GetMapping(value = "/registration-confirm", produces = MediaType.TEXT_HTML_VALUE)
-//    public String confirmRegistration(@RequestParam("token") final String token){
-//        String result = userService.validateVerificationAccount(token);
-//        Context context = new Context();
-//        context.setVariable("result", result);
-//        String content = templateEngine.process("result-confirm", context);
-//        return content;
-//    }
 
     @PostMapping("/sendOTP")
     public ResponseEntity<GenericResponse> sendOtp(@RequestBody EmailVerificationRequest emailVerificationRequest) {
@@ -177,7 +154,6 @@ public class AuthController {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(GenericResponse.builder()
                             .success(false)

@@ -2,6 +2,7 @@ package vn.iostar.NT_cinema.exception;
 
 import com.google.firebase.messaging.FirebaseMessagingException;
 import io.jsonwebtoken.ExpiredJwtException;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -32,9 +33,9 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers,
-                                                                  HttpStatusCode status,
-                                                                  WebRequest request) {
+                                                                  @NotNull HttpHeaders headers,
+                                                                  @NotNull HttpStatusCode status,
+                                                                  @NotNull WebRequest request) {
         List<ObjectError> details = ex.getBindingResult().getAllErrors();
         Map<String, String> errors = new HashMap<>();
         details.forEach((error) ->{
@@ -99,8 +100,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleNotFoundException(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Không tìm thấy")
-                .result(ex.getMessage())
+                .message(ex.getMessage())
+                .result("Không tìm thấy.")
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
         return new ResponseEntity<>(genericResponse,HttpStatus.NOT_FOUND);
@@ -154,7 +155,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("The file size exceeds the maximum upload limit.")
+                .message("Dung lượng tệp vượt quá giới hạn tải lên tối đa.")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.PAYLOAD_TOO_LARGE.value())
                 .build();
@@ -165,8 +166,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleIOException(IOException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Lỗi máy chủ")
-                .result(ex.getMessage())
+                .message("Lỗi máy chủ"+ex.getMessage())
+                .result(null)
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .build();
         return new ResponseEntity<>(genericResponse,HttpStatus.INTERNAL_SERVER_ERROR);
@@ -177,7 +178,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
                 .message("Lỗi máy chủ. "+ex.getMessage())
-                .result("InternalError")
+                .result(null)
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .build();
         return new ResponseEntity<>(genericResponse,HttpStatus.INTERNAL_SERVER_ERROR);

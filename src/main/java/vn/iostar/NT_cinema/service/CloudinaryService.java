@@ -2,7 +2,6 @@ package vn.iostar.NT_cinema.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.mongodb.annotations.Sealed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -10,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Service
 public class CloudinaryService {
@@ -46,8 +44,7 @@ public class CloudinaryService {
 
     public String getPublicIdImage(String imageUrl)  {
         String imageName = imageUrl.substring(imageUrl.lastIndexOf("/") + 1, imageUrl.lastIndexOf("."));
-        String publicId = "Recruiment Assets/User/" + imageName;
-        return publicId;
+        return "Recruiment Assets/User/" + imageName;
     }
 
 }
