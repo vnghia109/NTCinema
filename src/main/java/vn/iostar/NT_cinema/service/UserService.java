@@ -5,13 +5,9 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.ArithmeticOperators;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,11 +15,11 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.repository.*;
 
 import java.util.*;
@@ -72,10 +68,6 @@ public class UserService {
 
     public <S extends User> S save(S entity) {
         return userRepository.save(entity);
-    }
-
-    public Optional<User> findByPassword(String password) {
-        return userRepository.findByPassword(password);
     }
 
     public ResponseEntity<GenericResponse> userRegister(RegisterRequest registerRequest) {
@@ -594,7 +586,7 @@ public class UserService {
     }
 
     public void createPasswordResetOtpForUser(User user, String otp) {
-        PasswordResetOtp myOtp = null;
+        PasswordResetOtp myOtp;
         if (passwordResetOtpRepository.findByUser(user).isPresent()) {
             myOtp = (PasswordResetOtp) passwordResetOtpRepository.findByUser(user).get();
             myOtp.updateOtp(otp);
@@ -754,29 +746,17 @@ public class UserService {
 
     public ResponseEntity<GenericResponse> getAllUser(String role, Pageable pageable) {
         try {
-            Page<User> users;
-            switch (role) {
-                case "ALL":
-                    users = userRepository.findAllByOrderByLastLoginAtDesc(pageable);
-                    break;
-                case "MANAGER":
-                    users = findAllByRole("MANAGER", pageable);
-                    break;
-                case "STAFF":
-                    users = findAllByRole("STAFF", pageable);
-                    break;
-                case "ADMIN":
-                    users = findAllByRole("ADMIN", pageable);
-                    break;
-                case "VIEWER":
-                    users = findAllByRole("VIEWER", pageable);
-                    break;
-                default:
-                    throw new IllegalArgumentException("Role không hợp lệ.");
-            }
+            Page<User> users = switch (role) {
+                case "ALL" -> userRepository.findAllByOrderByLastLoginAtDesc(pageable);
+                case "MANAGER" -> findAllByRole("MANAGER", pageable);
+                case "STAFF" -> findAllByRole("STAFF", pageable);
+                case "ADMIN" -> findAllByRole("ADMIN", pageable);
+                case "VIEWER" -> findAllByRole("VIEWER", pageable);
+                default -> throw new IllegalArgumentException("Role không hợp lệ.");
+            };
 
             Map<String, Object> map = new HashMap<>();
-            map.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getLastLoginAt)).toList());
+            map.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getLastLoginAt, Comparator.nullsLast(Comparator.naturalOrder()))).toList());
             map.put("pageNumber", users.getPageable().getPageNumber() + 1);
             map.put("pageSize", users.getSize());
             map.put("totalPages", users.getTotalPages());
@@ -792,7 +772,7 @@ public class UserService {
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
                     .success(false)
-                    .message(e.getMessage())
+                    .message("Lỗi máy chủ. "+e.getMessage())
                     .result(null)
                     .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     .build());
@@ -802,7 +782,8 @@ public class UserService {
     public ResponseEntity<GenericResponse> getUser(String id) {
         try {
             Optional<User> user = userRepository.findById(id);
-
+            if (user.isEmpty())
+                throw new UserNotFoundException();
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
@@ -1039,15 +1020,13 @@ public class UserService {
 
     private int getRolePriority(Role role) {
         // Xác định ưu tiên của vai trò
-        if (role.getRoleName().equals("ADMIN")) {
-            return 1;
-        } else if (role.getRoleName().equals("MANAGER")) {
-            return 2;
-        } else if (role.getRoleName().equals("STAFF")) {
-            return 3;
-        } else {
-            return Integer.MAX_VALUE; // Mặc định các vai trò không biết sắp xếp ở cuối danh sách
-        }
+        return switch (role.getRoleName()) {
+            case "ADMIN" -> 1;
+            case "MANAGER" -> 2;
+            case "STAFF" -> 3;
+            default -> Integer.MAX_VALUE; // Mặc định các vai trò không biết sắp xếp ở cuối danh sách
+
+        };
         }
 
     public ResponseEntity<GenericResponse> getAllViewer(Pageable pageable) {
@@ -1080,7 +1059,8 @@ public class UserService {
     public ResponseEntity<GenericResponse> getAllStaff(String managerId, PageRequest pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
-
+            if (manager.isEmpty())
+                throw new UserNotFoundException();
             Page<Staff> users = staffRepository.findAllByRoleAndCinema(roleService.findByRoleName("STAFF"), manager.get().getCinema(), pageable);
             Map<String, Object> result = new HashMap<>();
             result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed())
@@ -1155,16 +1135,4 @@ public class UserService {
                     .build());
         }
     }
-
-//    public String validateVerificationAccount(String token) {
-//
-//        VerificationToken verificationToken = tokenRepository.findByToken(token);
-//        if (verificationToken == null) {
-//            return "Invalid token, please check the token again!";
-//        }
-//        User user = verificationToken.getUser();
-//        user.setVerified(true);
-//        userRepository.save(user);
-//        return "Account verification successful, please login!";
-//    }
 }

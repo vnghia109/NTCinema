@@ -225,7 +225,7 @@ public class StatsService {
 
             if (isStaff) {
                 List<StaffStats> staffStats = staffStatsRepository.findAllByOrderByTotalOfTicketsDesc().stream()
-                        .sorted(Comparator.comparing(StaffStats::getRevenue).reversed()).toList();
+                        .sorted(Comparator.comparing(StaffStats::getRevenue, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList();
                 int dem = 0;
                 for (StaffStats staffStat : staffStats) {
                     money.add(staffStat.getRevenue());
@@ -251,7 +251,7 @@ public class StatsService {
                                 .build());
             }else {
                 List<UserStats> userStats = userStatsRepository.findAllByOrderByTotalOfTicketsDesc().stream()
-                        .sorted(Comparator.comparing(UserStats::getTotalSpent).reversed()).toList();
+                        .sorted(Comparator.comparing(UserStats::getTotalSpent, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList();
                 int dem = 0;
                 for (UserStats userStat : userStats) {
                     money.add(userStat.getTotalSpent());
@@ -305,7 +305,8 @@ public class StatsService {
             List<String> name = new ArrayList<>();
             if (isStaff) {
                 List<StaffStats> staffStats = staffStatsRepository.findAllByStaffIn(staffs).stream()
-                        .sorted(Comparator.comparing(StaffStats::getTotalOfTickets).reversed().thenComparing(StaffStats::getRevenue).reversed()).toList();
+                        .sorted(Comparator.comparing(StaffStats::getTotalOfTickets, Comparator.nullsLast(Comparator.naturalOrder())).reversed()
+                                .thenComparing(StaffStats::getRevenue, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList();
                 int dem = 0;
                 for (StaffStats staffStat : staffStats) {
                     money.add(staffStat.getRevenue());
@@ -330,7 +331,7 @@ public class StatsService {
                                 .build());
             }else {
                 List<UserStats> userStats = userStatsRepository.findAllByOrderByTotalOfTicketsDesc().stream()
-                        .sorted(Comparator.comparing(UserStats::getTotalSpent).reversed()).toList();
+                        .sorted(Comparator.comparing(UserStats::getTotalSpent, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList();
                 int dem = 0;
                 for (UserStats userStat : userStats) {
                     money.add(userStat.getTotalSpent());

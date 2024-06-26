@@ -306,7 +306,9 @@ public class ShowTimeService {
             List<ShowTime> showTimes = showTimeRepository.findByMovieAndIsDeleteIsFalse(optionalMovie.get());
             for (ShowTime showTime : showTimes) {
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
-                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
+                        .stream().sorted(Comparator.comparing(Schedule::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                                .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
+                        .collect(Collectors.toList());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
                         showTime.getRoom(),
@@ -458,7 +460,9 @@ public class ShowTimeService {
             }
             ShowTime showTime = optionalShowTime.get();
             List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
-                    .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
+                    .stream().sorted(Comparator.comparing(Schedule::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
             ShowScheduleResp response = new ShowScheduleResp(
                     showTime.getShowTimeId(),
                     showTime.getRoom(),
@@ -488,7 +492,9 @@ public class ShowTimeService {
     public ResponseEntity<GenericResponse> getTimeShowOfRoom(String roomId) {
         try {
             List<Schedule> schedules = scheduleRepository.findAllByRoomId(roomId)
-                    .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).toList();
+                    .stream().sorted(Comparator.comparing(Schedule::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .toList();
 
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
@@ -590,11 +596,13 @@ public class ShowTimeService {
         if (date != null) {
             schedules = schedules.stream()
                     .filter(schedule -> schedule.getDate().equals(date))
-                    .sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime))
+                    .sorted(Comparator.comparing(Schedule::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
                     .toList();
         }else {
             schedules = schedules.stream()
-                    .sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime))
+                    .sorted(Comparator.comparing(Schedule::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
                     .toList();
         }
         return new ShowScheduleResp(

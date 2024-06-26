@@ -374,7 +374,9 @@ public class MovieService {
             List<ShowScheduleResp> responses = new ArrayList<>();
             for (ShowTime showTime : showTimes.getContent()) {
                 List<Schedule> schedules = scheduleRepository.findAllByShowTimeId(showTime.getShowTimeId())
-                        .stream().sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime)).collect(Collectors.toList());
+                        .stream().sorted(Comparator.comparing(Schedule::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                                .thenComparing(Schedule::getStartTime, Comparator.nullsLast(Comparator.naturalOrder())))
+                        .collect(Collectors.toList());
                 ShowScheduleResp response = new ShowScheduleResp(
                         showTime.getShowTimeId(),
                         showTime.getRoom(),
