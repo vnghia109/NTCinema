@@ -76,13 +76,7 @@ public class ReviewService {
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message(e.getMessage())
-                                .result("")
-                                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                                .build());
+                throw new RuntimeException(e.getMessage());
             }
     }
 
@@ -104,13 +98,7 @@ public class ReviewService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result("")
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 }

@@ -40,13 +40,7 @@ public class GenresService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result("Lỗi máy chủ.")
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -61,13 +55,7 @@ public class GenresService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result("Lỗi máy chủ. Xóa thất bại.")
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -82,13 +70,7 @@ public class GenresService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lỗi máy chủ.")
-                            .result(e.getMessage())
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 }

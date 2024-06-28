@@ -146,14 +146,6 @@ public class NotificationService {
         Optional<UserTokenFCM> tokenStaff = userTokenRepository.findByUserId(staff.getUserId());
         if (tokenStaff.isPresent())
             fcmService.sendNotification(tokenStaff.get().getToken(), "Giao dịch mới: Bán vé.", message2);
-        //Gửi thông báo cho admin
-        List<User> users = userRepository.findAllByRole(roleService.findByRoleName("ADMIN"));
-        for (User item : users) {
-            notificationUserRepository.save(new NotificationUser(item, notification));
-            Optional<UserTokenFCM> tokenAdmin = userTokenRepository.findByUserId(item.getUserId());
-            if (tokenAdmin.isPresent())
-                fcmService.sendNotification(tokenAdmin.get().getToken(), "Giao dịch mới: Bán vé.", message2);
-        }
         //Gửi thông báo cho manager
         Optional<Manager> manager = managerService.getManagerByCinema(booking.getSeats().get(0).getShowTime().getRoom().getCinema());
         if (manager.isPresent()) {
@@ -325,13 +317,7 @@ public class NotificationService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lỗi máy chủ. " + e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -358,13 +344,7 @@ public class NotificationService {
                                 .build());
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lỗi máy chủ. " + e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -424,13 +404,7 @@ public class NotificationService {
             }
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lỗi máy chủ. " + e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -485,13 +459,7 @@ public class NotificationService {
             }
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lỗi máy chủ. " + e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -533,13 +501,7 @@ public class NotificationService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lỗi máy chủ. " + e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 }

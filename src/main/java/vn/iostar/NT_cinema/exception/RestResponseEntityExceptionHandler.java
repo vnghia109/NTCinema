@@ -89,7 +89,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleUserNotFoundException(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Người dùng không tồn tại!Vui lòng đăng nhập lại")
+                .message("Người dùng không tồn tại. Vui lòng đăng nhập lại!")
                 .result(ex.getMessage())
                 .statusCode(HttpStatus.NOT_FOUND.value())
                 .build();
@@ -111,8 +111,8 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
     public ResponseEntity<?> handleAlreadyExistException(RuntimeException ex) {
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Đã tồn tại!")
-                .result(ex.getMessage())
+                .message(ex.getMessage())
+                .result(null)
                 .statusCode(HttpStatus.CONFLICT.value())
                 .build();
         return new ResponseEntity<>(genericResponse,HttpStatus.CONFLICT);
@@ -222,7 +222,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
                 GenericResponse.builder()
                         .success(false)
                         .message(ex.getMessage())
-                        .result("Unsupported Encoding!")
+                        .result("Không hỗ trợ mã hóa!")
                         .statusCode(HttpStatus.BAD_REQUEST.value()).build()
         );
     }

@@ -76,7 +76,7 @@ public class UserController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<GenericResponse> resetPassword(@RequestParam final String email) {
+    public ResponseEntity<GenericResponse> forgotPassword(@RequestParam final String email) {
         return userService.forgotPassword(email);
     }
 

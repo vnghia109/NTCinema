@@ -63,7 +63,7 @@ public class AdminController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
                     false,
-                    "Invalid input data!",
+                    "Dữ liệu đầu vào không hợp lệ!!",
                     null,
                     HttpStatus.BAD_REQUEST.value()));
         }
@@ -126,7 +126,7 @@ public class AdminController {
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
                     false,
-                    "Invalid input data!",
+                    "Dữ liệu đầu vào không hợp lệ!!",
                     null,
                     HttpStatus.BAD_REQUEST.value()));
         }
@@ -136,11 +136,6 @@ public class AdminController {
     @PatchMapping("/users/{userId}")
     public ResponseEntity<GenericResponse> updateIsDeleteUser(@PathVariable("userId") String id){
         return userService.updateIsDeleteUser(id);
-    }
-
-    @DeleteMapping("/users/{userId}")
-    public ResponseEntity<GenericResponse> deleteUser(@PathVariable("userId") String id){
-        return userService.deleteUser(id);
     }
 
     @PostMapping("/cinemas/cinema")

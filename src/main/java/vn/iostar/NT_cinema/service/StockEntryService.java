@@ -10,6 +10,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.StockEntryReq;
 import vn.iostar.NT_cinema.dto.StockEntryRes;
 import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.exception.NotFoundException;
 import vn.iostar.NT_cinema.repository.*;
 
 import java.math.BigDecimal;
@@ -38,34 +39,13 @@ public class StockEntryService {
     public ResponseEntity<GenericResponse> importFoods(String managerId, StockEntryReq req) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
-            if (manager.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Quản lý không tồn tại. Vui lòng đăng nhập lại.")
-                                .result(null)
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .build());
-            }
+            if (manager.isEmpty())
+                throw new NotFoundException("Quản lý không tồn tại. Vui lòng đăng nhập lại.");
             Optional<Food> food = foodRepository.findById(req.getFoodId());
-            if (food.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Mặt hàng này không tồn tại.")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
-            }
-            if (req.getTotalPrice() != req.getQuantity() * req.getPurchasePrice()){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Tổng tiền không đúng với số lượng và đơn giá.")
-                                .result(null)
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .build());
-            }
+            if (food.isEmpty())
+                throw new NotFoundException("Mặt hàng này không tồn tại.");
+            if (req.getTotalPrice() != req.getQuantity() * req.getPurchasePrice())
+                throw new IllegalArgumentException("Tổng tiền không đúng với số lượng và đơn giá.");
             StockEntry stockEntry = new StockEntry();
             stockEntry.setManager(manager.get());
             stockEntry.setFood(food.get());
@@ -104,13 +84,7 @@ public class StockEntryService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message(e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -139,28 +113,18 @@ public class StockEntryService {
     }
 
     public ResponseEntity<GenericResponse> getStockEntriesByCinema(Pageable pageable, String cinemaId){
-        Optional<Cinema> cinema = cinemaRepository.findById(cinemaId);
-        Role role = roleRepository.findByRoleName("MANAGER");
-        if (cinema.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Rạp phim không tìm thấy.")
-                            .result(null)
-                            .statusCode(HttpStatus.NOT_FOUND.value())
-                            .build());
+        try {
+            Optional<Cinema> cinema = cinemaRepository.findById(cinemaId);
+            Role role = roleRepository.findByRoleName("MANAGER");
+            if (cinema.isEmpty())
+                throw new NotFoundException("Rạp phim không tìm thấy.");
+            Optional<Manager> manager = managerRepository.findByCinemaAndRole(cinema.get(), role);
+            if (manager.isEmpty())
+                throw new NotFoundException("Quản lý không tồn tại. Vui lòng đăng nhập lại.");
+            return getStockEntries(pageable, manager.get().getUserId());
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
         }
-        Optional<Manager> manager = managerRepository.findByCinemaAndRole(cinema.get(), role);
-        if (manager.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Mặt quản trị không tìm thấy.")
-                            .result(null)
-                            .statusCode(HttpStatus.NOT_FOUND.value())
-                            .build());
-        }
-        return getStockEntries(pageable, manager.get().getUserId());
     }
 
     public ResponseEntity<GenericResponse> getStockEntries(Pageable pageable, String managerId) {
@@ -186,13 +150,7 @@ public class StockEntryService {
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(GenericResponse.builder()
-                            .success(false)
-                            .message("Lỗi máy chủ. "+e.getMessage())
-                            .result(null)
-                            .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                            .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 }

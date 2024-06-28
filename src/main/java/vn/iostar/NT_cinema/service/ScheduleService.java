@@ -61,12 +61,7 @@ public class ScheduleService {
                     .build());
 
         } catch(Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Không thể thêm giờ chiếu.")
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -102,12 +97,7 @@ public class ScheduleService {
                     .statusCode(HttpStatus.OK.value())
                     .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Không thể xóa lịch trình.")
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -166,12 +156,7 @@ public class ScheduleService {
                     .statusCode(HttpStatus.OK.value())
                     .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Lỗi máy chủ.")
-                    .result(e.getMessage())
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -219,12 +204,7 @@ public class ScheduleService {
                     .statusCode(HttpStatus.OK.value())
                     .build());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message("Lỗi máy chủ.")
-                    .result(e.getMessage())
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 }

@@ -11,6 +11,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.entity.Cinema;
 import vn.iostar.NT_cinema.entity.Manager;
 import vn.iostar.NT_cinema.entity.Ticket;
+import vn.iostar.NT_cinema.exception.NotFoundException;
 import vn.iostar.NT_cinema.repository.CinemaRepository;
 import vn.iostar.NT_cinema.repository.ManagerRepository;
 import vn.iostar.NT_cinema.repository.TicketRepository;
@@ -32,17 +33,12 @@ public class TicketService {
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
-                            .message("Get total tickets success")
+                            .message("lấy tổng số vé thành công!")
                             .result(count)
                             .statusCode(200)
                             .build());
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -68,17 +64,12 @@ public class TicketService {
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
-                            .message("Get total tickets success")
+                            .message("Lấy tổng số vé thành công!")
                             .result(res)
                             .statusCode(200)
                             .build());
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -86,28 +77,18 @@ public class TicketService {
         try {
             Optional<Cinema> cinema = cinemaRepository.findById(id);
             if (cinema.isEmpty()){
-                return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Cinema not found")
-                        .result(null)
-                        .statusCode(HttpStatus.OK.value())
-                        .build());
+                throw new NotFoundException("Rạp phim không tồn tại!");
             }
             Long count = ticketRepository.countByCinemaName(cinema.get().getCinemaName());
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
-                            .message("Get total tickets by cinema success")
+                            .message("Lấy tổng vé theo rạp phim thành công!")
                             .result(count)
                             .statusCode(200)
                             .build());
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -117,61 +98,40 @@ public class TicketService {
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
-                            .message("Get total tickets of time success")
+                            .message("Lấy tổng số vé thành công!")
                             .result(tickets.size())
                             .statusCode(200)
                             .build());
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     public ResponseEntity<GenericResponse> getTotalTicketsByCinemaOfManager(String managerId) {
         try {
             Optional<Manager> manager = userRepository.findById(managerId);
-            if (manager.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        GenericResponse.builder()
-                                .success(false)
-                                .message("Manager not found")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
-            }
+            if (manager.isEmpty())
+                throw new NotFoundException("Quản lý không tồn tại. Vui lòng đăng nhập lại.");
+
             Long count = ticketRepository.countByCinemaName(manager.get().getCinema().getCinemaName());
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
-                            .message("Get total tickets by cinema of manager success")
+                            .message("Lấy tổng số vé thành công!")
                             .result(count)
                             .statusCode(200)
                             .build());
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
     public ResponseEntity<GenericResponse> getTicketsSoldBetweenDatesOfManager(Date startDate, Date endDate, String managerId) {
         try {
             Optional<Manager> manager = userRepository.findById(managerId);
-            if (manager.isEmpty()){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
-                        .success(false)
-                        .message("Manager not have cinema")
-                        .result(null)
-                        .statusCode(HttpStatus.NOT_FOUND.value())
-                        .build());
-            }
+            if (manager.isEmpty())
+                throw new NotFoundException("Quản lý không tồn tại. Vui lòng đăng nhập lại.");
+
             List<Ticket> tickets = ticketRepository.findTicketsSoldBetweenDatesByManager(startDate, endDate, manager.get().getCinema().getCinemaName());
             Map<String, Object> map = new HashMap<>();
             map.put("name", manager.get().getCinema().getCinemaName());
@@ -179,17 +139,12 @@ public class TicketService {
             return ResponseEntity.ok(
                     GenericResponse.builder()
                             .success(true)
-                            .message("Get total tickets of time success")
+                            .message("Lấy tất cả các vé thành công!")
                             .result(map)
                             .statusCode(200)
                             .build());
         }catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -207,17 +162,12 @@ public class TicketService {
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
-                            .message("Get all ticket success")
+                            .message("Lấy tất cả các vé thành công!")
                             .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(GenericResponse.builder()
-                    .success(false)
-                    .message(e.getMessage())
-                    .result(null)
-                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .build());
+            throw new RuntimeException(e.getMessage());
         }
     }
 }
