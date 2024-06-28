@@ -39,6 +39,8 @@ public class ViewerController {
     UserTokenRepository userTokenRepository;
     @Autowired
     GenresService genresService;
+    @Autowired
+    PromotionService promotionService;
 
     @PostMapping("/selectSeat/{showTimeId}")
     public ResponseEntity<GenericResponse> checkSeat(@PathVariable("showTimeId") String showTimeId, @RequestBody List<SeatReq> seatReqList){
@@ -137,5 +139,10 @@ public class ViewerController {
     @GetMapping("/genres")
     public ResponseEntity<GenericResponse> getGenres() {
         return genresService.getGenres();
+    }
+
+    @GetMapping("/promotionFixeds")
+    public ResponseEntity<GenericResponse> getPromotionFixeds() {
+        return promotionService.getPromotionFixeds();
     }
 }

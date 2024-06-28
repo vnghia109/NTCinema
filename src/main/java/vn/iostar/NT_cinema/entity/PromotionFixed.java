@@ -30,6 +30,7 @@ public class PromotionFixed {
     private LocalTime validTimeFrameEnd;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String image;
     private boolean isDeleted = false;
     private boolean isValid = true;
     private LocalDate createAt;

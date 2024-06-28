@@ -104,6 +104,13 @@ public class NotificationService {
                     NotiTarget.ADMIN_MANAGER,
                     new TicketDetailRes(booking, user.get()));
 
+            List<Staff> staffs = staffRepository.findAllByRoleAndCinema(roleService.findByRoleName("STAFF"), booking.getSeats().get(0).getShowTime().getRoom().getCinema());
+            for (User item : staffs) {
+                notificationUserRepository.save(new NotificationUser(item, notification));
+                Optional<UserTokenFCM> tokenStaff = userTokenRepository.findByUserId(item.getUserId());
+                if (tokenStaff.isPresent())
+                    fcmService.sendNotification(tokenStaff.get().getToken(), "Giao dịch mới: Đặt vé.", message2);
+            }
             List<User> users = userRepository.findAllByRole(roleService.findByRoleName("ADMIN"));
             for (User item : users) {
                 notificationUserRepository.save(new NotificationUser(item, notification));
@@ -303,7 +310,7 @@ public class NotificationService {
 
     public ResponseEntity<GenericResponse> getNotifications(String userId, Pageable pageable) {
         try {
-            Page<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId, pageable);
+            Page<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserIdOrderByNotificationUserIdDesc(userId, pageable);
             Map<String, Object> result = new HashMap<>();
             result.put("content", notifications.getContent().stream().map(NotificationRes::new).collect(Collectors.toList()));
             result.put("pageNumber", notifications.getPageable().getPageNumber()+1);
