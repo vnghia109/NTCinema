@@ -135,6 +135,7 @@ public class PromotionService {
             promotionFixed.setCreateAt(LocalDate.now());
 
             PromotionFixed response = promotionFixedRepository.save(promotionFixed);
+            changeValidPromotion();
             notificationService.promotionNotification(response);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -164,6 +165,7 @@ public class PromotionService {
                 promotion.get().setStartDate(promotionFixedReq.getStartDate());
                 promotion.get().setEndDate(promotionFixedReq.getEndDate());
 
+                changeValidPromotion();
                 promotionFixedRepository.save(promotion.get());
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
@@ -275,6 +277,7 @@ public class PromotionService {
                 promotionCode.setEndDate(promotionCodeReq.getEndDate());
                 promotionCode.setCreateAt(LocalDate.now());
 
+                changeValidPromotion();
                 PromotionCode response = promotionCodeRepository.save(promotionCode);
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
@@ -305,6 +308,7 @@ public class PromotionService {
                 promotion.get().setStartDate(promotionCodeReq.getStartDate());
                 promotion.get().setEndDate(promotionCodeReq.getEndDate());
 
+                changeValidPromotion();
                 promotionCodeRepository.save(promotion.get());
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
