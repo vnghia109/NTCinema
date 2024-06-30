@@ -16,6 +16,7 @@ import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.PromotionCodeReq;
 import vn.iostar.NT_cinema.dto.PromotionFixedReq;
 import vn.iostar.NT_cinema.entity.*;
+import vn.iostar.NT_cinema.exception.NotFoundException;
 import vn.iostar.NT_cinema.repository.PromotionCodeRepository;
 import vn.iostar.NT_cinema.repository.PromotionCodeUsageRepository;
 import vn.iostar.NT_cinema.repository.PromotionFixedRepository;
@@ -41,6 +42,8 @@ public class PromotionService {
     PromotionCodeUsageRepository promotionCodeUsageRepository;
     @Autowired
     NotificationService notificationService;
+    @Autowired
+    CloudinaryService cloudinaryService;
 
     public ResponseEntity<GenericResponse> getAllPromotions(boolean isFixed, String code, Pageable pageable) {
         try {
@@ -94,33 +97,15 @@ public class PromotionService {
     public ResponseEntity<GenericResponse> createPromotionFixed(PromotionFixedReq promotionFixedReq) {
         try {
             PromotionFixed promotionFixed = new PromotionFixed();
-            if (promotionFixedReq.getName() == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Vui lòng nhập tên khuyến mãi!")
-                                .result(null)
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .build());
-            }
-            if (promotionFixedReq.getNormalValue() == null || promotionFixedReq.getVipValue() == null || promotionFixedReq.getCoupleValue() == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Vui lòng nhập giá trị của khuyến mãi!")
-                                .result(null)
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .build());
-            }
-            if(promotionFixedReq.getStartDate() == null){
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Vui lòng chọn ngày bắt đầu của khuyến mãi!")
-                                .result(null)
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .build());
-            }
+            if (promotionFixedReq.getName() == null)
+                throw new IllegalArgumentException("Vui lòng nhập tên khuyến mãi!");
+
+            if (promotionFixedReq.getNormalValue() == null || promotionFixedReq.getVipValue() == null || promotionFixedReq.getCoupleValue() == null)
+                throw new IllegalArgumentException("Vui lòng nhập giá trị của khuyến mãi!");
+
+            if(promotionFixedReq.getStartDate() == null)
+                throw new IllegalArgumentException("Vui lòng chọn ngày bắt đầu của khuyến mãi!");
+
             promotionFixed.setName(promotionFixedReq.getName());
             promotionFixed.setDescription(promotionFixedReq.getDescription());
             promotionFixed.setNormalValue(promotionFixedReq.getNormalValue());
@@ -133,6 +118,7 @@ public class PromotionService {
             promotionFixed.setStartDate(promotionFixedReq.getStartDate());
             promotionFixed.setEndDate(promotionFixedReq.getEndDate());
             promotionFixed.setCreateAt(LocalDate.now());
+            promotionFixed.setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
 
             PromotionFixed response = promotionFixedRepository.save(promotionFixed);
             changeValidPromotion();
@@ -165,6 +151,9 @@ public class PromotionService {
                 promotion.get().setStartDate(promotionFixedReq.getStartDate());
                 promotion.get().setEndDate(promotionFixedReq.getEndDate());
 
+                cloudinaryService.deleteImage(promotion.get().getImage());
+                promotion.get().setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
+
                 changeValidPromotion();
                 promotionFixedRepository.save(promotion.get());
                 return ResponseEntity.status(HttpStatus.OK)
@@ -175,13 +164,7 @@ public class PromotionService {
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Khuyến mãi không tồn tại!")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
+                throw new NotFoundException("Khuyến mãi không tồn tại!");
             }
         }catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -203,13 +186,7 @@ public class PromotionService {
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Khuyến mãi không tồn tại!")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
+                throw new NotFoundException("Khuyến mãi không tồn tại!");
             }
         }catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -219,49 +196,19 @@ public class PromotionService {
     public ResponseEntity<GenericResponse> createPromotionCode(PromotionCodeReq promotionCodeReq) {
         try {
             if (promotionCodeRepository.existsByPromotionCode(promotionCodeReq.getPromotionCode())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Mã khuyến mãi đã đưọc sử dụng!")
-                                .result(null)
-                                .statusCode(HttpStatus.BAD_REQUEST.value())
-                                .build());
+                throw new IllegalArgumentException("Mã khuyến mãi đã được sử dụng!");
             }else {
                 if (promotionCodeReq.getName() == null) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(GenericResponse.builder()
-                                    .success(false)
-                                    .message("Vui lòng nhập tên khuyến mãi!")
-                                    .result(null)
-                                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                                    .build());
+                    throw new IllegalArgumentException("Vui lòng nhập tên khuyến mãi!");
                 }
                 if (promotionCodeReq.getDiscountType() == null){
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(GenericResponse.builder()
-                                    .success(false)
-                                    .message("Vui lòng chọn loại khuyến mãi!")
-                                    .result(null)
-                                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                                    .build());
+                    throw new IllegalArgumentException("Vui lòng chọn loại khuyến mãi!");
                 }
                 if (promotionCodeReq.getDiscountValue() == null) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(GenericResponse.builder()
-                                    .success(false)
-                                    .message("Vui lòng nhập giá trị của khuyến mãi!")
-                                    .result(null)
-                                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                                    .build());
+                    throw new IllegalArgumentException("Vui lòng nhập giá trị của khuyến mãi!");
                 }
                 if(promotionCodeReq.getStartDate() == null){
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body(GenericResponse.builder()
-                                    .success(false)
-                                    .message("Vui lòng chọn ngày bắt đầu của khuyến mãi!")
-                                    .result(null)
-                                    .statusCode(HttpStatus.BAD_REQUEST.value())
-                                    .build());
+                    throw new IllegalArgumentException("Vui lòng chọn ngày bắt đầu của khuyến mãi!");
                 }
                 PromotionCode promotionCode = new PromotionCode();
                 promotionCode.setName(promotionCodeReq.getName());
@@ -276,6 +223,7 @@ public class PromotionService {
                 promotionCode.setMinOrderValue(promotionCodeReq.getMinOrderValue());
                 promotionCode.setEndDate(promotionCodeReq.getEndDate());
                 promotionCode.setCreateAt(LocalDate.now());
+                promotionCode.setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
 
                 changeValidPromotion();
                 PromotionCode response = promotionCodeRepository.save(promotionCode);
@@ -308,6 +256,9 @@ public class PromotionService {
                 promotion.get().setStartDate(promotionCodeReq.getStartDate());
                 promotion.get().setEndDate(promotionCodeReq.getEndDate());
 
+                cloudinaryService.deleteImage(promotion.get().getImage());
+                promotion.get().setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
+
                 changeValidPromotion();
                 promotionCodeRepository.save(promotion.get());
                 return ResponseEntity.status(HttpStatus.OK)
@@ -318,13 +269,7 @@ public class PromotionService {
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Khuyến mãi không tồn tại!")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
+                throw new NotFoundException("Khuyến mãi không tồn tại!");
             }
         }catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -346,13 +291,7 @@ public class PromotionService {
                                 .statusCode(HttpStatus.OK.value())
                                 .build());
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Khuyến mãi không tồn tại!")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
+                throw new NotFoundException("Khuyến mãi không tồn tại!");
             }
         }catch (Exception e) {
             throw new RuntimeException(e.getMessage());

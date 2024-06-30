@@ -15,6 +15,18 @@ public class CloudinaryService {
     @Autowired
     Cloudinary cloudinary;
 
+    public String uploadImage(MultipartFile imageFile) throws IOException {
+        if (imageFile == null) {
+            throw new IllegalArgumentException("Không có tệp được tải lên. Vui lòng tải lên tệp hợp lệ.");
+        }
+        Map<String, String> params = ObjectUtils.asMap(
+                "folder", "Movie",
+                "resource_type", "image");
+        Map uploadResult = cloudinary.uploader().upload(imageFile.getBytes(), params);
+
+        return (String) uploadResult.get("secure_url");
+    }
+
     public String uploadImage(List<MultipartFile> imageFile) throws IOException {
         if (imageFile == null) {
             throw new IllegalArgumentException("Không có tệp được tải lên. Vui lòng tải lên tệp hợp lệ.");

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,4 +27,5 @@ public class PromotionCodeReq {
     private BigDecimal minOrderValue;
     private LocalDate startDate;
     private LocalDate endDate;
+    private MultipartFile image;
 }

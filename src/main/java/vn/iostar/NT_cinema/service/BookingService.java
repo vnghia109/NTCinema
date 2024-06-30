@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -487,38 +488,33 @@ public class BookingService {
             throw new RuntimeException(e.getMessage());
         }
     }
-
     public ResponseEntity<GenericResponse> getBookings(String status, String cinemaId, Pageable pageable) {
         try {
-            Page<Booking> bookings;
-            if (cinemaId == null) {
-                if (status.isEmpty() || status.isBlank()) {
-                    bookings = bookingRepository.findAllByOrderByBookingIdDesc(pageable);
-                } else {
-                    TicketStatus ticketStatus = TicketStatus.valueOf(status);
-                    bookings = bookingRepository.findAllByTicketStatusOrderByBookingIdDesc(ticketStatus, pageable);
-                }
-            } else {
+            List<Booking> bookings;
+            Criteria criteria = Criteria.where("isPayment").is(true);
+            if (cinemaId != null && !cinemaId.isEmpty()) {
                 List<Room> rooms = roomRepository.findAllByCinema_CinemaId(cinemaId);
-                List<ShowTime> showTimes = showTimeRepository.findAllByRoomIn(rooms);
-                List<String> showtimeIds = showTimes.stream().map(ShowTime::getShowTimeId).toList();
-                if (status.isEmpty() || status.isBlank()) {
-                    bookings = bookingRepository.findAllByShowtimeIdInOrderByBookingIdDesc(showtimeIds, pageable);
-                } else {
-                    TicketStatus ticketStatus = TicketStatus.valueOf(status);
-                    bookings = bookingRepository.findAllByShowtimeIdInAndTicketStatusOrderByBookingIdDesc(showtimeIds, ticketStatus, pageable);
-                }
+                List<String> roomIds = rooms.stream().map(Room::getRoomId).toList();
+                criteria.and("seats.showTime.room.roomId").in(roomIds);
             }
+            if (!status.isEmpty() && !status.isBlank()) {
+                criteria.and("ticketStatus").is(TicketStatus.valueOf(status));
+            }
+            Query query = new Query(criteria);
+            long totalElements = mongoTemplate.count(query, Booking.class);
+            bookings = mongoTemplate.find(query.with(pageable), Booking.class);
+
+            Page<Booking> result = new PageImpl<>(bookings.stream().sorted(Comparator.comparing(Booking::getCreateAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList(), pageable, totalElements);
 
             List<BookingsOfStaffRes> list = new ArrayList<>();
-            for (Booking item : bookings.getContent()) {
+            for (Booking item : result.getContent()) {
                 Optional<User> user = userRepository.findById(item.getUserId());
                 BookingsOfStaffRes bookingRes = new BookingsOfStaffRes();
                 bookingRes.setBookingId(item.getBookingId());
-                if (user.isPresent()){
+                if (user.isPresent()) {
                     bookingRes.setUserName(user.get().getUserName());
                     bookingRes.setFullName(user.get().getFullName());
-                }else {
+                } else {
                     bookingRes.setUserName("");
                     bookingRes.setFullName("");
                 }
@@ -535,10 +531,10 @@ public class BookingService {
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", list);
-            map.put("pageNumber", bookings.getPageable().getPageNumber() + 1);
-            map.put("pageSize", bookings.getSize());
-            map.put("totalPages", bookings.getTotalPages());
-            map.put("totalElements", bookings.getTotalElements());
+            map.put("pageNumber", result.getPageable().getPageNumber() + 1);
+            map.put("pageSize", result.getSize());
+            map.put("totalPages", result.getTotalPages());
+            map.put("totalElements", totalElements);
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -547,7 +543,7 @@ public class BookingService {
                             .result(map)
                             .statusCode(HttpStatus.OK.value())
                             .build());
-        }catch (Exception e){
+        } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }

@@ -458,24 +458,24 @@ public class AdminController {
     }
 
     @PostMapping("/promotionsFixed")
-    public ResponseEntity<GenericResponse> createPromotionFixed(@RequestBody PromotionFixedReq promotionFixedReq) {
+    public ResponseEntity<GenericResponse> createPromotionFixed(@ModelAttribute PromotionFixedReq promotionFixedReq) {
         return promotionService.createPromotionFixed(promotionFixedReq);
     }
 
     @PostMapping("/promotionsCode")
-    public ResponseEntity<GenericResponse> createPromotionCode(@Valid @RequestBody PromotionCodeReq promotionCodeReq) {
+    public ResponseEntity<GenericResponse> createPromotionCode(@Valid @ModelAttribute PromotionCodeReq promotionCodeReq) {
         return promotionService.createPromotionCode(promotionCodeReq);
     }
 
     @PutMapping("/promotionsFixed/{id}")
     public ResponseEntity<GenericResponse> updatePromotionFixed(@PathVariable String id,
-                                                           @RequestBody PromotionFixedReq promotionFixedReq) {
+                                                           @ModelAttribute PromotionFixedReq promotionFixedReq) {
         return promotionService.updatePromotionFixed(id, promotionFixedReq);
     }
 
     @PutMapping("/promotionsCode/{id}")
     public ResponseEntity<GenericResponse> updatePromotionCode(@PathVariable String id,
-                                                           @Valid @RequestBody PromotionCodeReq promotionCodeReq) {
+                                                           @Valid @ModelAttribute PromotionCodeReq promotionCodeReq) {
         return promotionService.updatePromotionCode(id, promotionCodeReq);
     }
 

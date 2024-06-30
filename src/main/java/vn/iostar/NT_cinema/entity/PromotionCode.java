@@ -32,6 +32,7 @@ public class PromotionCode {
     private BigDecimal minOrderValue;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String image;
     private boolean isDeleted = false;
     private boolean isValid = true;
     private LocalDate createAt;
