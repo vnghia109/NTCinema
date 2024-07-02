@@ -422,12 +422,18 @@ public class PromotionService {
             if (item.getEndDate().isBefore(LocalDate.now()) || item.getStartDate().isAfter(LocalDate.now())) {
                 item.setValid(false);
                 promotionCodeRepository.save(item);
+            }else{
+                item.setValid(true);
+                promotionCodeRepository.save(item);
             }
         }
         List<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll();
         for (PromotionFixed item : promotionFixeds) {
             if (item.getEndDate().isBefore(LocalDate.now()) || item.getStartDate().isAfter(LocalDate.now())) {
                 item.setValid(false);
+                promotionFixedRepository.save(item);
+            }else {
+                item.setValid(true);
                 promotionFixedRepository.save(item);
             }
         }
