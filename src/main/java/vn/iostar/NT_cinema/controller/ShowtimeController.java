@@ -18,8 +18,9 @@ public class ShowtimeController {
     @GetMapping("")
     public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size,
-                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
-        return showTimeService.getShowTimes(date, PageRequest.of(index-1, size));
+                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                        @RequestParam(required = false) String movieId) {
+        return showTimeService.getShowTimes(movieId, date, PageRequest.of(index-1, size));
     }
     @GetMapping("/{id}")
     public ResponseEntity<GenericResponse> getShowTime(@PathVariable("id") String id){

@@ -316,7 +316,7 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getShowTimes(LocalDate date, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getShowTimes(String movieId, LocalDate date, Pageable pageable) {
         try {
             Criteria criteria = Criteria.where("isDelete").is(false);
             if (date != null){
@@ -324,6 +324,9 @@ public class ShowTimeService {
                         Criteria.where("timeStart").lte(date),
                         Criteria.where("timeEnd").gte(date)
                 );
+            }
+            if (movieId != null && !movieId.isBlank()) {
+                criteria.and("movie.movieId").is(movieId);
             }
             Query query = new Query(criteria)
                     .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
@@ -346,13 +349,16 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> adminGetShowTimes(LocalDate date, Pageable pageable) {
+    public ResponseEntity<GenericResponse> adminGetShowTimes(LocalDate date, String movieId, Pageable pageable) {
         try {
-            Query query = new Query();
+            Criteria criteria = new Criteria();
             if (date != null){
-                Criteria criteria = Criteria.where("timeStart").lte(date).and("timeEnd").gte(date);
-                query.addCriteria(criteria);
+                criteria = Criteria.where("timeStart").lte(date).and("timeEnd").gte(date);
             }
+            if (movieId != null && !movieId.isBlank()){
+                criteria.and("movie.movieId").is(movieId);
+            }
+            Query query = new Query(criteria);
             query.with(Sort.by(Sort.Direction.DESC, "showTimeId"));
             long count = mongoTemplate.count(query, ShowTime.class);
             query.with(pageable);
@@ -372,9 +378,9 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getShowTimesOfManager(LocalDate date, String id, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getShowTimesOfManager(LocalDate date, String movieId, String managerId, Pageable pageable) {
         try {
-            Optional<Manager> manager = managerRepository.findById(id);
+            Optional<Manager> manager = managerRepository.findById(managerId);
             if (manager.isEmpty()){
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
                         .success(false)
@@ -390,6 +396,9 @@ public class ShowTimeService {
                         Criteria.where("timeStart").lte(date),
                         Criteria.where("timeEnd").gte(date)
                 );
+            }
+            if (movieId != null && !movieId.isBlank()){
+                criteria.and("movie.movieId").is(movieId);
             }
             Query query = new Query(criteria)
                     .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
@@ -466,7 +475,7 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, LocalDate date, Pageable pageable) {
+    public ResponseEntity<GenericResponse> findShowtimesByCinema(String id, LocalDate date, String movieId, Pageable pageable) {
         try {
             List<Room> rooms = roomRepository.findAllByCinema_CinemaId(id);
 
@@ -477,7 +486,9 @@ public class ShowTimeService {
                         Criteria.where("timeEnd").gte(date)
                 );
             }
-
+            if (movieId != null && !movieId.isBlank()){
+                criteria.and("movie.movieId").is(movieId);
+            }
             Query query = new Query(criteria)
                     .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
             long count = mongoTemplate.count(query, ShowTime.class);
@@ -499,7 +510,7 @@ public class ShowTimeService {
         }
     }
 
-    public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date, Pageable pageable) {
+    public ResponseEntity<GenericResponse> findShowtimesByRoom(String roomId, LocalDate date, String movieId, Pageable pageable) {
         try {
             Criteria criteria = Criteria.where("room.roomId").is(roomId);
             if (date != null){
@@ -507,6 +518,9 @@ public class ShowTimeService {
                         Criteria.where("timeStart").lte(date),
                         Criteria.where("timeEnd").gte(date)
                 );
+            }
+            if (movieId != null && !movieId.isBlank()){
+                criteria.and("movie.movieId").is(movieId);
             }
             Query query = new Query(criteria)
                     .with(Sort.by(Sort.Direction.DESC, "showTimeId"));

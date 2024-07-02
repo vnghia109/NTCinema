@@ -127,10 +127,11 @@ public class ManagerController {
     public ResponseEntity<GenericResponse> getShowTimes(@RequestHeader("Authorization") String authorizationHeader,
                                                         @RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size,
-                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                        @RequestParam(required = false) String movieId){
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return showTimeService.getShowTimesOfManager(date, managerId, PageRequest.of(index-1, size));
+        return showTimeService.getShowTimesOfManager(date, movieId, managerId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/showtimes/{id}")
@@ -147,14 +148,17 @@ public class ManagerController {
     public ResponseEntity<GenericResponse> getShowtimesOfRoom(@PathVariable("Id") String Id,
                                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                                               @RequestParam(defaultValue = "1") int index,
-                                                              @RequestParam(defaultValue = "10") int size) {
-        return showTimeService.findShowtimesByRoom(Id, date, PageRequest.of(index-1, size));
+                                                              @RequestParam(defaultValue = "10") int size,
+                                                              @RequestParam(required = false) String movieId) {
+        return showTimeService.findShowtimesByRoom(Id, date, movieId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
-                                                      @RequestParam(defaultValue = "10") int size){
-        return reviewService.getReviews(PageRequest.of(index-1, size));
+                                                      @RequestParam(defaultValue = "10") int size,
+                                                      @RequestParam(required = false) String movieId,
+                                                      @RequestParam(required = false) Integer star){
+        return reviewService.getReviews(movieId, star, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/tickets")

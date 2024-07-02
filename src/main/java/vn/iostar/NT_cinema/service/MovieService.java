@@ -3,7 +3,11 @@ package vn.iostar.NT_cinema.service;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -37,12 +41,30 @@ public class MovieService {
     StaffRepository staffRepository;
     @Autowired
     GenresRepository genresRepository;
+    @Autowired
+    MongoTemplate mongoTemplate;
 
-    public ResponseEntity<GenericResponse> allMovies(Pageable pageable) {
-        Page<Movie> moviePage = movieRepository.findAllByIsDeleteIsFalseOrderByMovieIdDesc(pageable);
-        List<MovieRes> movieRes = moviePage.getContent().stream()
-                .map(this::mapCinemaToMovieRes)
+    public ResponseEntity<GenericResponse> allMovies(String genresId, Pageable pageable) {
+        List<MovieRes> movieRes;
+        Page<Movie> moviePage;
+        if (genresId != null && !genresId.isBlank()) {
+            Criteria criteria = Criteria.where("isDelete").is(false)
+                    .and("genres.id").is(genresId);
+            Query query = new Query(criteria);
+
+            long count = mongoTemplate.count(query, Movie.class);
+            List<Movie> movies = mongoTemplate.find(query, Movie.class);
+            moviePage = new PageImpl<>(movies, pageable, count);
+            movieRes = moviePage.getContent().stream()
+                    .sorted(Comparator.comparing(Movie::getMovieId, Comparator.reverseOrder()))
+                    .map(this::mapMovieToMovieRes)
+                    .collect(Collectors.toList());
+        } else {
+        moviePage = movieRepository.findAllByIsDeleteIsFalseOrderByMovieIdDesc(pageable);
+        movieRes = moviePage.getContent().stream()
+                .map(this::mapMovieToMovieRes)
                 .collect(Collectors.toList());
+        }
 
         Map<String, Object> map = new HashMap<>();
         map.put("content", movieRes);
@@ -54,13 +76,13 @@ public class MovieService {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(GenericResponse.builder()
                         .success(true)
-                        .message("Lấy tất cả phim thành công!")
+                        .message("Lấy danh sách phim thành công!")
                         .result(map)
                         .statusCode(HttpStatus.OK.value())
                         .build());
     }
 
-    private MovieRes mapCinemaToMovieRes(Movie movie) {
+    private MovieRes mapMovieToMovieRes(Movie movie) {
         MovieRes movieRes = new MovieRes();
         movieRes.setMovieId(movie.getMovieId());
         movieRes.setTitle(movie.getTitle());
@@ -77,8 +99,19 @@ public class MovieService {
         return movieRes;
     }
 
-    public ResponseEntity<GenericResponse> adminGetAllMovie(Pageable pageable) {
-        Page<Movie> moviePage = movieRepository.findAllByOrderByMovieIdDesc(pageable);
+    public ResponseEntity<GenericResponse> adminGetAllMovie(String genresId, Pageable pageable) {
+        Page<Movie> moviePage;
+        if (genresId != null && !genresId.isBlank()) {
+            Criteria criteria = Criteria.where("genres.id").is(genresId);
+            Query query = new Query(criteria);
+
+            long count = mongoTemplate.count(query, Movie.class);
+            List<Movie> movies = mongoTemplate.find(query, Movie.class).stream()
+                    .sorted(Comparator.comparing(Movie::getMovieId, Comparator.reverseOrder())).toList();
+            moviePage = new PageImpl<>(movies, pageable, count);
+        } else {
+            moviePage = movieRepository.findAllByOrderByMovieIdDesc(pageable);
+        }
 
         Map<String, Object> map = new HashMap<>();
         map.put("content", moviePage.getContent());
@@ -361,7 +394,9 @@ public class MovieService {
 
     public ResponseEntity<GenericResponse> searchMovie(String keyWord) {
         try {
-            List<Movie> foundMovies = movieRepository.searchMoviesByKeyword(keyWord);
+            Query query = new Query();
+            query.addCriteria(Criteria.where("title").regex(".*" + keyWord + ".*", "i"));
+            List<Movie> foundMovies = mongoTemplate.find(query, Movie.class);
 
             if (foundMovies.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)

@@ -97,14 +97,16 @@ public class AdminController {
     @GetMapping("/personnel")
     public ResponseEntity<GenericResponse> getPersonnel(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size,
-                                                        @RequestParam(required = false) boolean sortByRole){
-        return userService.getAllPersonnel(sortByRole, PageRequest.of(index-1, size));
+                                                        @RequestParam(required = false) boolean sortByRole,
+                                                        @RequestParam(required = false) String userName){
+        return userService.getAllPersonnel(sortByRole, userName, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/viewers")
     public ResponseEntity<GenericResponse> getViewers(@RequestParam(defaultValue = "1") int index,
-                                                      @RequestParam(defaultValue = "10") int size){
-        return userService.getAllViewer(PageRequest.of(index-1, size));
+                                                      @RequestParam(defaultValue = "10") int size,
+                                                      @RequestParam(required = false) String userName){
+        return userService.getAllViewer(userName, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/users")
@@ -175,8 +177,9 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getShowtimesOfCinema(@PathVariable("Id") String Id,
                                                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                                                 @RequestParam(defaultValue = "1") int index,
-                                                                @RequestParam(defaultValue = "10") int size) {
-        return showTimeService.findShowtimesByCinema(Id, date, PageRequest.of(index-1, size));
+                                                                @RequestParam(defaultValue = "10") int size,
+                                                                @RequestParam(required = false) String movieId) {
+        return showTimeService.findShowtimesByCinema(Id, date, movieId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/cinemas/{Id}/rooms")
@@ -191,8 +194,9 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getShowtimesOfRoom(@PathVariable("Id") String Id,
                                                               @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                                                               @RequestParam(defaultValue = "1") int index,
-                                                              @RequestParam(defaultValue = "10") int size) {
-        return showTimeService.findShowtimesByRoom(Id, date, PageRequest.of(index-1, size));
+                                                              @RequestParam(defaultValue = "10") int size,
+                                                              @RequestParam(required = false) String movieId) {
+        return showTimeService.findShowtimesByRoom(Id, date, movieId, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/movies/movie")
@@ -234,8 +238,9 @@ public class AdminController {
 
     @GetMapping("/movies")
     public ResponseEntity<GenericResponse> getAllMovies(@RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size) {
-        return movieService.adminGetAllMovie(PageRequest.of(index-1, size));
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @RequestParam(required = false) String genresId) {
+        return movieService.adminGetAllMovie(genresId, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/foods/food")
@@ -276,8 +281,9 @@ public class AdminController {
     @GetMapping("/showtimes")
     public ResponseEntity<GenericResponse> getShowTimes(@RequestParam(defaultValue = "1") int index,
                                                         @RequestParam(defaultValue = "10") int size,
-                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
-        return showTimeService.adminGetShowTimes(date, PageRequest.of(index-1, size));
+                                                        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+                                                        @RequestParam(required = false) String movieId){
+        return showTimeService.adminGetShowTimes(date, movieId, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/showtimes/schedule/check")
@@ -372,8 +378,10 @@ public class AdminController {
 
     @GetMapping("/reviews")
     public ResponseEntity<GenericResponse> getReviews(@RequestParam(defaultValue = "1") int index,
-                                                    @RequestParam(defaultValue = "10") int size){
-        return reviewService.getReviews(PageRequest.of(index-1, size));
+                                                      @RequestParam(defaultValue = "10") int size,
+                                                      @RequestParam(required = false) String movieId,
+                                                      @RequestParam(required = false) Integer star) {
+        return reviewService.getReviews(movieId, star, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/bookings")
@@ -448,8 +456,9 @@ public class AdminController {
     public ResponseEntity<GenericResponse> getAllPromotions(@RequestParam(defaultValue = "1") int index,
                                                             @RequestParam(defaultValue = "10") int size,
                                                             @RequestParam(defaultValue = "false") boolean isFixed,
-                                                            @RequestParam(required = false) String code) {
-        return promotionService.getAllPromotions(isFixed, code, PageRequest.of(index-1, size));
+                                                            @RequestParam(required = false) String code,
+                                                            @RequestParam(required = false) String name) {
+        return promotionService.getAllPromotions(isFixed, code, name, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/promotions/{id}")

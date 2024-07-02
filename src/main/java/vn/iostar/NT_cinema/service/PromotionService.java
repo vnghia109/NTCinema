@@ -3,6 +3,7 @@ package vn.iostar.NT_cinema.service;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -45,25 +46,23 @@ public class PromotionService {
     @Autowired
     CloudinaryService cloudinaryService;
 
-    public ResponseEntity<GenericResponse> getAllPromotions(boolean isFixed, String code, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getAllPromotions(boolean isFixed, String code, String name, Pageable pageable) {
         try {
+            Map<String, Object> map = new HashMap<>();
             if (isFixed) {
                 Page<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll(pageable);
-                Map<String, Object> map = new HashMap<>();
-                map.put("content", promotionFixeds.getContent());
+                List<PromotionFixed> result = promotionFixeds.getContent();
+                if (name != null && !name.isBlank()) {
+                    result = result.stream()
+                            .filter(promotionFixed -> promotionFixed.getName().contains(name)).toList();
+                    promotionFixeds = new PageImpl<>(result, pageable, result.size());
+                }
+
+                map.put("content", result);
                 map.put("pageNumber", promotionFixeds.getPageable().getPageNumber() + 1);
                 map.put("pageSize", promotionFixeds.getSize());
                 map.put("totalPages", promotionFixeds.getTotalPages());
                 map.put("totalElements", promotionFixeds.getTotalElements());
-
-                return ResponseEntity.ok(
-                        GenericResponse.builder()
-                                .success(true)
-                                .message("Lấy danh sách khuyến mãi thành công!")
-                                .result(map)
-                                .statusCode(HttpStatus.OK.value())
-                                .build()
-                );
             }else {
                 Page<PromotionCode> promotionCodes;
                 if (code != null) {
@@ -71,23 +70,27 @@ public class PromotionService {
                 }else {
                     promotionCodes = promotionCodeRepository.findAll(pageable);
                 }
+                List<PromotionCode> result = promotionCodes.getContent();
+                if (name != null && !name.isBlank()) {
+                    result = result.stream()
+                            .filter(promotionFixed -> promotionFixed.getName().contains(name)).toList();
+                    promotionCodes = new PageImpl<>(result, pageable, result.size());
+                }
 
-                Map<String, Object> map = new HashMap<>();
-                map.put("content", promotionCodes.getContent());
+                map.put("content", result);
                 map.put("pageNumber", promotionCodes.getPageable().getPageNumber() + 1);
                 map.put("pageSize", promotionCodes.getSize());
                 map.put("totalPages", promotionCodes.getTotalPages());
                 map.put("totalElements", promotionCodes.getTotalElements());
-
-                return ResponseEntity.ok(
-                        GenericResponse.builder()
-                                .success(true)
-                                .message("Lấy danh sách khuyến mãi thành công!")
-                                .result(map)
-                                .statusCode(HttpStatus.OK.value())
-                                .build()
-                );
             }
+            return ResponseEntity.ok(
+                    GenericResponse.builder()
+                            .success(true)
+                            .message("Lấy danh sách khuyến mãi thành công!")
+                            .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build()
+            );
 
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());

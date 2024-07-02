@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -671,7 +672,7 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getAllPersonnel(boolean sortByRole, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getAllPersonnel(boolean sortByRole, String userName, Pageable pageable) {
         try {
             List<Role> roles = new ArrayList<>();
             roles.add(roleService.findByRoleName("MANAGER"));
@@ -685,6 +686,10 @@ public class UserService {
             }else {
                 list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed())
                         .toList();
+            }
+            if (userName != null && !userName.isBlank()) {
+                list = list.stream().filter(user -> user.getUserName().contains(userName)).toList();
+                users = new PageImpl<>(list, pageable, list.size());
             }
             Map<String, Object> result = new HashMap<>();
             result.put("content", list);
@@ -714,13 +719,18 @@ public class UserService {
         };
         }
 
-    public ResponseEntity<GenericResponse> getAllViewer(Pageable pageable) {
+    public ResponseEntity<GenericResponse> getAllViewer(String userName, Pageable pageable) {
         try {
             List<Role> roles = new ArrayList<>();
             roles.add(roleService.findByRoleName("VIEWER"));
             Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
+            List<User> list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed()).toList();
+            if (userName != null && !userName.isBlank()) {
+                list = list.stream().filter(user -> user.getUserName().contains(userName)).toList();
+                users = new PageImpl<>(list, pageable, list.size());
+            }
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed()).collect(Collectors.toList()));
+            result.put("content", list);
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());
             result.put("totalPages", users.getTotalPages());

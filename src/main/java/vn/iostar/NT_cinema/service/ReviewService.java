@@ -2,7 +2,12 @@ package vn.iostar.NT_cinema.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -16,10 +21,7 @@ import vn.iostar.NT_cinema.repository.MovieRepository;
 import vn.iostar.NT_cinema.repository.ReviewRepository;
 import vn.iostar.NT_cinema.repository.UserRepository;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ReviewService {
@@ -31,6 +33,8 @@ public class ReviewService {
     MovieRepository movieRepository;
     @Autowired
     NotificationService notificationService;
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     public ResponseEntity<?> reviewMovie(ReviewReq req, String userId, String movieId) {
             try {
@@ -80,16 +84,28 @@ public class ReviewService {
             }
     }
 
-    public ResponseEntity<GenericResponse> getReviews(Pageable pageable) {
+    public ResponseEntity<GenericResponse> getReviews(String movieId, Integer star, Pageable pageable) {
         try {
-            Page<Review> reviews = reviewRepository.findAllByOrderByCreateAtDesc(pageable);
+            Criteria criteria = new Criteria();
+            if (star != null && star > 0 && star <=5) {
+                criteria = criteria.and("rating").is(star);
+            }
+            if (movieId != null && !movieId.isBlank()) {
+                criteria = criteria.and("movieId").is(movieId);
+            }
+            Query query = new Query(criteria);
+            query.with(Sort.by(Sort.Direction.DESC, "createAt"));
+            long count = mongoTemplate.count(query, Review.class);
+            List<Review> reviews = mongoTemplate.find(query, Review.class);
+
+            Page<Review> result = new PageImpl<>(reviews, pageable, count);
 
             Map<String, Object> map = new HashMap<>();
-            map.put("content", reviews.getContent());
-            map.put("pageNumber", reviews.getPageable().getPageNumber() + 1);
-            map.put("pageSize", reviews.getSize());
-            map.put("totalPages", reviews.getTotalPages());
-            map.put("totalElements", reviews.getTotalElements());
+            map.put("content", result.getContent());
+            map.put("pageNumber", result.getPageable().getPageNumber() + 1);
+            map.put("pageSize", result.getSize());
+            map.put("totalPages", result.getTotalPages());
+            map.put("totalElements", result.getTotalElements());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
