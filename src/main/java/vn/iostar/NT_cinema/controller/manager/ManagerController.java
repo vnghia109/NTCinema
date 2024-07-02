@@ -237,10 +237,11 @@ public class ManagerController {
     @GetMapping("/personnel")
     public ResponseEntity<GenericResponse> getPersonnel(@RequestHeader("Authorization") String authorizationHeader,
                                                         @RequestParam(defaultValue = "1") int index,
-                                                        @RequestParam(defaultValue = "10") int size){
+                                                        @RequestParam(defaultValue = "10") int size,
+                                                        @RequestParam(required = false) String userName){
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return userService.getAllStaff(managerId, PageRequest.of(index-1, size));
+        return userService.getAllStaff(managerId, userName, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/foods/import")

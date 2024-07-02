@@ -26,7 +26,6 @@ import vn.iostar.NT_cinema.exception.UserNotFoundException;
 import vn.iostar.NT_cinema.repository.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -746,15 +745,19 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getAllStaff(String managerId, PageRequest pageable) {
+    public ResponseEntity<GenericResponse> getAllStaff(String managerId, String userName, PageRequest pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
             if (manager.isEmpty())
                 throw new UserNotFoundException();
             Page<Staff> users = staffRepository.findAllByRoleAndCinema(roleService.findByRoleName("STAFF"), manager.get().getCinema(), pageable);
+            List<Staff> list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed()).toList();
+            if (userName != null && !userName.isBlank()) {
+                list = list.stream().filter(user -> user.getUserName().contains(userName)).toList();
+                users = new PageImpl<>(list, pageable, list.size());
+            }
             Map<String, Object> result = new HashMap<>();
-            result.put("content", users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed())
-                    .collect(Collectors.toList()));
+            result.put("content", list);
             result.put("pageNumber", users.getPageable().getPageNumber() + 1);
             result.put("pageSize", users.getSize());
             result.put("totalPages", users.getTotalPages());
