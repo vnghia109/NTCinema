@@ -2,7 +2,6 @@ package vn.iostar.NT_cinema.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -11,6 +10,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import vn.iostar.NT_cinema.controller.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.ReviewReq;
 import vn.iostar.NT_cinema.dto.ReviewRes;
@@ -95,10 +95,10 @@ public class ReviewService {
             }
             Query query = new Query(criteria);
             query.with(Sort.by(Sort.Direction.DESC, "createAt"));
-            long count = mongoTemplate.count(query, Review.class);
+
             List<Review> reviews = mongoTemplate.find(query, Review.class);
 
-            Page<Review> result = new PageImpl<>(reviews, pageable, count);
+            Page<Review> result = PaginationUtils.paginate(reviews, pageable);
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", result.getContent());

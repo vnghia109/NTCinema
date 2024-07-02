@@ -3,7 +3,6 @@ package vn.iostar.NT_cinema.service;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -13,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.DiscountType;
+import vn.iostar.NT_cinema.controller.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.PromotionCodeReq;
 import vn.iostar.NT_cinema.dto.PromotionFixedReq;
@@ -50,38 +50,36 @@ public class PromotionService {
         try {
             Map<String, Object> map = new HashMap<>();
             if (isFixed) {
-                Page<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll(pageable);
-                List<PromotionFixed> result = promotionFixeds.getContent();
+                List<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll();
                 if (name != null && !name.isBlank()) {
-                    result = result.stream()
-                            .filter(promotionFixed -> promotionFixed.getName().contains(name)).toList();
-                    promotionFixeds = new PageImpl<>(result, pageable, result.size());
+                    promotionFixeds = promotionFixeds.stream()
+                            .filter(promotionFixed -> promotionFixed.getName().toLowerCase().contains(name)).toList();
                 }
+                Page<PromotionFixed> result = PaginationUtils.paginate(promotionFixeds, pageable);
 
-                map.put("content", result);
-                map.put("pageNumber", promotionFixeds.getPageable().getPageNumber() + 1);
-                map.put("pageSize", promotionFixeds.getSize());
-                map.put("totalPages", promotionFixeds.getTotalPages());
-                map.put("totalElements", promotionFixeds.getTotalElements());
+                map.put("content", result.getContent());
+                map.put("pageNumber", result.getPageable().getPageNumber() + 1);
+                map.put("pageSize", result.getSize());
+                map.put("totalPages", result.getTotalPages());
+                map.put("totalElements", result.getTotalElements());
             }else {
-                Page<PromotionCode> promotionCodes;
+                List<PromotionCode> promotionCodes;
                 if (code != null) {
-                    promotionCodes = promotionCodeRepository.findAllByPromotionCode(code, pageable);
+                    promotionCodes = promotionCodeRepository.findAllByPromotionCode(code);
                 }else {
-                    promotionCodes = promotionCodeRepository.findAll(pageable);
+                    promotionCodes = promotionCodeRepository.findAll();
                 }
-                List<PromotionCode> result = promotionCodes.getContent();
                 if (name != null && !name.isBlank()) {
-                    result = result.stream()
-                            .filter(promotionFixed -> promotionFixed.getName().contains(name)).toList();
-                    promotionCodes = new PageImpl<>(result, pageable, result.size());
+                    promotionCodes = promotionCodes.stream()
+                            .filter(promotionFixed -> promotionFixed.getName().toLowerCase().contains(name)).toList();
                 }
+                Page<PromotionCode> result = PaginationUtils.paginate(promotionCodes, pageable);
 
-                map.put("content", result);
-                map.put("pageNumber", promotionCodes.getPageable().getPageNumber() + 1);
-                map.put("pageSize", promotionCodes.getSize());
-                map.put("totalPages", promotionCodes.getTotalPages());
-                map.put("totalElements", promotionCodes.getTotalElements());
+                map.put("content", result.getContent());
+                map.put("pageNumber", result.getPageable().getPageNumber() + 1);
+                map.put("pageSize", result.getSize());
+                map.put("totalPages", result.getTotalPages());
+                map.put("totalElements", result.getTotalElements());
             }
             return ResponseEntity.ok(
                     GenericResponse.builder()

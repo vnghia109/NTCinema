@@ -3,7 +3,6 @@ package vn.iostar.NT_cinema.service;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -15,6 +14,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.ShowStatus;
 import vn.iostar.NT_cinema.constant.TimeShow;
+import vn.iostar.NT_cinema.controller.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
@@ -330,10 +330,9 @@ public class ShowTimeService {
             }
             Query query = new Query(criteria)
                     .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
-            long count = mongoTemplate.count(query, ShowTime.class);
-            query.with(pageable);
+
             List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
-            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
+            Page<ShowTime> showTimePage = PaginationUtils.paginate(showTimes, pageable);
 
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
 
@@ -360,10 +359,9 @@ public class ShowTimeService {
             }
             Query query = new Query(criteria);
             query.with(Sort.by(Sort.Direction.DESC, "showTimeId"));
-            long count = mongoTemplate.count(query, ShowTime.class);
-            query.with(pageable);
+
             List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
-            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
+            Page<ShowTime> showTimePage = PaginationUtils.paginate(showTimes, pageable);
 
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
             Map<String, Object> map = createResponseMap(responses, showTimePage);
@@ -402,11 +400,10 @@ public class ShowTimeService {
             }
             Query query = new Query(criteria)
                     .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
-            long count = mongoTemplate.count(query, ShowTime.class);
-            query.with(pageable);
+
             List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
 
-            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
+            Page<ShowTime> showTimePage = PaginationUtils.paginate(showTimes, pageable);
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
             Map<String, Object> map = createResponseMap(responses, showTimePage);
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
@@ -491,10 +488,9 @@ public class ShowTimeService {
             }
             Query query = new Query(criteria)
                     .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
-            long count = mongoTemplate.count(query, ShowTime.class);
-            query.with(pageable);
+
             List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
-            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
+            Page<ShowTime> showTimePage = PaginationUtils.paginate(showTimes, pageable);
 
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
             Map<String, Object> map = createResponseMap(responses, showTimePage);
@@ -524,10 +520,9 @@ public class ShowTimeService {
             }
             Query query = new Query(criteria)
                     .with(Sort.by(Sort.Direction.DESC, "showTimeId"));
-            long count = mongoTemplate.count(query, ShowTime.class);
-            query.with(pageable);
+
             List<ShowTime> showTimes = mongoTemplate.find(query, ShowTime.class);
-            Page<ShowTime> showTimePage = new PageImpl<>(showTimes, pageable, count);
+            Page<ShowTime> showTimePage = PaginationUtils.paginate(showTimes, pageable);
 
             List<ShowScheduleResp> responses = createShowScheduleResponses(showTimePage, date);
 

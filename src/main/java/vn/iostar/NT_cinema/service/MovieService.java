@@ -3,7 +3,6 @@ package vn.iostar.NT_cinema.service;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -12,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.ShowStatus;
+import vn.iostar.NT_cinema.controller.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
@@ -52,9 +52,8 @@ public class MovieService {
                     .and("genres.id").is(genresId);
             Query query = new Query(criteria);
 
-            long count = mongoTemplate.count(query, Movie.class);
             List<Movie> movies = mongoTemplate.find(query, Movie.class);
-            moviePage = new PageImpl<>(movies, pageable, count);
+            moviePage = PaginationUtils.paginate(movies, pageable);
             movieRes = moviePage.getContent().stream()
                     .sorted(Comparator.comparing(Movie::getMovieId, Comparator.reverseOrder()))
                     .map(this::mapMovieToMovieRes)
@@ -105,10 +104,9 @@ public class MovieService {
             Criteria criteria = Criteria.where("genres.id").is(genresId);
             Query query = new Query(criteria);
 
-            long count = mongoTemplate.count(query, Movie.class);
             List<Movie> movies = mongoTemplate.find(query, Movie.class).stream()
                     .sorted(Comparator.comparing(Movie::getMovieId, Comparator.reverseOrder())).toList();
-            moviePage = new PageImpl<>(movies, pageable, count);
+            moviePage = PaginationUtils.paginate(movies, pageable);
         } else {
             moviePage = movieRepository.findAllByOrderByMovieIdDesc(pageable);
         }

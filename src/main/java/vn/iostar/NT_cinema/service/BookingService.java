@@ -4,7 +4,6 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -19,6 +18,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import vn.iostar.NT_cinema.constant.PriceType;
 import vn.iostar.NT_cinema.constant.TicketStatus;
+import vn.iostar.NT_cinema.controller.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.repository.*;
@@ -504,7 +504,7 @@ public class BookingService {
             long totalElements = mongoTemplate.count(query, Booking.class);
             bookings = mongoTemplate.find(query.with(pageable), Booking.class);
 
-            Page<Booking> result = new PageImpl<>(bookings.stream().sorted(Comparator.comparing(Booking::getCreateAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList(), pageable, totalElements);
+            Page<Booking> result = PaginationUtils.paginate(bookings.stream().sorted(Comparator.comparing(Booking::getCreateAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList(), pageable);
 
             List<BookingsOfStaffRes> list = new ArrayList<>();
             for (Booking item : result.getContent()) {

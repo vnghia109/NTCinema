@@ -5,7 +5,6 @@ import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -18,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import vn.iostar.NT_cinema.controller.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.exception.AlreadyExistException;
@@ -671,35 +671,37 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getAllPersonnel(boolean sortByRole, String userName, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getAllPersonnel(boolean sortByRole, String search, Pageable pageable) {
         try {
             List<Role> roles = new ArrayList<>();
             roles.add(roleService.findByRoleName("MANAGER"));
             roles.add(roleService.findByRoleName("STAFF"));
 
-            Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
-            List<User> list;
+            List<User> users = userRepository.findAllByRoleIn(roles);
             if (sortByRole) {
-                list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed().thenComparing(user -> getRolePriority(user.getRole())))
+                users = users.stream().sorted(Comparator.comparing(User::getUserId).reversed().thenComparing(user -> getRolePriority(user.getRole())))
                         .toList();
             }else {
-                list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed())
+                users = users.stream().sorted(Comparator.comparing(User::getUserId).reversed())
                         .toList();
             }
-            if (userName != null && !userName.isBlank()) {
-                list = list.stream().filter(user -> user.getUserName().contains(userName)).toList();
-                users = new PageImpl<>(list, pageable, list.size());
+            if (search != null && !search.isBlank()) {
+                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search) ||
+                        user.getFullName().toLowerCase().contains(search) ||
+                        user.getEmail().toLowerCase().contains(search))
+                        .toList();
             }
-            Map<String, Object> result = new HashMap<>();
-            result.put("content", list);
-            result.put("pageNumber", users.getPageable().getPageNumber() + 1);
-            result.put("pageSize", users.getSize());
-            result.put("totalPages", users.getTotalPages());
-            result.put("totalElements", users.getTotalElements());
+            Page<User> result = PaginationUtils.paginate(users, pageable);
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", result.getContent());
+            map.put("pageNumber", result.getPageable().getPageNumber() + 1);
+            map.put("pageSize", result.getSize());
+            map.put("totalPages", result.getTotalPages());
+            map.put("totalElements", result.getTotalElements());
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
                     .message("Lấy sanh sách nhân sự thành công!")
-                    .result(result)
+                    .result(map)
                     .statusCode(200)
                     .build());
         } catch (Exception e) {
@@ -718,26 +720,29 @@ public class UserService {
         };
         }
 
-    public ResponseEntity<GenericResponse> getAllViewer(String userName, Pageable pageable) {
+    public ResponseEntity<GenericResponse> getAllViewer(String search, Pageable pageable) {
         try {
             List<Role> roles = new ArrayList<>();
             roles.add(roleService.findByRoleName("VIEWER"));
-            Page<User> users = userRepository.findAllByRoleIn(roles, pageable);
-            List<User> list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed()).toList();
-            if (userName != null && !userName.isBlank()) {
-                list = list.stream().filter(user -> user.getUserName().contains(userName)).toList();
-                users = new PageImpl<>(list, pageable, list.size());
+            List<User> users = userRepository.findAllByRoleIn(roles)
+                    .stream().sorted(Comparator.comparing(User::getUserId).reversed()).toList();
+            if (search != null && !search.isBlank()) {
+                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search) ||
+                        user.getFullName().toLowerCase().contains(search) ||
+                        user.getEmail().toLowerCase().contains(search))
+                        .toList();
             }
-            Map<String, Object> result = new HashMap<>();
-            result.put("content", list);
-            result.put("pageNumber", users.getPageable().getPageNumber() + 1);
-            result.put("pageSize", users.getSize());
-            result.put("totalPages", users.getTotalPages());
-            result.put("totalElements", users.getTotalElements());
+            Page<User> result = PaginationUtils.paginate(users, pageable);
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", result.getContent());
+            map.put("pageNumber", result.getPageable().getPageNumber() + 1);
+            map.put("pageSize", result.getSize());
+            map.put("totalPages", result.getTotalPages());
+            map.put("totalElements", result.getTotalElements());
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
                     .message("Lấy danh sách người xem thành công!")
-                    .result(result)
+                    .result(map)
                     .statusCode(200)
                     .build());
         } catch (Exception e) {
@@ -745,27 +750,30 @@ public class UserService {
         }
     }
 
-    public ResponseEntity<GenericResponse> getAllStaff(String managerId, String userName, PageRequest pageable) {
+    public ResponseEntity<GenericResponse> getAllStaff(String managerId, String search, PageRequest pageable) {
         try {
             Optional<Manager> manager = managerRepository.findById(managerId);
             if (manager.isEmpty())
                 throw new UserNotFoundException();
-            Page<Staff> users = staffRepository.findAllByRoleAndCinema(roleService.findByRoleName("STAFF"), manager.get().getCinema(), pageable);
-            List<Staff> list = users.getContent().stream().sorted(Comparator.comparing(User::getUserId).reversed()).toList();
-            if (userName != null && !userName.isBlank()) {
-                list = list.stream().filter(user -> user.getUserName().contains(userName)).toList();
-                users = new PageImpl<>(list, pageable, list.size());
+            List<Staff> users = staffRepository.findAllByRoleAndCinema(roleService.findByRoleName("STAFF"), manager.get().getCinema())
+                    .stream().sorted(Comparator.comparing(User::getUserId).reversed()).toList();
+            if (search != null && !search.isBlank()) {
+                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search) ||
+                        user.getFullName().toLowerCase().contains(search) ||
+                        user.getEmail().toLowerCase().contains(search))
+                        .toList();
             }
-            Map<String, Object> result = new HashMap<>();
-            result.put("content", list);
-            result.put("pageNumber", users.getPageable().getPageNumber() + 1);
-            result.put("pageSize", users.getSize());
-            result.put("totalPages", users.getTotalPages());
-            result.put("totalElements", users.getTotalElements());
+            Page<Staff> result = PaginationUtils.paginate(new ArrayList<>(users), pageable);
+            Map<String, Object> map = new HashMap<>();
+            map.put("content", result.getContent());
+            map.put("pageNumber", result.getPageable().getPageNumber() + 1);
+            map.put("pageSize", result.getSize());
+            map.put("totalPages", result.getTotalPages());
+            map.put("totalElements", result.getTotalElements());
             return ResponseEntity.ok().body(GenericResponse.builder()
                     .success(true)
                     .message("Lấy danh sách nhân viên thành công!")
-                    .result(result)
+                    .result(map)
                     .statusCode(200)
                     .build());
         } catch (Exception e) {
