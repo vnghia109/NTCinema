@@ -226,11 +226,6 @@ public class AdminController {
         return movieService.update(movieId, movieRequest);
     }
 
-    @DeleteMapping("/movies/{movieId}")
-    public ResponseEntity<GenericResponse> deleteMovie(@PathVariable("movieId") String movieId){
-        return movieService.delete(movieId);
-    }
-
     @PatchMapping("/movies/{movieId}")
     public ResponseEntity<GenericResponse> updateIsDeleteMovie(@PathVariable("movieId") String movieId){
         return movieService.updateIsDelete(movieId);

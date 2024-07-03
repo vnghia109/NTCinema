@@ -154,7 +154,10 @@ public class MovieService {
     public ResponseEntity<GenericResponse> save(MovieReq req) {
         try {
             if (movieRepository.findByTitle(req.getTitle()).isEmpty()) {
-                List<Genres> genres = genresRepository.findAllById(req.getGenres());
+                List<String> genresIds = req.getGenres();
+                if (genresIds.contains(null))
+                    throw new IllegalArgumentException("Danh sách thể loại không hợp lệ.");
+                List<Genres> genres = genresRepository.findAllById(genresIds);
                 Movie movie = new Movie(req.getTitle(), req.getDirector(), genres, req.getActor(), req.getReleaseDate(), req.getDesc(), req.getTrailerLink(), req.getDuration());
 
                 String url = cloudinaryService.uploadImage(req.getPoster());
@@ -190,7 +193,10 @@ public class MovieService {
         try {
             Optional<Movie> optionalMovie = movieRepository.findById(movieId);
             if (optionalMovie.isPresent()){
-                List<Genres> genres = genresRepository.findAllById(movieRequest.getGenres());
+                List<String> genresIds = movieRequest.getGenres();
+                if (genresIds.contains(null))
+                    throw new IllegalArgumentException("Danh sách thể loại không hợp lệ.");
+                List<Genres> genres = genresRepository.findAllById(genresIds);
                 Movie movie = optionalMovie.get();
                 movie.setTitle(movieRequest.getTitle());
                 movie.setDirector(movieRequest.getDirector());
@@ -229,38 +235,6 @@ public class MovieService {
                         .body(GenericResponse.builder()
                                 .success(false)
                                 .message("Phim không tìm thấy.")
-                                .result(null)
-                                .statusCode(HttpStatus.NOT_FOUND.value())
-                                .build());
-            }
-        } catch (Exception e){
-            throw new RuntimeException(e.getMessage());
-        }
-    }
-
-    public ResponseEntity<GenericResponse> delete(String movieId) {
-        try {
-            Optional<Movie> optionalMovie = movieRepository.findById(movieId);
-            if (optionalMovie.isPresent()){
-                if (optionalMovie.get().getSlider() != null) {
-                    cloudinaryService.deleteImage(optionalMovie.get().getSlider());
-                }
-                if (optionalMovie.get().getPoster() != null) {
-                    cloudinaryService.deleteImage(optionalMovie.get().getPoster());
-                }
-                movieRepository.delete(optionalMovie.get());
-                return ResponseEntity.status(HttpStatus.OK)
-                        .body(GenericResponse.builder()
-                                .success(true)
-                                .message("Xóa phim thành công!")
-                                .result(null)
-                                .statusCode(HttpStatus.OK.value())
-                                .build());
-            }else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(GenericResponse.builder()
-                                .success(false)
-                                .message("Xóa phim thất bai! Không tìm thấy phim.")
                                 .result(null)
                                 .statusCode(HttpStatus.NOT_FOUND.value())
                                 .build());
