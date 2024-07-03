@@ -686,9 +686,9 @@ public class UserService {
                         .toList();
             }
             if (search != null && !search.isBlank()) {
-                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search) ||
-                        user.getFullName().toLowerCase().contains(search) ||
-                        user.getEmail().toLowerCase().contains(search))
+                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search.toLowerCase()) ||
+                        user.getFullName().toLowerCase().contains(search.toLowerCase()) ||
+                        user.getEmail().toLowerCase().contains(search.toLowerCase()))
                         .toList();
             }
             Page<User> result = PaginationUtils.paginate(users, pageable);
@@ -727,9 +727,9 @@ public class UserService {
             List<User> users = userRepository.findAllByRoleIn(roles)
                     .stream().sorted(Comparator.comparing(User::getUserId).reversed()).toList();
             if (search != null && !search.isBlank()) {
-                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search) ||
-                        user.getFullName().toLowerCase().contains(search) ||
-                        user.getEmail().toLowerCase().contains(search))
+                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search.toLowerCase()) ||
+                        user.getFullName().toLowerCase().contains(search.toLowerCase()) ||
+                        user.getEmail().toLowerCase().contains(search.toLowerCase()))
                         .toList();
             }
             Page<User> result = PaginationUtils.paginate(users, pageable);
@@ -758,9 +758,9 @@ public class UserService {
             List<Staff> users = staffRepository.findAllByRoleAndCinema(roleService.findByRoleName("STAFF"), manager.get().getCinema())
                     .stream().sorted(Comparator.comparing(User::getUserId).reversed()).toList();
             if (search != null && !search.isBlank()) {
-                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search) ||
-                        user.getFullName().toLowerCase().contains(search) ||
-                        user.getEmail().toLowerCase().contains(search))
+                users = users.stream().filter(user -> user.getUserName().toLowerCase().contains(search.toLowerCase()) ||
+                        user.getFullName().toLowerCase().contains(search.toLowerCase()) ||
+                        user.getEmail().toLowerCase().contains(search.toLowerCase()))
                         .toList();
             }
             Page<Staff> result = PaginationUtils.paginate(new ArrayList<>(users), pageable);

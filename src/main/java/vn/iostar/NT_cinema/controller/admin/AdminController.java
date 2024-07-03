@@ -99,14 +99,14 @@ public class AdminController {
                                                         @RequestParam(defaultValue = "10") int size,
                                                         @RequestParam(required = false) boolean sortByRole,
                                                         @RequestParam(required = false) String search){
-        return userService.getAllPersonnel(sortByRole, search.toLowerCase(), PageRequest.of(index-1, size));
+        return userService.getAllPersonnel(sortByRole, search, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/viewers")
     public ResponseEntity<GenericResponse> getViewers(@RequestParam(defaultValue = "1") int index,
                                                       @RequestParam(defaultValue = "10") int size,
                                                       @RequestParam(required = false) String search){
-        return userService.getAllViewer(search.toLowerCase(), PageRequest.of(index-1, size));
+        return userService.getAllViewer(search, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/users")
@@ -458,7 +458,7 @@ public class AdminController {
                                                             @RequestParam(defaultValue = "false") boolean isFixed,
                                                             @RequestParam(required = false) String code,
                                                             @RequestParam(required = false) String name) {
-        return promotionService.getAllPromotions(isFixed, code, name.toLowerCase(), PageRequest.of(index-1, size));
+        return promotionService.getAllPromotions(isFixed, code, name, PageRequest.of(index-1, size));
     }
 
     @GetMapping("/promotions/{id}")

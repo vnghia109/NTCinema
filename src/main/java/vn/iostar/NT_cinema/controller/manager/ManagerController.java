@@ -241,7 +241,7 @@ public class ManagerController {
                                                         @RequestParam(required = false) String search){
         String token = authorizationHeader.substring(7);
         String managerId = jwtTokenProvider.getUserIdFromJwt(token);
-        return userService.getAllStaff(managerId, search.toLowerCase(), PageRequest.of(index-1, size));
+        return userService.getAllStaff(managerId, search, PageRequest.of(index-1, size));
     }
 
     @PostMapping("/foods/import")

@@ -53,7 +53,7 @@ public class PromotionService {
                 List<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll();
                 if (name != null && !name.isBlank()) {
                     promotionFixeds = promotionFixeds.stream()
-                            .filter(promotionFixed -> promotionFixed.getName().toLowerCase().contains(name)).toList();
+                            .filter(promotionFixed -> promotionFixed.getName().toLowerCase().contains(name.toLowerCase())).toList();
                 }
                 Page<PromotionFixed> result = PaginationUtils.paginate(promotionFixeds, pageable);
 
@@ -71,7 +71,7 @@ public class PromotionService {
                 }
                 if (name != null && !name.isBlank()) {
                     promotionCodes = promotionCodes.stream()
-                            .filter(promotionFixed -> promotionFixed.getName().toLowerCase().contains(name)).toList();
+                            .filter(promotionFixed -> promotionFixed.getName().toLowerCase().contains(name.toLowerCase())).toList();
                 }
                 Page<PromotionCode> result = PaginationUtils.paginate(promotionCodes, pageable);
 
