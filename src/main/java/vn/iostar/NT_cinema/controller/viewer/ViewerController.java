@@ -8,8 +8,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
-import vn.iostar.NT_cinema.entity.UserTokenFCM;
-import vn.iostar.NT_cinema.repository.UserTokenRepository;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.*;
 
@@ -35,8 +33,6 @@ public class ViewerController {
     ReviewService reviewService;
     @Autowired
     MovieService movieService;
-    @Autowired
-    UserTokenRepository userTokenRepository;
     @Autowired
     GenresService genresService;
     @Autowired
@@ -126,14 +122,6 @@ public class ViewerController {
                 authorizationHeader.substring(7)
         );
         return bookingService.getTicketCanceled(userId);
-    }
-
-    @PostMapping("/save-token")
-    public void saveToken(@RequestBody UserTokenReq tokenRequest) {
-        UserTokenFCM userTokenFCM = new UserTokenFCM();
-        userTokenFCM.setUserId(tokenRequest.getUserId());
-        userTokenFCM.setToken(tokenRequest.getToken());
-        userTokenRepository.save(userTokenFCM);
     }
 
     @GetMapping("/genres")

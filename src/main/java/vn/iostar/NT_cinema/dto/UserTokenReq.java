@@ -8,6 +8,5 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class UserTokenReq {
-    private String userId;
     private String token;
 }

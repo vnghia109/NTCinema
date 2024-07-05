@@ -7,13 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import vn.iostar.NT_cinema.dto.ChangePasswordRequest;
-import vn.iostar.NT_cinema.dto.GenericResponse;
-import vn.iostar.NT_cinema.dto.PasswordResetRequest;
-import vn.iostar.NT_cinema.dto.UserReq;
+import vn.iostar.NT_cinema.dto.*;
+import vn.iostar.NT_cinema.repository.UserTokenRepository;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.NotificationService;
 import vn.iostar.NT_cinema.service.UserService;
+import vn.iostar.NT_cinema.entity.UserTokenFCM;
 
 import java.util.Objects;
 
@@ -22,7 +21,8 @@ import java.util.Objects;
 public class UserController {
     @Autowired
     JwtTokenProvider jwtTokenProvider;
-
+    @Autowired
+    UserTokenRepository userTokenRepository;
     @Autowired
     UserService userService;
     @Autowired
@@ -39,7 +39,7 @@ public class UserController {
     @PutMapping("/change-password")
     public ResponseEntity<GenericResponse> changePassword(@RequestBody @Valid ChangePasswordRequest request,
                                                           @RequestHeader("Authorization") String authorizationHeader,
-                                                          BindingResult bindingResult) throws Exception {
+                                                          BindingResult bindingResult) {
         String token = authorizationHeader.substring(7);
         String userId = jwtTokenProvider.getUserIdFromJwt(token);
         if (bindingResult.hasErrors()) {
@@ -112,5 +112,17 @@ public class UserController {
                 authorizationHeader.substring(7)
         );
         return notificationService.notReadCount(userId);
+    }
+
+    @PostMapping("/save-token")
+    public void saveToken(@RequestHeader("Authorization") String authorizationHeader,
+                          @RequestBody UserTokenReq tokenRequest) {
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        UserTokenFCM userTokenFCM = new UserTokenFCM();
+        userTokenFCM.setUserId(userId);
+        userTokenFCM.setToken(tokenRequest.getToken());
+        userTokenRepository.save(userTokenFCM);
     }
 }
