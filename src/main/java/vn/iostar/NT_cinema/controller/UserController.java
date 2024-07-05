@@ -148,15 +148,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Đã cho phép thông báo!")
-                    .result(null)
+                    .result(true)
                     .statusCode(HttpStatus.OK.value())
                     .build());
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
                     .success(true)
                     .message("Chưa cho phép thông báo!")
-                    .result(null)
-                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .result(false)
+                    .statusCode(HttpStatus.OK.value())
                     .build());
         }
     }
