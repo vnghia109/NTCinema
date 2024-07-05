@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import vn.iostar.NT_cinema.dto.*;
+import vn.iostar.NT_cinema.exception.AlreadyExistException;
 import vn.iostar.NT_cinema.repository.UserTokenRepository;
 import vn.iostar.NT_cinema.security.JwtTokenProvider;
 import vn.iostar.NT_cinema.service.NotificationService;
@@ -15,6 +16,7 @@ import vn.iostar.NT_cinema.service.UserService;
 import vn.iostar.NT_cinema.entity.UserTokenFCM;
 
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -115,14 +117,47 @@ public class UserController {
     }
 
     @PostMapping("/save-token")
-    public void saveToken(@RequestHeader("Authorization") String authorizationHeader,
-                          @RequestBody UserTokenReq tokenRequest) {
+    public ResponseEntity<GenericResponse> saveToken(@RequestHeader("Authorization") String authorizationHeader,
+                                                     @RequestBody UserTokenReq tokenRequest) throws RuntimeException {
         String userId = jwtTokenProvider.getUserIdFromJwt(
                 authorizationHeader.substring(7)
         );
+        Optional<UserTokenFCM> token = userTokenRepository.findByUserId(userId);
+        if (token.isPresent()) {
+            throw new AlreadyExistException("Token đã tồn tại.");
+        }
         UserTokenFCM userTokenFCM = new UserTokenFCM();
         userTokenFCM.setUserId(userId);
         userTokenFCM.setToken(tokenRequest.getToken());
         userTokenRepository.save(userTokenFCM);
+        return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                .success(true)
+                .message("Đã cho phép thông báo!")
+                .result(null)
+                .statusCode(HttpStatus.OK.value())
+                .build());
+    }
+
+    @GetMapping("/check/token")
+    public ResponseEntity<GenericResponse> checkToken(@RequestHeader("Authorization") String authorizationHeader) throws RuntimeException {
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        Optional<UserTokenFCM> token = userTokenRepository.findByUserId(userId);
+        if (token.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Đã cho phép thông báo!")
+                    .result(null)
+                    .statusCode(HttpStatus.OK.value())
+                    .build());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(GenericResponse.builder()
+                    .success(true)
+                    .message("Chưa cho phép thông báo!")
+                    .result(null)
+                    .statusCode(HttpStatus.NOT_FOUND.value())
+                    .build());
+        }
     }
 }
