@@ -33,6 +33,8 @@ public class Booking {
 
     private List<FoodWithCount> foods;
 
+    private String cinemaId;
+
     private BigDecimal discount = BigDecimal.ZERO;
 
     @DBRef

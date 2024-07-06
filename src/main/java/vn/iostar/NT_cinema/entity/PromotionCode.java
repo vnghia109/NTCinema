@@ -1,9 +1,6 @@
 package vn.iostar.NT_cinema.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -22,18 +19,25 @@ public class PromotionCode {
     private String promotionCodeId;
     @Indexed(unique = true)
     private String promotionCode;
+    @NonNull
     private Integer maxUsage;
+    @NonNull
     private Integer useForUserPerDay;
+    @NonNull
     private String name;
     private String description;
+    @NonNull
     private DiscountType discountType;
+    @NonNull
     private BigDecimal discountValue;
     private BigDecimal maxDiscountAmount;
     private BigDecimal minOrderValue;
+    @NonNull
     private LocalDate startDate;
+    @NonNull
     private LocalDate endDate;
     private String image;
     private boolean isDeleted = false;
     private boolean isValid = true;
-    private LocalDate createAt;
+    private LocalDate createAt = LocalDate.now();
 }

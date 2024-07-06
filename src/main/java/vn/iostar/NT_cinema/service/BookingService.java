@@ -27,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -266,6 +267,7 @@ public class BookingService {
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
             booking.setFoods(foods);
+            booking.setCinemaId(seats.get(0).getShowTime().getRoom().getCinema().getCinemaId());
             booking.setDiscount(BigDecimal.ZERO);
             booking.setPromotionCode(null);
             Map<String, BigDecimal> seatPriceMap = new HashMap<>();
@@ -493,48 +495,33 @@ public class BookingService {
             List<Booking> bookings;
             Criteria criteria = Criteria.where("isPayment").is(true);
             if (cinemaId != null && !cinemaId.isEmpty()) {
-                List<Room> rooms = roomRepository.findAllByCinema_CinemaId(cinemaId);
-                List<String> roomIds = rooms.stream().map(Room::getRoomId).toList();
-                criteria.and("seats.showTime.room.roomId").in(roomIds);
+                criteria.and("cinemaId").is(cinemaId);
             }
             if (!status.isEmpty() && !status.isBlank()) {
                 criteria.and("ticketStatus").is(TicketStatus.valueOf(status));
             }
             Query query = new Query(criteria);
-            long totalElements = mongoTemplate.count(query, Booking.class);
             bookings = mongoTemplate.find(query.with(pageable), Booking.class);
 
             Page<Booking> result = PaginationUtils.paginate(bookings.stream().sorted(Comparator.comparing(Booking::getCreateAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList(), pageable);
+            List<String> userIds = result.getContent().stream()
+                    .map(Booking::getUserId)
+                    .distinct() // Lọc ra các userId duy nhất
+                    .collect(Collectors.toList());
 
-            List<BookingsOfStaffRes> list = new ArrayList<>();
-            for (Booking item : result.getContent()) {
-                Optional<User> user = userRepository.findById(item.getUserId());
-                BookingsOfStaffRes bookingRes = new BookingsOfStaffRes();
-                bookingRes.setBookingId(item.getBookingId());
-                if (user.isPresent()) {
-                    bookingRes.setUserName(user.get().getUserName());
-                    bookingRes.setFullName(user.get().getFullName());
-                } else {
-                    bookingRes.setUserName("");
-                    bookingRes.setFullName("");
-                }
-                bookingRes.setCinemaName(item.getSeats().get(0).getShowTime().getRoom().getCinema().getCinemaName());
-                bookingRes.setMovieName(item.getSeats().get(0).getShowTime().getMovie().getTitle());
-                bookingRes.setMovieId(item.getSeats().get(0).getShowTime().getMovie().getMovieId());
-                bookingRes.setDate(item.getSeats().get(0).getSchedule().getDate());
-                bookingRes.setStartTime(item.getSeats().get(0).getSchedule().getStartTime().format(DateTimeFormatter.ofPattern("HH:mm")));
-                bookingRes.setPrice(item.getTotal());
-                bookingRes.setCreateAt(item.getCreateAt());
+            Map<String, User> userMap = userRepository.findAllById(userIds).stream()
+                    .collect(Collectors.toMap(User::getUserId, Function.identity()));
 
-                list.add(bookingRes);
-            }
+            List<BookingsOfStaffRes> list = result.getContent().stream()
+                    .map(item -> new BookingsOfStaffRes(item, userMap.get(item.getUserId())))
+                    .toList();
 
             Map<String, Object> map = new HashMap<>();
             map.put("content", list);
             map.put("pageNumber", result.getPageable().getPageNumber() + 1);
             map.put("pageSize", result.getSize());
             map.put("totalPages", result.getTotalPages());
-            map.put("totalElements", totalElements);
+            map.put("totalElements", result.getTotalElements());
 
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -710,6 +697,7 @@ public class BookingService {
             booking.setCreateAt(new Date());
             booking.setSeats(seats);
             booking.setFoods(foods);
+            booking.setCinemaId(seats.get(0).getShowTime().getRoom().getCinema().getCinemaId());
             booking.setDiscount(BigDecimal.ZERO);
             booking.setPromotionCode(null);
             Map<String, BigDecimal> seatPriceMap = new HashMap<>();

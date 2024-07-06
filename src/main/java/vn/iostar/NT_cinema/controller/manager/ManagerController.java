@@ -267,6 +267,12 @@ public class ManagerController {
         return seatService.countSeatBooked(showtimeId, scheduleId);
     }
 
+    @GetMapping("/users")
+    public ResponseEntity<GenericResponse> getUsers(@RequestParam(defaultValue = "1") int index,
+                                                    @RequestParam(defaultValue = "10") int size,
+                                                    @RequestParam(defaultValue = "ALL") String role){
+        return userService.getAllUser(role, PageRequest.of(index-1, size));
+    }
 
     @PostMapping("/notification/send")
     public ResponseEntity<GenericResponse> sendNotification(@RequestHeader("Authorization") String authorizationHeader,
