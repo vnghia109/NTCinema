@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import vn.iostar.NT_cinema.constant.DiscountType;
-import vn.iostar.NT_cinema.controller.util.PaginationUtils;
+import vn.iostar.NT_cinema.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.PromotionCodeReq;
 import vn.iostar.NT_cinema.dto.PromotionFixedReq;

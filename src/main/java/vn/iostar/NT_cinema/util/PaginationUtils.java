@@ -1,4 +1,4 @@
-package vn.iostar.NT_cinema.controller.util;
+package vn.iostar.NT_cinema.util;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

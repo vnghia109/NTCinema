@@ -17,7 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import vn.iostar.NT_cinema.controller.util.PaginationUtils;
+import vn.iostar.NT_cinema.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.*;
 import vn.iostar.NT_cinema.entity.*;
 import vn.iostar.NT_cinema.exception.AlreadyExistException;

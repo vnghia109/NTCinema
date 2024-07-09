@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import vn.iostar.NT_cinema.controller.util.PaginationUtils;
+import vn.iostar.NT_cinema.util.PaginationUtils;
 import vn.iostar.NT_cinema.dto.GenericResponse;
 import vn.iostar.NT_cinema.dto.ReviewReq;
 import vn.iostar.NT_cinema.dto.ReviewRes;
