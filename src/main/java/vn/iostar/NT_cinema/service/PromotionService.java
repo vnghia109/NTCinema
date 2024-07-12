@@ -151,8 +151,8 @@ public class PromotionService {
                 promotion.get().setValidTimeFrameEnd(promotionFixedReq.getValidTimeFrameEnd());
                 promotion.get().setStartDate(promotionFixedReq.getStartDate());
                 promotion.get().setEndDate(promotionFixedReq.getEndDate());
-
-                cloudinaryService.deleteImage(promotion.get().getImage());
+                if (promotion.get().getImage() != null)
+                    cloudinaryService.deleteImage(promotion.get().getImage());
                 promotion.get().setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
 
                 changeValidPromotion();
@@ -256,8 +256,8 @@ public class PromotionService {
                 promotion.get().setMinOrderValue(promotionCodeReq.getMinOrderValue());
                 promotion.get().setStartDate(promotionCodeReq.getStartDate());
                 promotion.get().setEndDate(promotionCodeReq.getEndDate());
-
-                cloudinaryService.deleteImage(promotion.get().getImage());
+                if (promotion.get().getImage() != null)
+                    cloudinaryService.deleteImage(promotion.get().getImage());
                 promotion.get().setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
 
                 changeValidPromotion();

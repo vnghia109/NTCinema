@@ -108,8 +108,8 @@ public class FoodService {
             food.get().setName(foodReq.getName());
             food.get().setPrice(foodReq.getPrice());
             food.get().setFoodType(FoodType.valueOf(foodReq.getFoodType()));
-
-            cloudinaryService.deleteImage(food.get().getImage());
+            if (food.get().getImage() != null)
+                cloudinaryService.deleteImage(food.get().getImage());
             String image = cloudinaryService.uploadImage(foodReq.getImage());
             food.get().setImage(image);
 
