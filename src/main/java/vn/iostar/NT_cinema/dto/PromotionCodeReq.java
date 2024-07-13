@@ -40,10 +40,8 @@ public class PromotionCodeReq {
     @NotEmpty(message = "Giá trị khuyến mãi tối thiểu không được để trống.")
     private BigDecimal minOrderValue;
 
-    @NotEmpty(message = "Ngày bắt đầu không được để trống.")
     private LocalDate startDate;
 
-    @NotEmpty(message = "Ngày kết thúc không được để trống.")
     private LocalDate endDate;
 
     private MultipartFile image;

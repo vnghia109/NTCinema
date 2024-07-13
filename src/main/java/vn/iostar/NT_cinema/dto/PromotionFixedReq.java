@@ -33,10 +33,8 @@ public class PromotionFixedReq {
     private LocalTime validTimeFrameStart;
     private LocalTime validTimeFrameEnd;
 
-    @NotEmpty(message = "Ngày bắt đầu không được để trống.")
     private LocalDate startDate;
 
-    @NotEmpty(message = "Ngày kết thúc không được để trống.")
     private LocalDate endDate;
 
     private MultipartFile image;
