@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import vn.iostar.NT_cinema.constant.FoodType;
 import vn.iostar.NT_cinema.entity.Food;
 
+import java.util.List;
+
 @Repository
 public interface FoodRepository extends MongoRepository<Food, String> {
     Page<Food> findAllByFoodTypeAndStatusOrderByFoodIdDesc(FoodType foodType, boolean isDelete, Pageable pageable);
@@ -16,4 +18,6 @@ public interface FoodRepository extends MongoRepository<Food, String> {
     Page<Food> findAllByStatusIsTrueOrderByFoodIdDesc(Pageable pageable);
 
     Page<Food> findAllByFoodTypeAndStatusIsTrueOrderByFoodIdDesc(FoodType foodType, Pageable pageable);
+
+    List<Food> findAllByStatusIsTrue();
 }
