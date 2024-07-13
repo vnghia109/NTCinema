@@ -377,11 +377,11 @@ public class UserService {
 
     public void createPasswordResetOtpForUser(User user, String otp) {
         PasswordResetOtp myOtp;
-        if (passwordResetOtpRepository.findByUser(user).isPresent()) {
-            myOtp = (PasswordResetOtp) passwordResetOtpRepository.findByUser(user).get();
+        Optional<PasswordResetOtp> OtpOptional = passwordResetOtpRepository.findByUser(user);
+        if (OtpOptional.isPresent()) {
+            myOtp = OtpOptional.get();
             myOtp.updateOtp(otp);
         } else {
-
             myOtp = new PasswordResetOtp(otp, user);
         }
         passwordResetOtpRepository.save(myOtp);
@@ -429,12 +429,24 @@ public class UserService {
         userRepository.deleteAll(unverifiedAccounts);
     }
     @PostConstruct
-    public void init() {
-        deleteUnverifiedAccounts();
-    }
     @Scheduled(fixedDelay = 86400000) // 24 hours
     public void scheduledDeleteUnverifiedAccounts() {
         deleteUnverifiedAccounts();
+    }
+
+    @PostConstruct
+    @Scheduled(fixedDelay = 600000) // 10 minutes
+    public void scheduledDeleteExpiredOtp() {
+        deleteExpiredOtp();
+    }
+
+    public void deleteExpiredOtp() {
+        List<PasswordResetOtp> expiredOtp = passwordResetOtpRepository.findAll();
+        for (PasswordResetOtp otp : expiredOtp) {
+            if (otp.getExpiryDate().before(new Date())) {
+                passwordResetOtpRepository.delete(otp);
+            }
+        }
     }
 
     public ResponseEntity<?> validateOtp(String token) {

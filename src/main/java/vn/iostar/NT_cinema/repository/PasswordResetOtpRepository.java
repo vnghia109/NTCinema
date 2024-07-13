@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface PasswordResetOtpRepository extends MongoRepository<PasswordResetOtp, String> {
-    Optional<Object> findByUser(User user);
+    Optional<PasswordResetOtp> findByUser(User user);
 
     Optional<PasswordResetOtp> findByOtp(String otp);
 }
