@@ -103,6 +103,14 @@ public class UserController {
         return notificationService.getNotifications(userId, PageRequest.of(index-1, size));
     }
 
+    @PostMapping("/notification/read-all")
+    public ResponseEntity<GenericResponse> readAllNotification(@RequestHeader("Authorization") String authorizationHeader) {
+        String userId = jwtTokenProvider.getUserIdFromJwt(
+                authorizationHeader.substring(7)
+        );
+        return notificationService.readAllNotification(userId);
+    }
+
     @GetMapping("/notification/{notificationUserId}")
     public ResponseEntity<GenericResponse> getNotification(@PathVariable("notificationUserId") String notificationUserId) {
         return notificationService.getNotification(notificationUserId);

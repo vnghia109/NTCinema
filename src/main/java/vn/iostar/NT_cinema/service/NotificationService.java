@@ -504,4 +504,21 @@ public class NotificationService {
             throw new RuntimeException(e.getMessage());
         }
     }
+
+    public ResponseEntity<GenericResponse> readAllNotification(String userId) {
+        try {
+            List<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId);
+            notifications.forEach(item -> item.setRead(true));
+            notificationUserRepository.saveAll(notifications);
+            return ResponseEntity.ok()
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Đã đọc tất cả thông báo!")
+                            .result(null)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        }catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
 }
