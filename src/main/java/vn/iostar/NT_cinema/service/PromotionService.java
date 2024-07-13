@@ -119,11 +119,11 @@ public class PromotionService {
             promotionFixed.setStartDate(promotionFixedReq.getStartDate());
             promotionFixed.setEndDate(promotionFixedReq.getEndDate());
             promotionFixed.setCreateAt(LocalDate.now());
+            promotionFixed.setValid(!promotionFixedReq.getEndDate().isBefore(LocalDate.now()) && !promotionFixedReq.getStartDate().isAfter(LocalDate.now()));
             if (promotionFixedReq.getImage() != null)
                 promotionFixed.setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
 
             PromotionFixed response = promotionFixedRepository.save(promotionFixed);
-            changeValidPromotion();
             notificationService.promotionNotification(response);
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
@@ -152,13 +152,13 @@ public class PromotionService {
                 promotion.get().setValidTimeFrameEnd(promotionFixedReq.getValidTimeFrameEnd());
                 promotion.get().setStartDate(promotionFixedReq.getStartDate());
                 promotion.get().setEndDate(promotionFixedReq.getEndDate());
+                promotion.get().setValid(!promotionFixedReq.getEndDate().isBefore(LocalDate.now()) && !promotionFixedReq.getStartDate().isAfter(LocalDate.now()));
                 if (promotion.get().getImage() != null)
                     cloudinaryService.deleteImage(promotion.get().getImage());
                 if (promotionFixedReq.getImage() != null)
                     promotion.get().setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
 
                 promotionFixedRepository.save(promotion.get());
-                changeValidPromotion();
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -226,11 +226,11 @@ public class PromotionService {
                 promotionCode.setMinOrderValue(promotionCodeReq.getMinOrderValue());
                 promotionCode.setEndDate(promotionCodeReq.getEndDate());
                 promotionCode.setCreateAt(LocalDate.now());
+                promotionCode.setValid(!promotionCodeReq.getEndDate().isBefore(LocalDate.now()) && !promotionCodeReq.getStartDate().isAfter(LocalDate.now()));
                 if (promotionCodeReq.getImage() != null)
                     promotionCode.setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
 
                 PromotionCode response = promotionCodeRepository.save(promotionCode);
-                changeValidPromotion();
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -259,13 +259,13 @@ public class PromotionService {
                 promotion.get().setMinOrderValue(promotionCodeReq.getMinOrderValue());
                 promotion.get().setStartDate(promotionCodeReq.getStartDate());
                 promotion.get().setEndDate(promotionCodeReq.getEndDate());
+                promotion.get().setValid(!promotionCodeReq.getEndDate().isBefore(LocalDate.now()) && !promotionCodeReq.getStartDate().isAfter(LocalDate.now()));
                 if (promotion.get().getImage() != null)
                     cloudinaryService.deleteImage(promotion.get().getImage());
                 if (promotionCodeReq.getImage() != null)
                     promotion.get().setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
 
                 promotionCodeRepository.save(promotion.get());
-                changeValidPromotion();
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -421,21 +421,21 @@ public class PromotionService {
     private void changeValidPromotion(){
         List<PromotionCode> promotionCodes = promotionCodeRepository.findAll();
         for (PromotionCode item : promotionCodes) {
-            if (item.getEndDate().isBefore(LocalDate.now()) || item.getStartDate().isAfter(LocalDate.now())) {
-                item.setValid(false);
+            if (!item.getEndDate().isBefore(LocalDate.now()) && !item.getStartDate().isAfter(LocalDate.now())) {
+                item.setValid(true);
                 promotionCodeRepository.save(item);
             }else{
-                item.setValid(true);
+                item.setValid(false);
                 promotionCodeRepository.save(item);
             }
         }
         List<PromotionFixed> promotionFixeds = promotionFixedRepository.findAll();
         for (PromotionFixed item : promotionFixeds) {
-            if (item.getEndDate().isBefore(LocalDate.now()) || item.getStartDate().isAfter(LocalDate.now())) {
-                item.setValid(false);
+            if (!item.getEndDate().isBefore(LocalDate.now()) && !item.getStartDate().isAfter(LocalDate.now())) {
+                item.setValid(true);
                 promotionFixedRepository.save(item);
             }else {
-                item.setValid(true);
+                item.setValid(false);
                 promotionFixedRepository.save(item);
             }
         }

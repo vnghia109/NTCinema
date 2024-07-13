@@ -32,6 +32,6 @@ public class PromotionFixed {
     private LocalDate endDate;
     private String image;
     private boolean isDeleted = false;
-    private boolean isValid = true;
+    private boolean isValid;
     private LocalDate createAt;
 }
