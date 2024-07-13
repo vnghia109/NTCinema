@@ -45,7 +45,7 @@ public class RestResponseEntityExceptionHandler extends ResponseEntityExceptionH
         });
         GenericResponse genericResponse = GenericResponse.builder()
                 .success(false)
-                .message("Xác thực không thành công!")
+                .message("Dữ liệu đầu vào không đúng định dạng hoặc thiếu dữ liệu!")
                 .result(errors)
                 .statusCode(HttpStatus.BAD_REQUEST.value())
                 .build();
