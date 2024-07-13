@@ -119,7 +119,8 @@ public class PromotionService {
             promotionFixed.setStartDate(promotionFixedReq.getStartDate());
             promotionFixed.setEndDate(promotionFixedReq.getEndDate());
             promotionFixed.setCreateAt(LocalDate.now());
-            promotionFixed.setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
+            if (promotionFixedReq.getImage() != null)
+                promotionFixed.setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
 
             PromotionFixed response = promotionFixedRepository.save(promotionFixed);
             changeValidPromotion();
@@ -153,7 +154,8 @@ public class PromotionService {
                 promotion.get().setEndDate(promotionFixedReq.getEndDate());
                 if (promotion.get().getImage() != null)
                     cloudinaryService.deleteImage(promotion.get().getImage());
-                promotion.get().setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
+                if (promotionFixedReq.getImage() != null)
+                    promotion.get().setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
 
                 changeValidPromotion();
                 promotionFixedRepository.save(promotion.get());
@@ -224,7 +226,8 @@ public class PromotionService {
                 promotionCode.setMinOrderValue(promotionCodeReq.getMinOrderValue());
                 promotionCode.setEndDate(promotionCodeReq.getEndDate());
                 promotionCode.setCreateAt(LocalDate.now());
-                promotionCode.setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
+                if (promotionCodeReq.getImage() != null)
+                    promotionCode.setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
 
                 changeValidPromotion();
                 PromotionCode response = promotionCodeRepository.save(promotionCode);
@@ -258,7 +261,8 @@ public class PromotionService {
                 promotion.get().setEndDate(promotionCodeReq.getEndDate());
                 if (promotion.get().getImage() != null)
                     cloudinaryService.deleteImage(promotion.get().getImage());
-                promotion.get().setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
+                if (promotionCodeReq.getImage() != null)
+                    promotion.get().setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
 
                 changeValidPromotion();
                 promotionCodeRepository.save(promotion.get());
