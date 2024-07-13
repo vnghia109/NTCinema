@@ -157,8 +157,8 @@ public class PromotionService {
                 if (promotionFixedReq.getImage() != null)
                     promotion.get().setImage(cloudinaryService.uploadImage(promotionFixedReq.getImage()));
 
-                changeValidPromotion();
                 promotionFixedRepository.save(promotion.get());
+                changeValidPromotion();
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -229,8 +229,8 @@ public class PromotionService {
                 if (promotionCodeReq.getImage() != null)
                     promotionCode.setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
 
-                changeValidPromotion();
                 PromotionCode response = promotionCodeRepository.save(promotionCode);
+                changeValidPromotion();
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)
@@ -264,8 +264,8 @@ public class PromotionService {
                 if (promotionCodeReq.getImage() != null)
                     promotion.get().setImage(cloudinaryService.uploadImage(promotionCodeReq.getImage()));
 
-                changeValidPromotion();
                 promotionCodeRepository.save(promotion.get());
+                changeValidPromotion();
                 return ResponseEntity.status(HttpStatus.OK)
                         .body(GenericResponse.builder()
                                 .success(true)

@@ -462,7 +462,7 @@ public class AdminController {
     }
 
     @PostMapping("/promotionsFixed")
-    public ResponseEntity<GenericResponse> createPromotionFixed(@ModelAttribute PromotionFixedReq promotionFixedReq) {
+    public ResponseEntity<GenericResponse> createPromotionFixed(@Valid @ModelAttribute PromotionFixedReq promotionFixedReq) {
         return promotionService.createPromotionFixed(promotionFixedReq);
     }
 
@@ -473,7 +473,7 @@ public class AdminController {
 
     @PutMapping("/promotionsFixed/{id}")
     public ResponseEntity<GenericResponse> updatePromotionFixed(@PathVariable String id,
-                                                           @ModelAttribute PromotionFixedReq promotionFixedReq) {
+                                                                @Valid @ModelAttribute PromotionFixedReq promotionFixedReq) {
         return promotionService.updatePromotionFixed(id, promotionFixedReq);
     }
 
