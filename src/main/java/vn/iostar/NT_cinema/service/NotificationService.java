@@ -251,7 +251,7 @@ public class NotificationService {
 
     @Scheduled(cron = "0 0 5 * * *", zone = "GMT+7")
     public void lowStockNotification() throws FirebaseMessagingException {
-        List<Food> foods = foodRepository.findAll();
+        List<Food> foods = foodRepository.findAllByStatusIsTrue();
         List<Cinema> cinemas = cinemaRepository.findAll();
         for (Food food : foods) {
             for (Cinema cinema : cinemas) {
