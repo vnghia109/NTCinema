@@ -497,7 +497,7 @@ public class BookingService {
             if (cinemaId != null && !cinemaId.isEmpty()) {
                 criteria.and("cinemaId").is(cinemaId);
             }
-            if (!status.isEmpty() && !status.isBlank()) {
+            if (status != null && !status.isEmpty()) {
                 criteria.and("ticketStatus").is(TicketStatus.valueOf(status));
             }
             Query query = new Query(criteria);
