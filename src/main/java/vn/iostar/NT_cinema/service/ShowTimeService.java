@@ -132,7 +132,7 @@ public class ShowTimeService {
                             .statusCode(HttpStatus.CONFLICT.value())
                             .build());
                 }
-                if (startNew.isBefore(LocalDateTime.now())){
+                if (startNew.isBefore(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")))) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                             .success(false)
                             .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")

@@ -20,6 +20,7 @@ import vn.iostar.NT_cinema.repository.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -53,6 +54,7 @@ public class NotificationService {
     ManagerRepository managerRepository;
     @Autowired
     BookingRepository bookingRepository;
+    ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
 
     public Notification createNotification(NotiType type, String title, String message, NotiTarget target, Object detailData) {
         Notification notification = new Notification();
@@ -60,8 +62,8 @@ public class NotificationService {
         notification.setTitle(title);
         notification.setMessage(message);
         notification.setTarget(target);
-        notification.setCreatedAt(LocalDateTime.now());
-        notification.setUpdatedAt(LocalDateTime.now());
+        notification.setCreatedAt(LocalDateTime.now(zoneId));
+        notification.setUpdatedAt(LocalDateTime.now(zoneId));
         notification.setDetailData(detailData);
         return notificationRepository.save(notification);
     }
@@ -77,8 +79,8 @@ public class NotificationService {
             notificationUser.setUser(user);
             notificationUser.setNotification(notification);
             notificationUser.setRead(false);
-            notificationUser.setCreatedAt(LocalDateTime.now());
-            notificationUser.setUpdatedAt(LocalDateTime.now());
+            notificationUser.setCreatedAt(LocalDateTime.now(zoneId));
+            notificationUser.setUpdatedAt(LocalDateTime.now(zoneId));
             notificationsUsers.add(notificationUser);
         }
 
@@ -472,8 +474,8 @@ public class NotificationService {
             notificationUser.setUser(user);
             notificationUser.setNotification(notification);
             notificationUser.setRead(false);
-            notificationUser.setCreatedAt(LocalDateTime.now());
-            notificationUser.setUpdatedAt(LocalDateTime.now());
+            notificationUser.setCreatedAt(LocalDateTime.now(zoneId));
+            notificationUser.setUpdatedAt(LocalDateTime.now(zoneId));
             notificationsUsers.add(notificationUser);
         }
 

@@ -587,7 +587,7 @@ public class BookingService {
                                 .build());
             }
             booking.get().setTicketStatus(TicketStatus.CANCELLED);
-            booking.get().setCancelTime(LocalDateTime.now());
+            booking.get().setCancelTime(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
             bookingRepository.save(booking.get());
             handleBookingChange(booking.get());
             notificationService.ticketStatusNotification(booking.get());

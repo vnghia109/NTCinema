@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,7 +31,8 @@ public class NotificationUser {
         this.user = user;
         this.notification = notification;
         this.read = false;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        this.createdAt = LocalDateTime.now(zoneId);
+        this.updatedAt = LocalDateTime.now(zoneId);
     }
 }
