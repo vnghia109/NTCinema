@@ -501,7 +501,7 @@ public class BookingService {
                 criteria.and("ticketStatus").is(TicketStatus.valueOf(status));
             }
             Query query = new Query(criteria);
-            bookings = mongoTemplate.find(query.with(pageable), Booking.class);
+            bookings = mongoTemplate.find(query, Booking.class);
 
             Page<Booking> result = PaginationUtils.paginate(bookings.stream().sorted(Comparator.comparing(Booking::getCreateAt, Comparator.nullsLast(Comparator.naturalOrder())).reversed()).toList(), pageable);
             List<String> userIds = result.getContent().stream()
