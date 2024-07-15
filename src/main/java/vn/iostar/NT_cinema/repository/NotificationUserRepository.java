@@ -11,5 +11,7 @@ import java.util.List;
 @Repository
 public interface NotificationUserRepository extends MongoRepository<NotificationUser, String> {
     Page<NotificationUser> findAllByUser_UserIdOrderByNotificationUserIdDesc(String userId, Pageable pageable);
-    List<NotificationUser> findAllByUser_UserId(String userId);
+    List<NotificationUser> findAllByUser_UserIdAndReadIsFalse(String userId);
+
+    long countAllByUser_UserIdAndReadIsFalse(String userId);
 }

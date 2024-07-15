@@ -490,8 +490,7 @@ public class NotificationService {
 
     public ResponseEntity<GenericResponse> notReadCount(String userId) {
         try {
-            List<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId);
-            long count = notifications.stream().filter(item -> !item.isRead()).count();
+            long count = notificationUserRepository.countAllByUser_UserIdAndReadIsFalse(userId);
 
             return ResponseEntity.ok()
                     .body(GenericResponse.builder()
@@ -507,7 +506,7 @@ public class NotificationService {
 
     public ResponseEntity<GenericResponse> readAllNotification(String userId) {
         try {
-            List<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserId(userId);
+            List<NotificationUser> notifications = notificationUserRepository.findAllByUser_UserIdAndReadIsFalse(userId);
             notifications.forEach(item -> item.setRead(true));
             notificationUserRepository.saveAll(notifications);
             return ResponseEntity.ok()
