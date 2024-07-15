@@ -121,7 +121,7 @@ public class ScheduleService {
                         .statusCode(HttpStatus.CONFLICT.value())
                         .build());
             }
-            if (startNew.isBefore(LocalDateTime.now())){
+            if (startNew.isBefore(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")))) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)
                         .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
@@ -169,7 +169,7 @@ public class ScheduleService {
             LocalDateTime startNew = LocalDateTime.of(date, startTime);
             LocalDateTime endNew = startNew.plusMinutes(Integer.parseInt(optionalMovie.get().getDuration()));
 
-            if (startNew.isBefore(LocalDateTime.now())){
+            if (startNew.isBefore(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")))) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).body(GenericResponse.builder()
                         .success(false)
                         .message("Thời gian bắt đầu chiếu phải sau thời điểm hiện tại.")
