@@ -179,7 +179,7 @@ public class VnPayController {
                     usage.setDateUsed(LocalDate.now());
                     promotionCodeUsageRepository.save(usage);
                 }
-                response.sendRedirect("http://localhost:5173/user/payment-success");
+                response.sendRedirect("https://tvn-cinema.vercel.app/user/payment-success");
             }
         }else {
             if (booking.isPresent()){
@@ -190,7 +190,7 @@ public class VnPayController {
                 }
                 bookingRepository.delete(booking.get());
             }
-            response.sendRedirect("http://localhost:5173/user/payment-false");
+            response.sendRedirect("https://tvn-cinema.vercel.app/user/payment-false");
         }
     }
 }
