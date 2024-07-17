@@ -182,14 +182,6 @@ public class VnPayController {
                 response.sendRedirect("https://tvn-cinema.vercel.app/user/payment-success");
             }
         }else {
-            if (booking.isPresent()){
-                List<Seat> seats = booking.get().getSeats();
-                for (Seat item : seats){
-                    item.setStatus(true);
-                    seatRepository.save(item);
-                }
-                bookingRepository.delete(booking.get());
-            }
             response.sendRedirect("https://tvn-cinema.vercel.app/user/payment-false");
         }
     }
