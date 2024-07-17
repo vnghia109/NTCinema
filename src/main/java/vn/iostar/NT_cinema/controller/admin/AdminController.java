@@ -58,7 +58,7 @@ public class AdminController {
     NotificationService notificationService;
 
     @PostMapping("/managers")
-    public ResponseEntity<GenericResponse> addManager(@RequestBody ManagerRequest request,
+    public ResponseEntity<GenericResponse> addManager(@Valid @RequestBody ManagerRequest request,
                                                       BindingResult bindingResult){
         if (bindingResult.hasErrors()) {
             return ResponseEntity.badRequest().body(new GenericResponse(
@@ -411,6 +411,11 @@ public class AdminController {
     @GetMapping("/stats/overview")
     public ResponseEntity<GenericResponse> getStatsOverview() {
         return statsService.getStatsOverview();
+    }
+
+    @GetMapping("/stats/top-cinemas")
+    public ResponseEntity<GenericResponse> getTopCinemasRevenue() {
+        return statsService.getTopCinemasRevenue();
     }
 
     @GetMapping("/total-revenue")

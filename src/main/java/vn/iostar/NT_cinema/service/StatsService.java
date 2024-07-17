@@ -199,6 +199,29 @@ public class StatsService {
         }
     }
 
+    public ResponseEntity<GenericResponse> getTopCinemasRevenue() {
+        try {
+            List<MonthlyStats> monthlyStats = monthlyStatsRepository.findAll();
+            Map<String, BigDecimal> map = new HashMap<>();
+            for (MonthlyStats monthlyStat : monthlyStats) {
+                map.merge(
+                        monthlyStat.getCinema().getCinemaName(),
+                        monthlyStat.getRevenue(),
+                        BigDecimal::add
+                );
+            }
+            return ResponseEntity.status(HttpStatus.OK)
+                    .body(GenericResponse.builder()
+                            .success(true)
+                            .message("Xếp hạng doanh thu các rạp!")
+                            .result(map)
+                            .statusCode(HttpStatus.OK.value())
+                            .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     public ResponseEntity<GenericResponse> getTopUsers(int top, boolean isStaff) {
         try {
             List<BigDecimal> money = new ArrayList<>();
