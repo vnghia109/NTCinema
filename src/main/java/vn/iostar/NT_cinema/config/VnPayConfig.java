@@ -14,8 +14,8 @@ import java.util.*;
 public class VnPayConfig {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    @Value("${VNP_RETURN_URL}")
-    public static String vnp_ReturnUrl;
+//    @Value("${VNP_RETURN_URL}")
+    public static String vnp_ReturnUrl = "https://tvn-cinema.vercel.app/user/payment-success";
     public static String vnp_TmnCode = "C8YZQRFI";
     public static String secretKey = "SBYQCUFBMPWNVYWXEXYQZXWXZRTRCOZN";
     public static String vnp_Version = "2.1.0";
