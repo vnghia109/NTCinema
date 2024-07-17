@@ -182,14 +182,6 @@ public class VnPayController {
                 response.sendRedirect("http://localhost:5173/user/payment-success");
             }
         }else {
-            if (booking.isPresent()){
-                List<Seat> seats = booking.get().getSeats();
-                for (Seat item : seats){
-                    item.setStatus(true);
-                    seatRepository.save(item);
-                }
-                bookingRepository.delete(booking.get());
-            }
             response.sendRedirect("http://localhost:5173/user/payment-false");
         }
     }
