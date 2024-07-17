@@ -210,11 +210,14 @@ public class StatsService {
                         BigDecimal::add
                 );
             }
+            Map<String, Object> result = new HashMap<>();
+            result.put("cinemaNames", map.keySet());
+            result.put("revenue", map.values());
             return ResponseEntity.status(HttpStatus.OK)
                     .body(GenericResponse.builder()
                             .success(true)
                             .message("Xếp hạng doanh thu các rạp!")
-                            .result(map)
+                            .result(result)
                             .statusCode(HttpStatus.OK.value())
                             .build());
         } catch (Exception e) {
